@@ -16,9 +16,9 @@ export default function SubjectNavbar({ title }) {
     <nav className="sticky top-0 z-50 border-b border-gray-100 bg-white shadow-sm px-24">
       {/* Rest of your navbar code remains the same */}
       <div className="mx-auto  px-3 sm:px-3 lg:px-3">
-        <div className="flex h-20 justify-between items-center">
+        <div className="flex h-20 items-center justify-between relative">
           
-            <div className="relative">
+            <div className="flex items-center">
               <button
                 onClick={() => setIsOpen(!isOpen)}
                 className="flex items-center text-sm font-semibold text-gray-700 hover:text-gray-900 focus:outline-none"
@@ -75,7 +75,7 @@ export default function SubjectNavbar({ title }) {
           
 
           {/* Left Side -  Logo */}
-                                        <div className="flex shrink-0 items-center pr-36">
+                                        <div className="absolute left-1/2 transform -translate-x-1/2 flex items-center">
                                           <Link href="/dashboard">
                                               <ApplicationLogo className="block h-16 w-auto fill-current text-gray-800" />
                                           </Link>

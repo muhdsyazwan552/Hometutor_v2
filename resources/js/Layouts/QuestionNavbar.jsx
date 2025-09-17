@@ -19,7 +19,7 @@ export default function QuestionNavbar({ title, visible = true }) {
           <div className="relative">
             <button
               onClick={() => setIsOpen(!isOpen)}
-              className="flex items-center text-sm font-semibold text-gray-700 hover:text-gray-900 focus:outline-none"
+              className="flex h-20 items-center justify-between relative"
             >
               School Subject (Question) - {title}
               <svg
@@ -70,7 +70,7 @@ export default function QuestionNavbar({ title, visible = true }) {
             </div>
           </div>
 
-          <div className="flex shrink-0 items-center">
+          <div className="absolute left-1/2 transform -translate-x-1/2 flex items-center">
             <Link href="/dashboard">
               <ApplicationLogo className="block h-16 w-auto fill-current text-gray-800" />
             </Link>

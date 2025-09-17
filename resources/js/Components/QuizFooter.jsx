@@ -21,17 +21,28 @@ export default function QuizFooter({
     <div className=" bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4">
       <div className="max-w-4xl mx-auto flex justify-between items-center">
         {/* Question navigation dots */}
-        <div className="flex space-x-2">
-          {questions.map((_, index) => (
-            <button
-              key={index}
-              onClick={() => onQuestionSelect(index)}
-              className={`w-3 h-3 rounded-full ${currentQuestion === index ? 'bg-blue-600' : 
-                answeredQuestions[index] === true ? 'bg-green-500' : 
-                answeredQuestions[index] === false ? 'bg-red-500' : 'bg-gray-300'}`}
-            />
-          ))}
-        </div>
+        {/* Question navigation pagination */}
+<div className="flex space-x-2">
+  {/* {questions.map((_, index) => (
+    <button
+      key={index}
+      onClick={() => onQuestionSelect(index)}
+      className={`px-3 py-1 rounded-lg text-sm font-medium border 
+        ${currentQuestion === index ? 'bg-blue-600 text-white border-blue-600' : 
+          answeredQuestions[index] === true ? 'bg-green-500 text-white border-green-500' : 
+          answeredQuestions[index] === false ? 'bg-red-500 text-white border-red-500' : 
+          'bg-gray-200 text-gray-700 border-gray-300'}
+      `}
+    >
+      {index + 1}
+    </button>
+  ))} */}
+  <div className="text-sm font-medium text-gray-600">
+  Question <span className="text-blue-600">{currentQuestion + 1}</span> / {questions.length}
+</div>
+
+</div>
+
         
         {/* Action buttons */}
         <div className="flex space-x-2">
