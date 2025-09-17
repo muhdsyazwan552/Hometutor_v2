@@ -185,7 +185,7 @@ const standardContent = {
 export default function SubjectPage() {
   const { props } = usePage();
   const subjectKey = props.subject;
-  
+
   const sectionRefs = useRef({});
   const [activeSection, setActiveSection] = useState(sectionList[0]);
   const [selectedStandard, setSelectedStandard] = useState('Standard 1');
@@ -219,8 +219,8 @@ export default function SubjectPage() {
   }, [currentSections]); // Re-run when sections change
 
   return (
-    <SubjectLayout 
-      subject={subjectKey} 
+    <SubjectLayout
+      subject={subjectKey}
       activeTab="Practice"
       onStandardChange={handleStandardChange}
     >
@@ -239,8 +239,8 @@ export default function SubjectPage() {
                   href={`#${section.title}`}
                   ref={(el) => (sectionRefs.current[section.title] = el)}
                   className={`block px-4 py-3 rounded-lg text-sm font-medium transition-all duration-200 flex items-center ${activeSection === section.title
-                      ? 'bg-gradient-to-r from-sky-600 to-indigo-600 text-white shadow-md'
-                      : 'text-gray-600 hover:bg-sky-100 hover:text-sky-700 border border-transparent hover:border-sky-200'
+                    ? 'bg-gradient-to-r from-sky-600 to-indigo-600 text-white shadow-md'
+                    : 'text-gray-600 hover:bg-sky-100 hover:text-sky-700 border border-transparent hover:border-sky-200'
                     }`}
                 >
                   <span className="mr-2">{activeSection === section.title ? '▶' : '•'}</span>
@@ -285,13 +285,18 @@ export default function SubjectPage() {
                         {section.practiceType}
                       </p>
                       <div className="mt-4">
-                        <Link 
-                          href={route('questions', { standard: selectedStandard })}
+                        <Link
+                          href={
+                            section.practiceType === "Objective"
+                              ? route("objective-page", { standard: selectedStandard, section: section.title })
+                              : route("subjective-page", { standard: selectedStandard, section: section.title })
+                          }
                           className="inline-flex items-center bg-gradient-to-r from-sky-600 to-indigo-600 text-white px-4 py-2 rounded-md hover:from-sky-700 hover:to-indigo-700 transition-all shadow-md hover:shadow-lg"
                         >
                           Start Practice
                           <ArrowRightIcon className="ml-2 h-4 w-4" />
                         </Link>
+
                       </div>
                     </div>
                   </div>

@@ -59,8 +59,12 @@ Route::get('/subject/{subject}/report', function ($subject) {
     ]);
 });
 
-Route::get('/questions', function () {
-    return Inertia::render('courses/training/QuestionPage');
-})->name('questions');
+Route::get('/objective-page', function () {
+    return Inertia::render('courses/training/ObjectiveQuizPage');
+})->name('objective-page');
+
+Route::get('/subjective-page', function () {
+    return Inertia::render('courses/training/SubjectiveQuizPage');
+})->name('subjective-page');
 
 require __DIR__.'/auth.php';

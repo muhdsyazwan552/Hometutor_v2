@@ -7,29 +7,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 export default function Dashboard() {
   const [hoveredIndex, setHoveredIndex] = useState(null);
   const [showEmoji, setShowEmoji] = useState(false);
-  const [posts, setPosts] = useState([
-    {
-      id: 1,
-      author: "En Haical",
-      period: "Dinamik (1st period)",
-      avatar: "/path/to/avatar1.jpg",
-      teacher: "Teccher",
-      date: "January 01, 1970",
-      likes: 5,
-      comments: 3
-    },
-    {
-      id: 2,
-      author: "En Haical",
-      period: "Dinamik (1st period)",
-      avatar: "/path/to/avatar1.jpg",
-      teacher: "Teccher",
-      date: "January 01, 1970",
-      likes: 2,
-      comments: 1
-    }
-  ]);
-  const [newPostContent, setNewPostContent] = useState("");
+
   const [showNewPostForm, setShowNewPostForm] = useState(false);
 
   const user = usePage().props.auth.user;
@@ -116,11 +94,11 @@ export default function Dashboard() {
       <Head title="Dashboard" />
 
       <div className=" max-w-full py-6 sm:px-6 lg:px-20 space-y-6">
-        <div className="grid grid-cols-1 sm:grid-cols-6 md:grid-cols-8 lg:grid-cols-10 xl:grid-cols-12 gap-4 sm:gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-6 md:grid-cols-8 lg:grid-cols-10 xl:grid-cols-10 gap-4 sm:gap-6">
 
           {/* Left Column - Profile Card */}
 
-          <div className="sm:col-span-2 md:col-span-2 lg:col-span-3 xl:col-span-3">
+          <div className="sm:col-span-2 md:col-span-2 lg:col-span-4 lg:col-start-2 xl:col-span-3 xl:col-start-3">
   <motion.div
     className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden"
     initial={{ opacity: 0, y: 20 }}
@@ -244,148 +222,10 @@ export default function Dashboard() {
 
         
 
-          {/* Middle Column - Posting Section */}
-          <div className="sm:col-span-4 md:col-span-4 lg:col-span-4 xl:col-span-6">
-            {/* Compose Post Section */}
-            <motion.div
-              className="bg-white rounded-xl shadow p-4 mb-6 sm:mb-6"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3 }}
-            >
-              {showNewPostForm ? (
-                <div>
-                  <h2 className="text-lg font-semibold mb-2">Compose Post</h2>
-                  <textarea
-                    className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    placeholder="What's on your mind?"
-                    rows="3"
-                    value={newPostContent}
-                    onChange={(e) => setNewPostContent(e.target.value)}
-                  />
-                  <div className="flex justify-between mt-3">
-                    <button
-                      className="text-gray-500 hover:text-gray-700"
-                      onClick={() => setShowNewPostForm(false)}
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 disabled:opacity-50"
-                      onClick={handlePostSubmit}
-                      disabled={!newPostContent.trim()}
-                    >
-                      Post
-                    </button>
-                  </div>
-                </div>
-              ) : (
-                <div
-                  className="cursor-pointer text-gray-500 p-3 border border-dashed border-gray-300 rounded-md hover:border-gray-400"
-                  onClick={() => setShowNewPostForm(true)}
-                >
-                  What's on your mind?
-                </div>
-              )}
-            </motion.div>
-
-            {/* Posts Section */}
-            <div className="space-y-4 sm:space-y-6">
-              {posts.map((post) => (
-                <motion.div
-                  key={post.id}
-                  className="bg-white rounded-xl shadow p-4"
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.3 }}
-                >
-
-                  <div className="mb-3">
-                    <div className="flex items-center space-x-3">
-                      {/* Avatar Icon */}
-                      <div className="w-10 h-10 rounded-full bg-gradient-to-r from-blue-400 to-purple-500 flex items-center justify-center text-white font-semibold">
-                        {post.author.split(" ").map(name => name[0]).join("").toUpperCase()}
-                      </div>
-                      <div>
-                        <div className='flex items-center justify-center'>
-                          <h3 className="font-semibold">{post.author}</h3>
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            className="h-4 w-4 ml-1 text-gray-400"
-                            viewBox="0 0 256 512"
-                            fill="currentColor"
-                          >
-                            <path d="M118.6 105.4l128 127.1C252.9 239.6 256 247.8 256 255.1s-3.125 16.38-9.375 22.63l-128 127.1c-9.156 9.156-22.91 11.9-34.88 6.943S64 396.9 64 383.1V128c0-12.94 7.781-24.62 19.75-29.58S109.5 96.23 118.6 105.4z" />
-                          </svg>
-                          <p className="text-sm text-gray-500">{post.period}</p>
-                        </div>
-                        <p className="text-xs text-gray-400">
-                          <span className="font-semibold text-gray-600">👨‍🏫 {post.teacher}</span> - {post.date}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                  {post.content && <p className="mt-2 mb-4">{post.content}</p>}
-
-                  {/* Like count and comments count */}
-                  {(post.likes > 0 || post.comments > 0) && (
-                    <div className="flex items-center text-xs text-gray-500 mb-2">
-                      {post.likes > 0 && (
-                        <div className="flex items-center mr-3">
-                          <div className="w-4 h-4 bg-blue-500 rounded-full flex items-center justify-center text-white text-xs mr-1">
-                            👍
-                          </div>
-                          <span>{post.likes}</span>
-                        </div>
-                      )}
-                      {post.comments > 0 && (
-                        <span>{post.comments} comments</span>
-                      )}
-                    </div>
-                  )}
-
-                  {/* Like and Comment Actions */}
-                  <div className="flex items-center justify-between space-x-4 mt-3 pt-3 border-t border-gray-100">
-                    <button className="flex items-center space-x-1 text-gray-500 hover:text-blue-500 transition-colors">
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905a3.61 3.61 0 01-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5" />
-                      </svg>
-                      <span className="text-sm">Like</span>
-                    </button>
-
-                    <button className="flex items-center space-x-1 text-gray-500 hover:text-green-500 transition-colors">
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                      </svg>
-                      <span className="text-sm">Comment</span>
-                    </button>
-
-                    <button className="flex items-center space-x-1 text-gray-500 hover:text-purple-500 transition-colors">
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
-                      </svg>
-                      <span className="text-sm">Share</span>
-                    </button>
-                  </div>
-
-                  {/* Comment Input */}
-                  <div className="mt-3 pt-3 border-t border-gray-100">
-                    <div className="flex items-start space-x-2">
-                      <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-xs font-semibold">
-                        {user.name.split(" ").map(n => n[0]).join("").toUpperCase()}
-                      </div>
-                      <div className="flex-1 bg-gray-100 rounded-full px-4 py-2 text-sm cursor-text hover:bg-gray-200 transition-colors">
-                        Write a comment...
-                      </div>
-                    </div>
-                  </div>
-                </motion.div>
-              ))}
-            </div>
-          </div>
+          
 
           {/* Right Column - Assignments and Courses */}
-          <div className="sm:col-span-2 md:col-span-2 lg:col-span-3 xl:col-span-3">
+          <div className="sm:col-span-2 md:col-span-2 lg:col-span-5 xl:col-span-4">
             {/* What's Due Card */}
             <motion.div
               className="bg-white rounded-lg shadow-sm border border-gray-100 p-4 mb-4 sm:mb-6"

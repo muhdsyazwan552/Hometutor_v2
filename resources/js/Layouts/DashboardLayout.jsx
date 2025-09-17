@@ -12,90 +12,89 @@ export default function DashboardLayout({ header, children }) {
 
     const [isOpen, setIsOpen] = useState(false);
 
-   const toggleDropdown = () => setIsOpen(!isOpen);
-   const closeDropdown = () => setIsOpen(false);
+    const toggleDropdown = () => setIsOpen(!isOpen);
+    const closeDropdown = () => setIsOpen(false);
 
     return (
         <div className="min-h-screen bg-gray-100">
             <nav className="sticky top-0 z-50 border-b border-gray-100 bg-white shadow-lg px-24">
                 <div className="mx-0 max-w-full px-3 sm:px-3 lg:px-3">
-                    <div className="flex h-20 justify-between items-center">
+                    <div className="flex h-20 items-center justify-between relative">
                         {/* Left Side -  Nav */}
-                                <div className="relative">
-                                    {/* Button with animated icon */}
-                                    <button
-                                        onClick={toggleDropdown}
-                                        className="flex items-center text-sm font-semibold text-gray-700 hover:text-gray-900 focus:outline-none"
-                                    >
-                                        Courses
-                                        <svg
-                                            className={`ml-1 h-4 w-4 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}
-                                            fill="currentColor"
-                                            viewBox="0 0 20 20"
-                                        >
-                                            <path
-                                                fillRule="evenodd"
-                                                d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
-                                                clipRule="evenodd"
-                                            />
-                                        </svg>
-                                    </button>
+                        <div className="relative">
+                            {/* Button with animated icon */}
+                            <button
+                                onClick={toggleDropdown}
+                                className="flex items-center text-sm font-semibold text-gray-700 hover:text-gray-900 focus:outline-none"
+                            >
+                                Courses
+                                <svg
+                                    className={`ml-1 h-4 w-4 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}
+                                    fill="currentColor"
+                                    viewBox="0 0 20 20"
+                                >
+                                    <path
+                                        fillRule="evenodd"
+                                        d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                                        clipRule="evenodd"
+                                    />
+                                </svg>
+                            </button>
 
-                                    {/* Dropdown with animation */}
-                                    <div
-  className={`fixed left-0 top-20 w-screen h-auto bg-white px-6 py-2 shadow-lg transition-all duration-300 ease-in-out z-50 ${
-    isOpen
-      ? "opacity-100 translate-y-0"
-      : "opacity-0 -translate-y-2 pointer-events-none"
-  }`}
->
-                                        <div className="px-6">
-                                            <div className="grid grid-cols-3 gap-6">
-                                                {/* School Subjects */}
-                                                <div>
-                                                    <h4 className="mb-2 border-b pb-1 text-sm font-semibold text-gray-700">
-                                                        School Subjects
-                                                    </h4>
-                                                    <ul className="space-y-1 text-sm text-sky-600">
-                                                    <li><Link href="/subject/bahasa-melayu" className="hover:underline">Bahasa Melayu</Link></li>
-                                                    <li><Link href="/subject/bahasa-inggeris" className="hover:underline">Bahasa Inggeris</Link></li>
-                                                    <li><Link href="/subject/matematik" className="hover:underline">Matematik</Link></li>
-                                                    <li><Link href="/subject/sains" className="hover:underline">Sains</Link></li>
-                                                    </ul>
-                                                </div>
+                            {/* Dropdown with animation */}
+                            <div
+                                className={`fixed left-0 top-20 w-screen h-auto bg-white px-6 py-2 shadow-lg transition-all duration-300 ease-in-out z-50 ${isOpen
+                                        ? "opacity-100 translate-y-0"
+                                        : "opacity-0 -translate-y-2 pointer-events-none"
+                                    }`}
+                            >
+                                <div className="px-6">
+                                    <div className="grid grid-cols-3 gap-6">
+                                        {/* School Subjects */}
+                                        <div>
+                                            <h4 className="mb-2 border-b pb-1 text-sm font-semibold text-gray-700">
+                                                School Subjects
+                                            </h4>
+                                            <ul className="space-y-1 text-sm text-sky-600">
+                                                <li><Link href="/subject/bahasa-melayu" className="hover:underline">Bahasa Melayu</Link></li>
+                                                <li><Link href="/subject/bahasa-inggeris" className="hover:underline">Bahasa Inggeris</Link></li>
+                                                <li><Link href="/subject/matematik" className="hover:underline">Matematik</Link></li>
+                                                <li><Link href="/subject/sains" className="hover:underline">Sains</Link></li>
+                                            </ul>
+                                        </div>
 
-                                                {/* VideoTube */}
-                                                <div>
-                                                    <h4 className="mb-2 border-b pb-1 text-sm font-semibold text-gray-700">
-                                                        VideoTube
-                                                    </h4>
-                                                    <ul className="space-y-1 text-sm text-red-500">
-                                                        <li><Link href="#" className="hover:underline">General Learning</Link></li>
-                                                    </ul>
-                                                </div>
+                                        {/* VideoTube */}
+                                        <div>
+                                            <h4 className="mb-2 border-b pb-1 text-sm font-semibold text-gray-700">
+                                                VideoTube
+                                            </h4>
+                                            <ul className="space-y-1 text-sm text-red-500">
+                                                <li><Link href="#" className="hover:underline">General Learning</Link></li>
+                                            </ul>
+                                        </div>
 
-                                                {/* Test Prep */}
-                                                <div>
-                                                    <h4 className="mb-2 border-b pb-1 text-sm font-semibold text-gray-700">
-                                                        Test Prep
-                                                    </h4>
-                                                    <ul className="space-y-1 text-sm text-gray-600">
-                                                        <li><Link href="#" className="hover:underline">UPSR</Link></li>
-                                                        <li><Link href="#" className="hover:underline">PT3</Link></li>
-                                                        <li><Link href="#" className="hover:underline">SPM</Link></li>
-                                                    </ul>
-                                                </div>
-                                            </div>
+                                        {/* Test Prep */}
+                                        <div>
+                                            <h4 className="mb-2 border-b pb-1 text-sm font-semibold text-gray-700">
+                                                Test Prep
+                                            </h4>
+                                            <ul className="space-y-1 text-sm text-gray-600">
+                                                <li><Link href="#" className="hover:underline">UPSR</Link></li>
+                                                <li><Link href="#" className="hover:underline">PT3</Link></li>
+                                                <li><Link href="#" className="hover:underline">SPM</Link></li>
+                                            </ul>
                                         </div>
                                     </div>
                                 </div>
+                            </div>
+                        </div>
 
                         {/* Left Side -  Logo */}
-                                                    <div className="flex shrink-0 items-center">
-                                <Link href="/dashboard">
-                                    <ApplicationLogoImg className="block h-16 w-auto fill-current text-gray-800" />
-                                </Link>
-                            </div>
+                        <div className="absolute left-1/2 transform -translate-x-1/2 flex items-center">
+                            <Link href="/dashboard">
+                                <ApplicationLogoImg className="block h-16 w-auto fill-current text-gray-800" />
+                            </Link>
+                        </div>
 
                         {/* Right Side - User Dropdown */}
                         <div className="hidden sm:flex sm:items-center">
@@ -109,9 +108,9 @@ export default function DashboardLayout({ header, children }) {
                                             >
                                                 {/* Avatar/Profile Icon */}
                                                 {user.avatar ? (
-                                                    <img 
-                                                        className="h-8 w-8 rounded-full" 
-                                                        src={user.avatar} 
+                                                    <img
+                                                        className="h-8 w-8 rounded-full"
+                                                        src={user.avatar}
                                                         alt={user.name}
                                                     />
                                                 ) : (
@@ -121,21 +120,21 @@ export default function DashboardLayout({ header, children }) {
                                                         </span>
                                                     </div>
                                                 )}
-                                                
+
                                                 {/* User Name */}
                                                 {/* <span className='font-semibold'>{user.name}</span> */}
-                                                
+
                                                 {/* Chevron Icon */}
-                                                <svg 
-                                                    className="h-4 w-4 text-gray-400" 
-                                                    xmlns="http://www.w3.org/2000/svg" 
-                                                    viewBox="0 0 20 20" 
+                                                <svg
+                                                    className="h-4 w-4 text-gray-400"
+                                                    xmlns="http://www.w3.org/2000/svg"
+                                                    viewBox="0 0 20 20"
                                                     fill="currentColor"
                                                 >
-                                                    <path 
-                                                        fillRule="evenodd" 
-                                                        d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" 
-                                                        clipRule="evenodd" 
+                                                    <path
+                                                        fillRule="evenodd"
+                                                        d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z"
+                                                        clipRule="evenodd"
                                                     />
                                                 </svg>
                                             </button>

@@ -53,7 +53,7 @@ const QuestionLayout = ({
             {firstAnswers.map((isCorrect, index) => (
               <div
                 key={index}
-                className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium border-2 border-gray-300 ${isCorrect === true
+                className={`w-10 h-10 rounded-full flex items-center justify-center text-xs font-medium border-2 border-gray-300 ${isCorrect === true
                     ? 'bg-green-500 text-white'
                     : isCorrect === false
                       ? 'bg-red-500 text-white'
