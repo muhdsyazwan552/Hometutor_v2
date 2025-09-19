@@ -55,7 +55,7 @@ export default function SubjectLayout({
             <div>
               <button
                 type="button"
-                className="inline-flex justify-center gap-x-1.5 rounded-none bg-none px-0 py-2 text-sm font-semibold text-white shadow-none ring-none hover:bg-white/10 rounded-md px-2 transition-colors"
+                className="inline-flex justify-center gap-x-1.5  bg-none  py-2 text-sm font-semibold text-white shadow-none ring-none hover:bg-white/10 rounded-md px-2 transition-colors"
                 id="standard-filter-button"
                 aria-expanded={isDropdownOpen}
                 aria-haspopup="true"

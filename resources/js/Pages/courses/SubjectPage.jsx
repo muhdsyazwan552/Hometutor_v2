@@ -238,7 +238,7 @@ export default function SubjectPage() {
                   key={section.title}
                   href={`#${section.title}`}
                   ref={(el) => (sectionRefs.current[section.title] = el)}
-                  className={`block px-4 py-3 rounded-lg text-sm font-medium transition-all duration-200 flex items-center ${activeSection === section.title
+                  className={`block px-4 py-3 rounded-lg text-sm font-medium transition-all duration-200  items-center ${activeSection === section.title
                     ? 'bg-gradient-to-r from-sky-600 to-indigo-600 text-white shadow-md'
                     : 'text-gray-600 hover:bg-sky-100 hover:text-sky-700 border border-transparent hover:border-sky-200'
                     }`}
