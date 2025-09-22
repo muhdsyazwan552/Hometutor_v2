@@ -1,8 +1,9 @@
 // Pages/QuizPage.jsx
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Head } from '@inertiajs/react';
 import QuestionLayout from '@/Layouts/QuestionLayout';
 import QuizFooter from '@/Components/QuizFooter';
+import ResultQuizPage from '@/Pages/courses/training/ResultQuizPage';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export default function QuizPage() {
@@ -16,6 +17,12 @@ export default function QuizPage() {
   const [firstAnswers, setFirstAnswers] = useState(Array(5).fill(null));
   const [explanationVisible, setExplanationVisible] = useState(false);
   const [showRetryOption, setShowRetryOption] = useState(false);
+  const [quizCompleted, setQuizCompleted] = useState(false);
+  const [quizResults, setQuizResults] = useState(null);
+  
+  // Timer state
+  const [timeElapsed, setTimeElapsed] = useState(0);
+  const [timerRunning, setTimerRunning] = useState(false);
 
   const questions = [
     {
@@ -50,6 +57,36 @@ export default function QuizPage() {
     }
   ];
 
+  // Timer effect
+  useEffect(() => {
+    let interval = null;
+    
+    if (timerRunning) {
+      interval = setInterval(() => {
+        setTimeElapsed(seconds => seconds + 1);
+      }, 1000);
+    } else if (!timerRunning && timeElapsed !== 0) {
+      clearInterval(interval);
+    }
+    
+    return () => clearInterval(interval);
+  }, [timerRunning]);
+
+  // Start timer when component mounts
+  useEffect(() => {
+    setTimerRunning(true);
+    
+    return () => {
+      setTimerRunning(false);
+    };
+  }, []);
+
+  const formatTime = (totalSeconds) => {
+    const minutes = Math.floor(totalSeconds / 60);
+    const seconds = totalSeconds % 60;
+    return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+  };
+
   const resetQuiz = () => {
     setCurrentQuestion(0);
     setShowScore(false);
@@ -59,6 +96,11 @@ export default function QuizPage() {
     setAnsweredQuestions(Array(5).fill(null));
     setFirstAnswers(Array(5).fill(null));
     setShowRetryOption(false);
+    setQuizCompleted(false);
+    setQuizResults(null);
+    // Reset timer
+    setTimeElapsed(0);
+    setTimerRunning(true);
   };
 
   const handleOptionSelect = (optionIndex) => {
@@ -106,7 +148,7 @@ export default function QuizPage() {
       if (prev < questions.length - 1) {
         return prev + 1;
       } else {
-        setShowScore(true);
+        handleSubmit();
         return prev;
       }
     });
@@ -187,6 +229,40 @@ export default function QuizPage() {
   // Calculate correct answers count
   const correctAnswersCount = firstAnswers.filter(answer => answer === true).length;
 
+  // Modify the submit function to stop timer
+  const handleSubmit = () => {
+    // Stop the timer
+    setTimerRunning(false);
+    
+    // Calculate results
+    const results = {
+      totalQuestions: questions.length,
+      correctAnswers: firstAnswers.filter(answer => answer === true).length,
+      wrongAnswers: firstAnswers.filter(answer => answer === false).length,
+      skippedAnswers: firstAnswers.filter(answer => answer === null).length,
+      timeElapsed: timeElapsed,
+      questions: questions.map((q, index) => ({
+        question: q.question,
+        correct: firstAnswers[index] === true
+      }))
+    };
+    
+    // Set completed state and pass results
+    setQuizCompleted(true);
+    setQuizResults(results);
+  };
+
+  // If quiz is completed, show the results page
+  if (quizCompleted && quizResults) {
+    return (
+      <ResultQuizPage 
+        quizType="objective" 
+        objectiveResults={quizResults} 
+        onTryAgain={resetQuiz} 
+      />
+    );
+  }
+
   return (
     <QuestionLayout 
       title="Quiz" 
@@ -217,207 +293,163 @@ export default function QuizPage() {
         {showConfetti && <Confetti />}
       </AnimatePresence>
 
-      <div className=" bg-[url('https://cdn.vectorstock.com/i/500p/65/08/cartoon-college-classroom-vector-38246508.jpg')]  bg-cover bg-top bg-no-repeat">
+      <div className="bg-[url('https://cdn.vectorstock.com/i/500p/65/08/cartoon-college-classroom-vector-38246508.jpg')] bg-cover bg-top bg-no-repeat">
         <div className="max-w-4xl mx-auto py-8 px-4">
-          {showScore ? (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              className="bg-white rounded-xl shadow-lg p-6 text-center border border-gray-200"
-            >
-              <motion.div
-                animate={{ scale: [1, 1.05, 1] }}
-                transition={{ duration: 0.5 }}
-                className="mb-6"
-              >
-                <div className="flex justify-center mb-4">
-                  <motion.div
-                    animate={{
-                      rotate: [0, 15, -15, 0],
-                      scale: [1, 1.1, 1]
-                    }}
-                    transition={{ repeat: Infinity, duration: 2 }}
-                  >
-                    <svg className="w-16 h-16 text-yellow-500" viewBox="0 0 24 24">
-                      <path fill="currentColor" d="M12,2L15.09,8.26L22,9.27L17,14.14L18.18,21.02L12,17.77L5.82,21.02L7,14.14L2,9.27L8.91,8.26L12,2Z" />
-                    </svg>
-                  </motion.div>
-                </div>
+          {/* Timer display */}
+          <div className="flex justify-end mb-4">
+            <div className="bg-white rounded-lg shadow-md px-4 py-2 flex items-center">
+              <svg className="w-5 h-5 text-gray-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <span className="text-lg font-medium text-gray-800">{formatTime(timeElapsed)}</span>
+            </div>
+          </div>
 
-                <h2 className="text-2xl font-bold text-gray-800 mb-2">Quiz Completed!</h2>
-
-                <div className="flex justify-center space-x-1 mb-4">
-                  {firstAnswers.map((isCorrect, index) => (
-                    <div
-                      key={index}
-                      className={`w-4 h-4 rounded-full ${isCorrect === true ? 'bg-green-500' :
-                          isCorrect === false ? 'bg-red-500' : 'bg-gray-300'
-                        }`}
-                    />
-                  ))}
-                </div>
-
-                <p className="text-md text-gray-600">
-                  You answered {correctAnswersCount} out of {questions.length} questions correctly
-                </p>
-              </motion.div>
-
-              <motion.button
-                onClick={resetQuiz}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className="bg-blue-600 text-white px-6 py-3 rounded-lg text-md font-medium shadow hover:shadow-md transition-all"
-              >
-                Play Again
-              </motion.button>
-            </motion.div>
-          ) : (
-            <motion.div
-              key={currentQuestion}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.3 }}
-              className="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-200"
-            >
-              {/* Progress and navigation header */}
-              <div className="bg-gray-50 p-4 border-b border-gray-200">
-                <div className="flex justify-between items-center mb-2">
-                  <div className="text-sm font-medium text-gray-600">
-                    Question {currentQuestion + 1} of {questions.length}
-                  </div>
+          <motion.div
+            key={currentQuestion}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{ duration: 0.3 }}
+            className="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-200"
+          >
+            {/* Progress and navigation header */}
+            <div className="bg-gray-50 p-4 border-b border-gray-200">
+              <div className="flex justify-between items-center mb-2">
+                <div className="text-sm font-medium text-gray-600">
+                  Question {currentQuestion + 1} of {questions.length}
                 </div>
               </div>
+            </div>
 
-              <div className="p-6">
-                {/* Question text */}
-                <motion.h2
-                  className="text-lg font-medium text-gray-800 mb-6"
-                  initial={{ y: -10, opacity: 0 }}
-                  animate={{ y: 0, opacity: 1 }}
-                  transition={{ delay: 0.1 }}
-                >
-                  {questions[currentQuestion].question}
-                </motion.h2>
+            <div className="p-6">
+              {/* Question text */}
+              <motion.h2
+                className="text-lg font-medium text-gray-800 mb-6"
+                initial={{ y: -10, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ delay: 0.1 }}
+              >
+                {questions[currentQuestion].question}
+              </motion.h2>
 
-                <div className="text-sm text-gray-500 mb-4">Choose 1 answer:</div>
+              <div className="text-sm text-gray-500 mb-4">Choose 1 answer:</div>
 
-                {/* Options */}
-                <div className="space-y-3 mb-6">
-                  {questions[currentQuestion].options.map((option, index) => (
-                    <motion.button
-                      key={index}
-                      initial={{ y: 10, opacity: 0 }}
-                      animate={{ y: 0, opacity: 1 }}
-                      transition={{ delay: 0.2 + index * 0.1 }}
-                      onClick={() => handleOptionSelect(index)}
-                      disabled={showExplanation && answeredQuestions[currentQuestion] !== null}
-                      className={`w-full p-4 border-b text-left transition-all ${selectedOption === index
-                          ? "border-blue-500 bg-blue-50"
-                          : "border-gray-300 hover:border-blue-300 hover:bg-blue-50"
-                        } ${showExplanation && index === questions[currentQuestion].correctAnswer
-                          ? "border-green-500 bg-green-50"
-                          : ""
-                        } ${showExplanation && selectedOption === index && !isCorrect ? "border-red-300 bg-red-50" : ""}`}
-                    >
-                      <div className="flex items-center">
-                        <div className={`w-6 h-6 rounded-full border flex items-center justify-center flex-shrink-0 mr-3 ${selectedOption === index
-                            ? "bg-blue-600 text-white border-blue-600"
-                            : "bg-white text-gray-600 border-gray-400"
-                          } ${showExplanation && index === questions[currentQuestion].correctAnswer
-                            ? "bg-green-500 text-white border-green-500"
-                            : ""
-                          } ${showExplanation && selectedOption === index && !isCorrect ? "bg-red-500 text-white border-red-500" : ""}`}>
-                          {String.fromCharCode(65 + index)}
-                        </div>
-                        <div className="text-gray-800">{option}</div>
-                        {showExplanation && index === questions[currentQuestion].correctAnswer && (
-                          <motion.div
-                            initial={{ scale: 0 }}
-                            animate={{ scale: 1 }}
-                            className="ml-auto text-green-500"
-                          >
-                            <svg className="w-5 h-5" viewBox="0 0 24 24">
-                              <path fill="currentColor" d="M21,7L9,19L3.5,13.5L4.91,12.09L9,16.17L19.59,5.59L21,7Z" />
-                            </svg>
-                          </motion.div>
-                        )}
-                        {showExplanation && selectedOption === index && !isCorrect && (
-                          <motion.div
-                            initial={{ scale: 0 }}
-                            animate={{ scale: 1 }}
-                            className="ml-auto text-red-500"
-                          >
-                            <svg className="w-5 h-5" viewBox="0 0 24 24">
-                              <path fill="currentColor" d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z" />
-                            </svg>
-                          </motion.div>
-                        )}
-                      </div>
-                    </motion.button>
-                  ))}
-                </div>
-
-                {/* Explanation Toggle Button */}
-                {showExplanation && (
-                  <div className="flex justify-center mb-4">
-                    <motion.button
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                      onClick={toggleExplanation}
-                      className="flex items-center space-x-2 text-sm text-blue-600 hover:text-blue-800 font-medium"
-                    >
-                      <span>{explanationVisible ? "Hide Explanation" : "Show Explanation"}</span>
-                      <motion.svg
-                        animate={{ rotate: explanationVisible ? 180 : 0 }}
-                        className="w-4 h-4"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                      </motion.svg>
-                    </motion.button>
-                  </div>
-                )}
-
-                {/* Explanation */}
-                {showExplanation && explanationVisible && (
-                  <motion.div
-                    initial={{ height: 0, opacity: 0 }}
-                    animate={{ height: 'auto', opacity: 1 }}
-                    transition={{ duration: 0.3 }}
-                    className="bg-gray-50 p-4 rounded-lg border border-gray-200 mt-4"
+              {/* Options */}
+              <div className="space-y-3 mb-6">
+                {questions[currentQuestion].options.map((option, index) => (
+                  <motion.button
+                    key={index}
+                    initial={{ y: 10, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    transition={{ delay: 0.2 + index * 0.1 }}
+                    onClick={() => handleOptionSelect(index)}
+                    disabled={showExplanation && answeredQuestions[currentQuestion] !== null}
+                    className={`w-full p-4 border-b text-left transition-all ${selectedOption === index
+                        ? "border-blue-500 bg-blue-50"
+                        : "border-gray-300 hover:border-blue-300 hover:bg-blue-50"
+                      } ${showExplanation && index === questions[currentQuestion].correctAnswer
+                        ? "border-green-500 bg-green-50"
+                        : ""
+                      } ${showExplanation && selectedOption === index && !isCorrect ? "border-red-300 bg-red-50" : ""}`}
                   >
-                    <div className="flex items-start">
-                      <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-white mr-3 ${isCorrect ? "bg-green-500" : "bg-red-500"
-                        }`}>
-                        {isCorrect ?
+                    <div className="flex items-center">
+                      <div className={`w-6 h-6 rounded-full border flex items-center justify-center flex-shrink-0 mr-3 ${selectedOption === index
+                          ? "bg-blue-600 text-white border-blue-600"
+                          : "bg-white text-gray-600 border-gray-400"
+                        } ${showExplanation && index === questions[currentQuestion].correctAnswer
+                          ? "bg-green-500 text-white border-green-500"
+                          : ""
+                        } ${showExplanation && selectedOption === index && !isCorrect ? "bg-red-500 text-white border-red-500" : ""}`}>
+                        {String.fromCharCode(65 + index)}
+                      </div>
+                      <div className="text-gray-800">{option}</div>
+                      {showExplanation && index === questions[currentQuestion].correctAnswer && (
+                        <motion.div
+                          initial={{ scale: 0 }}
+                          animate={{ scale: 1 }}
+                          className="ml-auto text-green-500"
+                        >
                           <svg className="w-5 h-5" viewBox="0 0 24 24">
                             <path fill="currentColor" d="M21,7L9,19L3.5,13.5L4.91,12.09L9,16.17L19.59,5.59L21,7Z" />
-                          </svg> :
+                          </svg>
+                        </motion.div>
+                      )}
+                      {showExplanation && selectedOption === index && !isCorrect && (
+                        <motion.div
+                          initial={{ scale: 0 }}
+                          animate={{ scale: 1 }}
+                          className="ml-auto text-red-500"
+                        >
                           <svg className="w-5 h-5" viewBox="0 0 24 24">
                             <path fill="currentColor" d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z" />
                           </svg>
-                        }
-                      </div>
-                      <div>
-                        <h3 className={`font-medium ${isCorrect ? "text-green-800" : "text-red-800"}`}>
-                          {isCorrect ? "Correct!" : "Incorrect!"}
-                          {firstAnswers[currentQuestion] !== null && !isCorrect && (
-                            <span className="text-xs text-gray-500 ml-2">(First attempt was wrong)</span>
-                          )}
-                        </h3>
-                        <p className="text-gray-700 mt-1 text-sm">
-                          {questions[currentQuestion].explanation}
-                        </p>
-                      </div>
+                        </motion.div>
+                      )}
                     </div>
-                  </motion.div>
-                )}
+                  </motion.button>
+                ))}
               </div>
-            </motion.div>
-          )}
+
+              {/* Explanation Toggle Button */}
+              {showExplanation && (
+                <div className="flex justify-center mb-4">
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={toggleExplanation}
+                    className="flex items-center space-x-2 text-sm text-blue-600 hover:text-blue-800 font-medium"
+                  >
+                    <span>{explanationVisible ? "Hide Explanation" : "Show Explanation"}</span>
+                    <motion.svg
+                      animate={{ rotate: explanationVisible ? 180 : 0 }}
+                      className="w-4 h-4"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </motion.svg>
+                  </motion.button>
+                </div>
+              )}
+
+              {/* Explanation */}
+              {showExplanation && explanationVisible && (
+                <motion.div
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: 'auto', opacity: 1 }}
+                  transition={{ duration: 0.3 }}
+                  className="bg-gray-50 p-4 rounded-lg border border-gray-200 mt-4"
+                >
+                  <div className="flex items-start">
+                    <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-white mr-3 ${isCorrect ? "bg-green-500" : "bg-red-500"
+                      }`}>
+                      {isCorrect ?
+                        <svg className="w-5 h-5" viewBox="0 0 24 24">
+                          <path fill="currentColor" d="M21,7L9,19L3.5,13.5L4.91,12.09L9,16.17L19.59,5.59L21,7Z" />
+                        </svg> :
+                        <svg className="w-5 h-5" viewBox="0 0 24 24">
+                          <path fill="currentColor" d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z" />
+                        </svg>
+                      }
+                    </div>
+                    <div>
+                      <h3 className={`font-medium ${isCorrect ? "text-green-800" : "text-red-800"}`}>
+                        {isCorrect ? "Correct!" : "Incorrect!"}
+                        {firstAnswers[currentQuestion] !== null && !isCorrect && (
+                          <span className="text-xs text-gray-500 ml-2">(First attempt was wrong)</span>
+                        )}
+                      </h3>
+                      <p className="text-gray-700 mt-1 text-sm">
+                        {questions[currentQuestion].explanation}
+                      </p>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+            </div>
+          </motion.div>
         </div>
       </div>
     </QuestionLayout>
