@@ -67,4 +67,8 @@ Route::get('/subjective-page', function () {
     return Inertia::render('courses/training/SubjectiveQuizPage');
 })->name('subjective-page');
 
+Route::get('/tekakata-page', function () {
+    return Inertia::render('games/TekaKataPage');
+})->name('tekakata-page');
+
 require __DIR__.'/auth.php';

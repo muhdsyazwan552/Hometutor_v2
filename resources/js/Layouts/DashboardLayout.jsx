@@ -76,12 +76,10 @@ export default function DashboardLayout({ header, children }) {
                                         {/* Test Prep */}
                                         <div>
                                             <h4 className="mb-2 border-b pb-1 text-sm font-semibold text-gray-700">
-                                                Test Prep
+                                                Games
                                             </h4>
                                             <ul className="space-y-1 text-sm text-gray-600">
-                                                <li><Link href="#" className="hover:underline">UPSR</Link></li>
-                                                <li><Link href="#" className="hover:underline">PT3</Link></li>
-                                                <li><Link href="#" className="hover:underline">SPM</Link></li>
+                                                <li><Link href="/tekakata-page" className="hover:underline">Teka Kata</Link></li>
                                             </ul>
                                         </div>
                                     </div>

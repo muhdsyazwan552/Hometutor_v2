@@ -29,7 +29,7 @@ export default function SubjectLayout({
   const title = formatTitle(subject);
   
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const [selectedStandard, setSelectedStandard] = useState('Standard 1');
+  const [selectedStandard, setSelectedStandard] = useState('Form 4');
 
   const handleStandardSelect = (standard) => {
     setSelectedStandard(standard);
@@ -77,7 +77,7 @@ export default function SubjectLayout({
                 tabIndex="-1"
               >
                 <div className="py-1" role="none">
-                  {['Standard 1', 'Standard 2', 'Standard 3'].map((standard) => (
+                  {['Form 4', 'Form 5'].map((standard) => (
                     <button
                       key={standard}
                       type="button"

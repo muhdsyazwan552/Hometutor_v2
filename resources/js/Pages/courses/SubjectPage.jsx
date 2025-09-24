@@ -7,36 +7,36 @@ const sectionList = ['Keperihalan', 'Rencana', 'Perbincangan', 'Laporan'];
 
 // Content for different standards
 const standardContent = {
-  'Standard 1': {
+  'Standard 4': {
     sections: [
       {
         title: 'Keperihalan',
         practiceType: 'Subjective',
         videos: [
-          { title: 'BM Standard 1 - Ayat Permulaan Karangan', duration: '05:30', thumbnail: '' },
-          { title: 'Teknik Menulis Standard 1', duration: '03:20', thumbnail: '' },
-          { title: 'BM Standard 1 - Teknik Penulisan Dasar', duration: '04:15', thumbnail: '' },
+          { title: 'BM Standard 4 - Ayat Permulaan Karangan', duration: '05:30', thumbnail: '' },
+          { title: 'Teknik Menulis Standard 4', duration: '03:20', thumbnail: '' },
+          { title: 'BM Standard 4 - Teknik Penulisan Dasar', duration: '04:15', thumbnail: '' },
         ],
       },
       {
         title: 'Rencana',
         practiceType: 'Objective',
         videos: [
-          { title: 'Menulis Karangan Standard 1', duration: '03:45', thumbnail: '' },
-          { title: 'Struktur Ayat Standard 1', duration: '04:10', thumbnail: '' },
+          { title: 'Menulis Karangan Standard 4', duration: '03:45', thumbnail: '' },
+          { title: 'Struktur Ayat Standard 4', duration: '04:10', thumbnail: '' },
         ],
       },
       {
         title: 'Pendapat',
         practiceType: 'Subjective',
         videos: [
-          { title: 'Menyatakan Pendapat Standard 1', duration: '04:50', thumbnail: '' },
-          { title: 'Latihan Pendapat Standard 1', duration: '05:05', thumbnail: '' },
+          { title: 'Menyatakan Pendapat Standard 4', duration: '04:50', thumbnail: '' },
+          { title: 'Latihan Pendapat Standard 4', duration: '05:05', thumbnail: '' },
         ],
       },
     ]
   },
-  'Standard 2': {
+  'Standard 5': {
     sections: [
       {
         title: 'Keperihalan',
@@ -65,7 +65,7 @@ const standardContent = {
       },
     ]
   },
-  'Standard 3': {
+  'Standard 5': {
     sections: [
       {
         title: 'Keperihalan',
@@ -188,8 +188,8 @@ export default function SubjectPage() {
 
   const sectionRefs = useRef({});
   const [activeSection, setActiveSection] = useState(sectionList[0]);
-  const [selectedStandard, setSelectedStandard] = useState('Standard 1');
-  const [currentSections, setCurrentSections] = useState(standardContent['Standard 1'].sections);
+  const [selectedStandard, setSelectedStandard] = useState('Standard 4');
+  const [currentSections, setCurrentSections] = useState(standardContent['Standard 4'].sections);
 
   // Handle standard change
   const handleStandardChange = (standard) => {

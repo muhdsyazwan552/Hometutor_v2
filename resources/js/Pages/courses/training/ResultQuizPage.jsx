@@ -4,30 +4,30 @@ import { Head } from '@inertiajs/react';
 import QuestionLayout from '@/Layouts/QuestionLayout';
 import { motion } from 'framer-motion';
 
-export default function ResultQuizPage({ 
+export default function ResultQuizPage({
   quizType = "combined", // "objective", "subjective", or "combined"
-  objectiveResults = null, 
+  objectiveResults = null,
   subjectiveResults = null,
   onTryAgain = null
 }) {
   // Calculate overall scores
-  const objectiveScore = objectiveResults 
+  const objectiveScore = objectiveResults
     ? `${objectiveResults.correctAnswers}/${objectiveResults.totalQuestions}`
     : null;
-    
-  const subjectiveScore = subjectiveResults 
+
+  const subjectiveScore = subjectiveResults
     ? `${subjectiveResults.score}/${subjectiveResults.totalQuestions}`
     : null;
 
   // Calculate time metrics for objective quiz
   const objectiveTotalTimeTaken = objectiveResults?.timeElapsed || 0;
-  const objectiveAverageTimePerQuestion = objectiveResults 
+  const objectiveAverageTimePerQuestion = objectiveResults
     ? (objectiveTotalTimeTaken / objectiveResults.totalQuestions).toFixed(1)
     : 0;
 
   // Calculate time metrics for subjective quiz
   const subjectiveTotalTimeTaken = subjectiveResults?.timeElapsed || 0;
-  const subjectiveAverageTimePerQuestion = subjectiveResults 
+  const subjectiveAverageTimePerQuestion = subjectiveResults
     ? (subjectiveTotalTimeTaken / subjectiveResults.totalQuestions).toFixed(1)
     : 0;
 
@@ -41,26 +41,37 @@ export default function ResultQuizPage({
   return (
     <QuestionLayout title="Quiz Results">
       <Head title="Quiz Results" />
-      
-      <div className="min-h-screen bg-gray-50 py-8">
-        <div className="max-w-4xl mx-auto px-4">
+
+      <div className="min-h-screen bg-gray-50 py-0">
+        {/* <div className="max-w-4xl mx-auto px-4"> */}
+        <div className="">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="text-center mb-8"
+            className="text-center mb-0 "
           >
-            <h1 className="text-3xl font-bold text-gray-800 mb-2">Quiz Completed!</h1>
-            <p className="text-gray-600">Congratulations on finishing the quiz</p>
+            <div class="bg-gradient-to-br from-blue-950 via-blue-900 to-blue-800 my-4 p-6">
+              <h1 className="text-3xl font-bold text-white mb-2">You got <span className='text-blue-400'>{((objectiveResults.correctAnswers / objectiveResults.totalQuestions) * 100).toFixed(1)}%</span> </h1>
+              <h3 className="text-3xl text-white">Get <span className='text-green-600 font-extrabold'>{objectiveResults.correctAnswers}</span> correct to reach Practiced.</h3>
+              <h3 className="text-xl text-white font-light"><p className="font-medium mt-2">
+                {objectiveResults.correctAnswers <= 2 ?
+                  '"Don\'t worry, even experts were beginners once!"' :
+                  objectiveResults.correctAnswers <= 4 ?
+                    '"You\'re making progress! Keep pushing!"' :
+                    '"Amazing work! You\'re crushing it!"'
+                }
+              </p></h3>
+            </div>
           </motion.div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8 max-w-4xl mx-auto px-4 my-16">
             {/* Objective Quiz Results Card */}
             {objectiveResults && (
               <motion.div
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.2 }}
-                className="bg-white rounded-xl shadow-lg p-6 border border-gray-200"
+                className="bg-white rounded-xl shadow-lg p-6 border border-gray-200 md:col-span-1"
               >
                 <div className="flex items-center mb-4">
                   <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center mr-3">
@@ -71,12 +82,13 @@ export default function ResultQuizPage({
                   <h2 className="text-xl font-semibold text-gray-800">Objective Quiz</h2>
                 </div>
 
-                <div className="text-center mb-6">
-                  <div className="text-4xl font-bold text-blue-600">{objectiveScore}</div>
-                  <div className="text-sm text-gray-600">Score</div>
-                </div>
 
-                <div className="grid grid-cols-3 gap-4 mb-6">
+
+                <div className="grid grid-cols-4 gap-4 mb-6">
+                  <div className="text-center p-3 bg-blue-50 rounded-lg">
+                    <div className="text-2xl font-bold text-blue-600">{objectiveScore}</div>
+                    <div className="text-sm text-gray-600">Score</div>
+                  </div>
                   <div className="text-center p-3 bg-green-50 rounded-lg">
                     <div className="text-2xl font-bold text-green-600">{objectiveResults.correctAnswers}</div>
                     <div className="text-sm text-green-800">Correct</div>
@@ -86,16 +98,40 @@ export default function ResultQuizPage({
                     <div className="text-sm text-red-800">Wrong</div>
                   </div>
                   <div className="text-center p-3 bg-yellow-50 rounded-lg">
-                    <div className="text-2xl font-bold text-yellow-600">{objectiveResults.skippedAnswers || 0}</div>
+                    <div className="text-2xl font-bold text-yellow-600">{objectiveResults.wrongAnswers + (objectiveResults.skippedAnswers || 0)}</div>
                     <div className="text-sm text-yellow-800">Skipped</div>
                   </div>
                 </div>
 
                 {/* Time Metrics for Objective Quiz */}
+
+              </motion.div>
+            )}
+
+            {/* Motivation Card with Meme */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.25 }}
+              className="bg-white rounded-xl shadow-lg p-6 border border-gray-200 md:col-span-1"
+            >
+              <div className="flex items-center mb-6">
+                <div className="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center mr-3">
+                  <svg class="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </div>
+                <h2 className="text-xl font-semibold ">Time Metrics</h2>
+              </div>
+
+              <div className="text-center ">
+   
+
                 {objectiveResults.timeElapsed && (
-                  <div className="border-t border-gray-200 pt-4 mt-4">
-                    <h3 className="text-lg font-medium text-gray-800 mb-3 text-center">Time Metrics</h3>
-                    <div className="grid grid-cols-2 gap-4">
+                  <div className="  mb-4">
+
+                    <div className="grid grid-cols-2 gap-4 mt-2">
                       <div className="text-center p-3 bg-indigo-50 rounded-lg">
                         <div className="flex items-center justify-center mb-1">
                           <svg className="w-5 h-5 text-indigo-600 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -117,8 +153,20 @@ export default function ResultQuizPage({
                     </div>
                   </div>
                 )}
-              </motion.div>
-            )}
+              </div>
+
+              {/* <div className="bg-white p-3 rounded-lg border border-orange-200 mt-4">
+    <p className="text-sm text-gray-700 text-center">
+      <span className="font-semibold">Did you know?</span> {
+        objectiveResults?.correctAnswers <= 2 || subjectiveResults?.answered <= 2 ?
+        "It takes an average of 7 attempts to master a new concept!" :
+        objectiveResults?.correctAnswers <= 4 || subjectiveResults?.answered <= 4 ?
+        "Regular practice can improve learning speed by 40%!" :
+        "Top performers review material at least 3 times for maximum retention!"
+      }
+    </p>
+  </div> */}
+            </motion.div>
 
             {/* Subjective Quiz Results Card */}
             {subjectiveResults && (
@@ -126,7 +174,7 @@ export default function ResultQuizPage({
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.3 }}
-                className="bg-white rounded-xl shadow-lg p-6 border border-gray-200"
+                className="bg-white rounded-xl shadow-lg p-6 border border-gray-200 md:col-span-1"
               >
                 <div className="flex items-center mb-4">
                   <div className="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center mr-3">
@@ -187,103 +235,7 @@ export default function ResultQuizPage({
             )}
           </div>
 
-          {/* Performance Insights for Objective Quiz */}
-          {objectiveResults && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.4 }}
-              className="bg-white rounded-xl shadow-lg p-6 border border-gray-200 mb-6"
-            >
-              <h3 className="text-xl font-semibold text-gray-800 mb-4 text-center">Performance Insights - Objective Quiz</h3>
-              
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="text-center p-4 bg-blue-50 rounded-lg">
-                  <div className="text-3xl font-bold text-blue-600">
-                    {((objectiveResults.correctAnswers / objectiveResults.totalQuestions) * 100).toFixed(1)}%
-                  </div>
-                  <div className="text-sm text-blue-800">Accuracy Rate</div>
-                </div>
-                
-                <div className="text-center p-4 bg-green-50 rounded-lg">
-                  <div className="text-3xl font-bold text-green-600">
-                    {objectiveResults.correctAnswers}
-                  </div>
-                  <div className="text-sm text-green-800">Correct Answers</div>
-                </div>
-                
-                <div className="text-center p-4 bg-amber-50 rounded-lg">
-                  <div className="text-3xl font-bold text-amber-600">
-                    {objectiveResults.wrongAnswers + (objectiveResults.skippedAnswers || 0)}
-                  </div>
-                  <div className="text-sm text-amber-800">Incorrect + Skipped</div>
-                </div>
-              </div>
 
-              {/* Time Analysis for Objective Quiz */}
-              {objectiveResults.timeElapsed && (
-                <div className="mt-6 p-4 bg-gray-50 rounded-lg">
-                  <h4 className="font-medium text-gray-800 mb-2">Time Analysis:</h4>
-                  <p className="text-sm text-gray-600">
-                    {objectiveAverageTimePerQuestion < 15 
-                      ? "You answered questions quickly while maintaining good accuracy. Great job!" 
-                      : objectiveAverageTimePerQuestion < 30 
-                      ? "You took a reasonable amount of time to consider each question carefully."
-                      : "You took your time with each question, which shows thorough consideration."
-                    }
-                  </p>
-                </div>
-              )}
-            </motion.div>
-          )}
-
-          {/* Performance Insights for Subjective Quiz */}
-          {subjectiveResults && subjectiveResults.timeElapsed && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.5 }}
-              className="bg-white rounded-xl shadow-lg p-6 border border-gray-200 mb-6"
-            >
-              <h3 className="text-xl font-semibold text-gray-800 mb-4 text-center">Performance Insights - Subjective Quiz</h3>
-              
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="text-center p-4 bg-blue-50 rounded-lg">
-                  <div className="text-3xl font-bold text-blue-600">
-                    {((subjectiveResults.answered / subjectiveResults.totalQuestions) * 100).toFixed(1)}%
-                  </div>
-                  <div className="text-sm text-blue-800">Completion Rate</div>
-                </div>
-                
-                <div className="text-center p-4 bg-green-50 rounded-lg">
-                  <div className="text-3xl font-bold text-green-600">
-                    {formatTime(subjectiveTotalTimeTaken)}
-                  </div>
-                  <div className="text-sm text-green-800">Total Time Spent</div>
-                </div>
-                
-                <div className="text-center p-4 bg-purple-50 rounded-lg">
-                  <div className="text-3xl font-bold text-purple-600">
-                    {subjectiveAverageTimePerQuestion}s
-                  </div>
-                  <div className="text-sm text-purple-800">Average Time Per Question</div>
-                </div>
-              </div>
-              
-              {/* Time Analysis for Subjective Quiz */}
-              <div className="mt-6 p-4 bg-gray-50 rounded-lg">
-                <h4 className="font-medium text-gray-800 mb-2">Time Analysis:</h4>
-                <p className="text-sm text-gray-600">
-                  {subjectiveAverageTimePerQuestion < 30 
-                    ? "You completed the questions efficiently while providing thoughtful answers." 
-                    : subjectiveAverageTimePerQuestion < 60 
-                    ? "You took a reasonable amount of time to craft your responses carefully."
-                    : "You invested significant time in each response, demonstrating thorough consideration."
-                  }
-                </p>
-              </div>
-            </motion.div>
-          )}
 
           {/* Action Buttons */}
           <motion.div
@@ -301,7 +253,7 @@ export default function ResultQuizPage({
                   Try Again
                 </button>
               )}
-              
+
               <button
                 onClick={() => window.print()}
                 className="bg-gray-600 hover:bg-gray-700 text-white px-6 py-3 rounded-lg font-medium shadow-md transition-colors"

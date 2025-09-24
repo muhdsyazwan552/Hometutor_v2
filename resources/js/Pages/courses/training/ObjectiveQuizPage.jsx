@@ -1,10 +1,10 @@
-// Pages/QuizPage.jsx
 import React, { useState, useEffect } from 'react';
 import { Head } from '@inertiajs/react';
 import QuestionLayout from '@/Layouts/QuestionLayout';
 import QuizFooter from '@/Components/QuizFooter';
 import ResultQuizPage from '@/Pages/courses/training/ResultQuizPage';
 import { motion, AnimatePresence } from 'framer-motion';
+import { getRandomQuestions } from './QuestionBankPage';
 
 export default function QuizPage() {
   const [currentQuestion, setCurrentQuestion] = useState(0);
@@ -13,8 +13,8 @@ export default function QuizPage() {
   const [showExplanation, setShowExplanation] = useState(false);
   const [isCorrect, setIsCorrect] = useState(false);
   const [showConfetti, setShowConfetti] = useState(false);
-  const [answeredQuestions, setAnsweredQuestions] = useState(Array(5).fill(null));
-  const [firstAnswers, setFirstAnswers] = useState(Array(5).fill(null));
+  const [answeredQuestions, setAnsweredQuestions] = useState([]);
+  const [firstAnswers, setFirstAnswers] = useState([]);
   const [explanationVisible, setExplanationVisible] = useState(false);
   const [showRetryOption, setShowRetryOption] = useState(false);
   const [quizCompleted, setQuizCompleted] = useState(false);
@@ -24,44 +24,22 @@ export default function QuizPage() {
   const [timeElapsed, setTimeElapsed] = useState(0);
   const [timerRunning, setTimerRunning] = useState(false);
 
-  const questions = [
-    {
-      question: "Hutin, Chan dan Ranjit berkeyakinan, \"_____ yakin akan berjaya dalam ujian itu.\"",
-      options: ["alku", "enakk", "kemi", "kema"],
-      correctAnswer: 2,
-      explanation: "The correct answer is 'kemi' which means 'we' in the context of the sentence."
-    },
-    {
-      question: "3 ratus + 4 sa = ?",
-      options: ["304", "340", "3 040", "34"],
-      correctAnswer: 0,
-      explanation: "3 ratus + 4 sa = 300 + 4 = 304"
-    },
-    {
-      question: "Which number is the smallest?",
-      options: ["0.5", "0.05", "0.005", "0.0005"],
-      correctAnswer: 3,
-      explanation: "0.0005 is the smallest number as it has the most decimal places"
-    },
-    {
-      question: "What is 12 × 12?",
-      options: ["121", "144", "132", "124"],
-      correctAnswer: 1,
-      explanation: "12 multiplied by 12 equals 144"
-    },
-    {
-      question: "Which shape has 5 sides?",
-      options: ["Square", "Pentagon", "Hexagon", "Triangle"],
-      correctAnswer: 1,
-      explanation: "A pentagon is a polygon with 5 sides"
-    }
-  ];
+  // Load exactly 5 random questions
+  const [questions, setQuestions] = useState([]);
+
+  useEffect(() => {
+    // Get 5 random questions
+    const randomQuestions = getRandomQuestions(5);
+    setQuestions(randomQuestions);
+    setAnsweredQuestions(Array(5).fill(null));
+    setFirstAnswers(Array(5).fill(null));
+  }, []);
 
   // Timer effect
   useEffect(() => {
     let interval = null;
     
-    if (timerRunning) {
+    if (timerRunning && questions.length > 0) {
       interval = setInterval(() => {
         setTimeElapsed(seconds => seconds + 1);
       }, 1000);
@@ -70,16 +48,18 @@ export default function QuizPage() {
     }
     
     return () => clearInterval(interval);
-  }, [timerRunning]);
+  }, [timerRunning, questions.length]);
 
-  // Start timer when component mounts
+  // Start timer when questions are loaded
   useEffect(() => {
-    setTimerRunning(true);
+    if (questions.length > 0) {
+      setTimerRunning(true);
+    }
     
     return () => {
       setTimerRunning(false);
     };
-  }, []);
+  }, [questions.length]);
 
   const formatTime = (totalSeconds) => {
     const minutes = Math.floor(totalSeconds / 60);
@@ -88,6 +68,10 @@ export default function QuizPage() {
   };
 
   const resetQuiz = () => {
+    // Get new random questions when resetting
+    const newRandomQuestions = getRandomQuestions(5);
+    setQuestions(newRandomQuestions);
+    
     setCurrentQuestion(0);
     setShowScore(false);
     setSelectedOption(null);
@@ -111,7 +95,7 @@ export default function QuizPage() {
   };
 
   const checkAnswer = () => {
-    if (selectedOption === null) return;
+    if (selectedOption === null || questions.length === 0) return;
 
     setShowExplanation(true);
     setExplanationVisible(true);
@@ -243,7 +227,9 @@ export default function QuizPage() {
       timeElapsed: timeElapsed,
       questions: questions.map((q, index) => ({
         question: q.question,
-        correct: firstAnswers[index] === true
+        correct: firstAnswers[index] === true,
+        category: q.category,
+        difficulty: q.difficulty
       }))
     };
     
@@ -251,6 +237,18 @@ export default function QuizPage() {
     setQuizCompleted(true);
     setQuizResults(results);
   };
+
+  // Show loading state while questions are being loaded
+  if (questions.length === 0) {
+    return (
+      <QuestionLayout title="Loading Quiz...">
+        <Head title="Loading Quiz" />
+        <div className="flex justify-center items-center h-64">
+          <div className="text-lg text-gray-600">Loading random questions...</div>
+        </div>
+      </QuestionLayout>
+    );
+  }
 
   // If quiz is completed, show the results page
   if (quizCompleted && quizResults) {
@@ -265,7 +263,7 @@ export default function QuizPage() {
 
   return (
     <QuestionLayout 
-      title="Quiz" 
+      title="Random Quiz (5 Questions)" 
       firstAnswers={firstAnswers}
       footer={
         !showScore && (
@@ -287,7 +285,7 @@ export default function QuizPage() {
         )
       }
     >
-      <Head title="Quiz" />
+      <Head title="Random Quiz" />
 
       <AnimatePresence>
         {showConfetti && <Confetti />}
@@ -295,8 +293,14 @@ export default function QuizPage() {
 
       <div className="bg-[url('https://cdn.vectorstock.com/i/500p/65/08/cartoon-college-classroom-vector-38246508.jpg')] bg-cover bg-top bg-no-repeat">
         <div className="max-w-4xl mx-auto py-8 px-4">
-          {/* Timer display */}
-          <div className="flex justify-end mb-4">
+          {/* Header with quiz info */}
+          <div className="flex justify-between items-center mb-4">
+            <div className="bg-white rounded-lg shadow-md px-4 py-2">
+              <span className="text-sm font-medium text-gray-600">Random Quiz • </span>
+              <span className="text-sm text-blue-600">5 Questions</span>
+            </div>
+            
+            {/* Timer display */}
             <div className="bg-white rounded-lg shadow-md px-4 py-2 flex items-center">
               <svg className="w-5 h-5 text-gray-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -317,7 +321,13 @@ export default function QuizPage() {
             <div className="bg-gray-50 p-4 border-b border-gray-200">
               <div className="flex justify-between items-center mb-2">
                 <div className="text-sm font-medium text-gray-600">
-                  Question {currentQuestion + 1} of {questions.length}
+                  Question {currentQuestion + 1} of 5
+                  <span className="ml-2 text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
+                    {questions[currentQuestion]?.category} • {questions[currentQuestion]?.difficulty}
+                  </span>
+                </div>
+                <div className="text-xs text-gray-500">
+                  Random selection
                 </div>
               </div>
             </div>

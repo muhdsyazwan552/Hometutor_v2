@@ -42,7 +42,7 @@ const QuestionLayout = ({
             </svg>
           </div>
           <div>
-            <h1 className="text-2xl font-bold">Mathematics Quiz</h1>
+            <h1 className="text-2xl font-bold">Quiz</h1>
             <p className="text-gray-400">Test your knowledge!</p>
           </div>
         </div>
