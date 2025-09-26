@@ -3,6 +3,7 @@ import React from 'react';
 import { Head } from '@inertiajs/react';
 import QuestionLayout from '@/Layouts/QuestionLayout';
 import { motion } from 'framer-motion';
+import DashboardLayout from '@/Layouts/DashboardLayout';
 
 export default function ResultQuizPage({
   quizType = "combined", // "objective", "subjective", or "combined"
@@ -39,7 +40,7 @@ export default function ResultQuizPage({
   };
 
   return (
-    <QuestionLayout title="Quiz Results">
+    <DashboardLayout title="Quiz Results">
       <Head title="Quiz Results" />
 
       <div className="min-h-screen bg-gray-50 py-0">
@@ -264,6 +265,6 @@ export default function ResultQuizPage({
           </motion.div>
         </div>
       </div>
-    </QuestionLayout>
+    </DashboardLayout>
   );
 }

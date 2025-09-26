@@ -71,25 +71,25 @@ const standardContent = {
         title: 'Keperihalan',
         practiceType: 'Subjective',
         videos: [
-          { title: 'BM Standard 3 - Ayat Permulaan Karangan', duration: '06:45', thumbnail: '' },
-          { title: 'Teknik Menulis Standard 3', duration: '04:30', thumbnail: '' },
-          { title: 'BM Standard 3 - Teknik Penulisan Lanjutan', duration: '06:20', thumbnail: '' },
+          { title: 'BM Standard 5 - Ayat Permulaan Karangan', duration: '06:45', thumbnail: '' },
+          { title: 'Teknik Menulis Standard 5', duration: '04:30', thumbnail: '' },
+          { title: 'BM Standard 5 - Teknik Penulisan Lanjutan', duration: '06:20', thumbnail: '' },
         ],
       },
       {
         title: 'Rencana',
         practiceType: 'Objective',
         videos: [
-          { title: 'Menulis Karangan Standard 3', duration: '05:00', thumbnail: '' },
-          { title: 'Struktur Ayat Standard 3', duration: '06:00', thumbnail: '' },
+          { title: 'Menulis Karangan Standard 5', duration: '05:00', thumbnail: '' },
+          { title: 'Struktur Ayat Standard 5', duration: '06:00', thumbnail: '' },
         ],
       },
       {
         title: 'Pendapat',
         practiceType: 'Subjective',
         videos: [
-          { title: 'Pendapat Peribadi Standard 3', duration: '04:40', thumbnail: '' },
-          { title: 'Pendapat Umum Standard 3', duration: '05:15', thumbnail: '' },
+          { title: 'Pendapat Peribadi Standard 5', duration: '04:40', thumbnail: '' },
+          { title: 'Pendapat Umum Standard 5', duration: '05:15', thumbnail: '' },
         ],
       },
     ]
