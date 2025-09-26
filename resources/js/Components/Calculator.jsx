@@ -1,4 +1,3 @@
-// components/Calculator.jsx
 import React, { useState, useEffect } from 'react';
 
 const Calculator = () => {
@@ -9,20 +8,20 @@ const Calculator = () => {
   const [isShift, setIsShift] = useState(false);
   const [showFormula, setShowFormula] = useState(true);
   const [currentOperation, setCurrentOperation] = useState('');
-  const [isFunctionMode, setIsFunctionMode] = useState(false); // State baru untuk mode fungsi
-  const [pendingFunction, setPendingFunction] = useState(''); // State untuk fungsi yang sedang menunggu input
+  const [isFunctionMode, setIsFunctionMode] = useState(false);
+  const [pendingFunction, setPendingFunction] = useState('');
 
   const handleButtonClick = (value) => {
     console.log('Button clicked:', value);
     
     // Reset jika ada error
     if (display === 'Error' || display === 'Infinity' || display === 'NaN') {
-      setDisplay('0');
-      setExpression('');
-      setCurrentOperation('');
-      setIsFunctionMode(false);
-      setPendingFunction('');
-    }
+    setDisplay('0');
+    setExpression('');
+    setCurrentOperation('');
+    setIsFunctionMode(false);
+    setPendingFunction('');
+  }
 
     switch (value) {
       case 'C':
@@ -42,7 +41,6 @@ const Calculator = () => {
       
       case 'DEL':
         if (isFunctionMode) {
-          // Jika dalam mode fungsi, batalkan mode fungsi
           setIsFunctionMode(false);
           setPendingFunction('');
           setDisplay('0');
@@ -55,7 +53,6 @@ const Calculator = () => {
       
       case '=':
         if (isFunctionMode && pendingFunction) {
-          // Jika dalam mode fungsi, hitung hasil fungsi
           calculateFunctionResult();
         } else {
           calculateResult();
@@ -66,14 +63,7 @@ const Calculator = () => {
       case '-':
       case '×':
       case '÷':
-        if (isFunctionMode) {
-          // Jika dalam mode fungsi, batalkan mode fungsi terlebih dahulu
-          setIsFunctionMode(false);
-          setPendingFunction('');
-        }
-        setExpression(expression + display + value);
-        setCurrentOperation(`${display} ${value}`);
-        setDisplay('0');
+        handleOperator(value);
         break;
       
       case '±':
@@ -123,44 +113,53 @@ const Calculator = () => {
         if (isShift) {
           handleInverseTrigFunction(value);
         } else {
+          console.log('Activating function mode for:', value);
           handleTrigFunction(value);
         }
         break;
       
       case 'log':
-        if (isShift) {
-          setDisplay((10 ** parseFloat(display)).toString());
-          setCurrentOperation(`10^${display}`);
-        } else {
-          handleFunction('log', 'log');
-        }
-        break;
+      if (isShift) {
+        setDisplay((10 ** parseFloat(display)).toString());
+        setCurrentOperation(`10^${display}`);
+      } else {
+        // ✅ PASTIKAN ini dipanggil  
+        console.log('Activating function mode for: log');
+        handleFunction('log', 'log');
+      }
+      break;
       
       case 'ln':
-        if (isShift) {
-          setDisplay((Math.exp(parseFloat(display))).toString());
-          setCurrentOperation(`e^${display}`);
-        } else {
-          handleFunction('ln', 'ln');
-        }
-        break;
+      if (isShift) {
+        setDisplay((Math.exp(parseFloat(display))).toString());
+        setCurrentOperation(`e^${display}`);
+      } else {
+        // ✅ PASTIKAN ini dipanggil
+        console.log('Activating function mode for: ln');
+        handleFunction('ln', 'ln');
+      }
+      break;
       
       case '√':
-        if (isShift) {
-          setDisplay((parseFloat(display) ** 2).toString());
-          setCurrentOperation(`(${display})²`);
-        } else {
-          handleFunction('√', '√');
-        }
-        break;
+      if (isShift) {
+        setDisplay((parseFloat(display) ** 2).toString());
+        setCurrentOperation(`(${display})²`);
+      } else {
+        // ✅ PASTIKAN ini dipanggil
+        console.log('Activating function mode for: √');
+        handleFunction('√', '√');
+      }
+      break;
       
       case 'x²':
-        setDisplay((parseFloat(display) ** 2).toString());
+        const squared = parseFloat(display) ** 2;
+        setDisplay(roundToPrecision(squared, 12).toString());
         setCurrentOperation(`(${display})²`);
         break;
       
       case 'x³':
-        setDisplay((parseFloat(display) ** 3).toString());
+        const cubed = parseFloat(display) ** 3;
+        setDisplay(roundToPrecision(cubed, 12).toString());
         setCurrentOperation(`(${display})³`);
         break;
       
@@ -172,7 +171,8 @@ const Calculator = () => {
       
       case '1/x':
         if (parseFloat(display) !== 0) {
-          setDisplay((1 / parseFloat(display)).toString());
+          const reciprocal = 1 / parseFloat(display);
+          setDisplay(roundToPrecision(reciprocal, 12).toString());
           setCurrentOperation(`1/(${display})`);
         } else {
           setDisplay('Error');
@@ -180,7 +180,8 @@ const Calculator = () => {
         break;
       
       case '|x|':
-        setDisplay(Math.abs(parseFloat(display)).toString());
+        const absolute = Math.abs(parseFloat(display));
+        setDisplay(absolute.toString());
         setCurrentOperation(`|${display}|`);
         break;
       
@@ -195,13 +196,13 @@ const Calculator = () => {
         break;
       
       case 'π':
-        setDisplay('3.14159265359');
+        setDisplay(Math.PI.toString());
         setCurrentOperation('π');
         setTimeout(() => setCurrentOperation(''), 1500);
         break;
       
       case 'e':
-        setDisplay('2.71828182846');
+        setDisplay(Math.E.toString());
         setCurrentOperation('e');
         setTimeout(() => setCurrentOperation(''), 1500);
         break;
@@ -226,14 +227,12 @@ const Calculator = () => {
       default:
         // Handle numbers (0-9)
         if (isFunctionMode) {
-          // Jika dalam mode fungsi, masukkan angka ke dalam fungsi
           if (display === '0') {
             setDisplay(value);
           } else {
             setDisplay(display + value);
           }
         } else {
-          // Normal number input
           if (display === '0') {
             setDisplay(value);
           } else {
@@ -244,20 +243,47 @@ const Calculator = () => {
     }
   };
 
-  // Fungsi baru untuk menangani fungsi trigonometri dengan format sin()
-  const handleTrigFunction = (func) => {
-    setIsFunctionMode(true);
-    setPendingFunction(func);
-    setCurrentOperation(`${func}(`);
-    setDisplay('0'); // Reset display untuk memasukkan angka baru
-  };
+// FUNGSI: Handle operator (+, -, ×, ÷) - VERSI FINAL
+const handleOperator = (operator) => {
+  console.log('=== handleOperator DEBUG ===');
+  console.log('isFunctionMode:', isFunctionMode);
+  console.log('pendingFunction:', pendingFunction);
+  console.log('expression before:', expression);
+  console.log('display before:', display);
+  console.log('operator:', operator);
+  
+  if (isFunctionMode && pendingFunction) {
+    // Jika dalam mode fungsi, simpan sebagai FUNGSI bukan hasil
+    const newExpression = expression + `${pendingFunction}(${display})` + operator;
+    console.log('New expression (function mode):', newExpression);
+    
+    setExpression(newExpression);
+    setCurrentOperation(`${pendingFunction}(${display}) ${operator}`);
+    setDisplay('0');
+    setIsFunctionMode(false);
+    setPendingFunction('');
+  } else {
+    // Normal operation
+    let newExpression;
+    
+    if (expression.includes('=')) {
+      newExpression = display + operator;
+    } else {
+      newExpression = expression + display + operator;
+    }
+    
+    console.log('New expression (normal mode):', newExpression);
+    
+    setExpression(newExpression);
+    setCurrentOperation(`${display} ${operator}`);
+    setDisplay('0');
+  }
+};
 
-  // Fungsi baru untuk menghitung hasil fungsi
-const calculateFunctionResult = () => {
-  if (!isFunctionMode || !pendingFunction) return;
-
+  // FUNGSI: Hitung fungsi immediately tanpa mengubah state
+const calculateFunctionImmediately = () => {
   const value = parseFloat(display);
-  if (isNaN(value)) return;
+  if (isNaN(value)) return null;
   
   let result;
   const radValue = isRad ? value : value * Math.PI / 180;
@@ -282,94 +308,62 @@ const calculateFunctionResult = () => {
       result = Math.sqrt(value); 
       break;
     default: 
-      return;
+      return null;
   }
   
-  // Fix precision issues for common values
-  result = fixPrecision(result, value, pendingFunction, isRad);
-  
-  setDisplay(result.toString());
-  setCurrentOperation(`${pendingFunction}(${value})`);
-  setIsFunctionMode(false);
-  setPendingFunction('');
-};
-
-// Fungsi untuk memperbaiki presisi nilai-nilai umum
-const fixPrecision = (result, inputValue, func, radMode) => {
-  // Jika dalam mode derajat, periksa nilai-nilai umum
-  if (!radMode) {
-    // Untuk fungsi trigonometri dengan input derajat
-    if (func === 'sin' || func === 'cos' || func === 'tan') {
-      // Nilai-nilai umum yang seharusnya menghasilkan hasil eksak
-      const commonValues = [0, 30, 45, 60, 90, 180, 270, 360];
-      const tolerance = 1e-10;
-      
-      // Cek jika inputValue mendekati nilai umum
-      for (const commonValue of commonValues) {
-        if (Math.abs(inputValue - commonValue) < tolerance) {
-          const exactValue = commonValue;
-          return getExactTrigValue(func, exactValue);
-        }
-      }
-    }
-  }
-  
-  // Untuk nilai lainnya, bulatkan untuk menghindari floating point errors
   return roundToPrecision(result, 12);
 };
 
-// Fungsi untuk mendapatkan nilai trigonometri eksak
-const getExactTrigValue = (func, degrees) => {
-  switch (func) {
-    case 'sin':
-      switch (degrees) {
-        case 0: return 0;
-        case 30: return 0.5;
-        case 45: return Math.SQRT2 / 2;
-        case 60: return Math.sqrt(3) / 2;
-        case 90: return 1;
-        case 180: return 0;
-        case 270: return -1;
-        case 360: return 0;
-        default: return Math.sin(degrees * Math.PI / 180);
-      }
-    case 'cos':
-      switch (degrees) {
-        case 0: return 1;
-        case 30: return Math.sqrt(3) / 2;
-        case 45: return Math.SQRT2 / 2;
-        case 60: return 0.5;
-        case 90: return 0;
-        case 180: return -1;
-        case 270: return 0;
-        case 360: return 1;
-        default: return Math.cos(degrees * Math.PI / 180);
-      }
-    case 'tan':
-      switch (degrees) {
-        case 0: return 0;
-        case 30: return 1 / Math.sqrt(3);
-        case 45: return 1;
-        case 60: return Math.sqrt(3);
-        case 90: return Infinity;
-        case 180: return 0;
-        case 270: return Infinity;
-        case 360: return 0;
-        default: return Math.tan(degrees * Math.PI / 180);
-      }
-    default:
-      return 0;
-  }
-};
+  // FUNGSI: Handle fungsi trigonometri
+  const handleTrigFunction = (func) => {
+    setIsFunctionMode(true);
+    setPendingFunction(func);
+    setCurrentOperation(`${func}(`);
+    setDisplay('0');
+  };
 
-// Fungsi untuk membulatkan angka dengan presisi tertentu
-const roundToPrecision = (number, precision) => {
-  if (!isFinite(number)) return number;
-  const factor = Math.pow(10, precision);
-  return Math.round(number * factor) / factor;
-};
+  // FUNGSI: Hitung hasil fungsi (saat tekan =)
+  const calculateFunctionResult = () => {
+    if (!isFunctionMode || !pendingFunction) return;
 
-  // Fungsi untuk inverse trigonometri (tetap seperti semula)
+    const value = parseFloat(display);
+    if (isNaN(value)) return;
+    
+    let result;
+    const radValue = isRad ? value : value * Math.PI / 180;
+    
+    switch (pendingFunction) {
+      case 'sin': 
+        result = Math.sin(radValue); 
+        break;
+      case 'cos': 
+        result = Math.cos(radValue); 
+        break;
+      case 'tan': 
+        result = Math.tan(radValue); 
+        break;
+      case 'log': 
+        result = Math.log10(value); 
+        break;
+      case 'ln': 
+        result = Math.log(value); 
+        break;
+      case '√': 
+        result = Math.sqrt(value); 
+        break;
+      default: 
+        return;
+    }
+    
+    result = roundToPrecision(result, 12);
+    
+    setDisplay(result.toString());
+    setCurrentOperation(`${pendingFunction}(${value})`);
+    setIsFunctionMode(false);
+    setPendingFunction('');
+  };
+
+  // FUNGSI: Inverse trigonometri
   const handleInverseTrigFunction = (func) => {
     const value = parseFloat(display);
     if (isNaN(value)) return;
@@ -378,10 +372,17 @@ const roundToPrecision = (number, precision) => {
     const inverseFunc = func === 'sin' ? 'asin' : func === 'cos' ? 'acos' : 'atan';
     
     switch (inverseFunc) {
-      case 'asin': result = Math.asin(value); break;
-      case 'acos': result = Math.acos(value); break;
-      case 'atan': result = Math.atan(value); break;
-      default: return;
+      case 'asin': 
+        result = Math.asin(value); 
+        break;
+      case 'acos': 
+        result = Math.acos(value); 
+        break;
+      case 'atan': 
+        result = Math.atan(value); 
+        break;
+      default: 
+        return;
     }
     
     // Convert to degrees if not in radian mode
@@ -389,11 +390,12 @@ const roundToPrecision = (number, precision) => {
       result = result * 180 / Math.PI;
     }
     
+    result = roundToPrecision(result, 12);
     setDisplay(result.toString());
     setCurrentOperation(`${func}⁻¹(${value})`);
   };
 
-  // Fungsi untuk fungsi umum (log, ln, √)
+  // FUNGSI: Handle fungsi umum (log, ln, √)
   const handleFunction = (func, displayName) => {
     setIsFunctionMode(true);
     setPendingFunction(func);
@@ -401,35 +403,101 @@ const roundToPrecision = (number, precision) => {
     setDisplay('0');
   };
 
-  const calculateResult = () => {
-    try {
-      let expr = expression + display;
-      
-      console.log('Calculating:', expr);
-      
-      // Replace symbols
-      expr = expr.replace(/×/g, '*').replace(/÷/g, '/');
-      expr = expr.replace(/π/g, Math.PI.toString());
-      expr = expr.replace(/e/g, Math.E.toString());
-      
-      // Handle power operator
-      expr = expr.replace(/\^/g, '**');
-      
-      // Simple evaluation untuk menghindari kompleksitas
-      const result = Function('"use strict"; return (' + expr + ')')();
-      
-      setDisplay(result.toString());
-      setExpression('');
-      setCurrentOperation(`${expr} = ${result}`);
-    } catch (error) {
-      console.error('Calculation error:', error);
-      setDisplay('Error');
-      setExpression('');
+// FUNGSI: Hitung hasil akhir - PERBAIKI BESAR
+// FUNGSI: Hitung hasil akhir - VERSI FINAL
+const calculateResult = () => {
+  try {
+    let exprToCalculate;
+    
+    if (isFunctionMode && pendingFunction) {
+      // Kasus: cos(60) lalu tekan =
+      exprToCalculate = expression + `${pendingFunction}(${display})`;
+    } else {
+      // Kasus normal
+      exprToCalculate = expression + display;
     }
+    
+    console.log('Raw expression:', exprToCalculate);
+    
+    // Simpan expression ASLI untuk display
+    const originalExpression = exprToCalculate;
+    
+    // Process functions dalam expression
+    let processedExpr = exprToCalculate;
+    
+    // Handle fungsi trigonometri
+    processedExpr = processedExpr.replace(/(sin|cos|tan)\(([^)]+)\)/g, (match, func, num) => {
+      const number = parseFloat(num);
+      if (isNaN(number)) return match;
+      
+      const radValue = isRad ? number : number * Math.PI / 180;
+      let result;
+      
+      switch (func) {
+        case 'sin': result = Math.sin(radValue); break;
+        case 'cos': result = Math.cos(radValue); break;
+        case 'tan': result = Math.tan(radValue); break;
+        default: return match;
+      }
+      
+      return roundToPrecision(result, 12).toString();
+    });
+    
+    // Handle fungsi lainnya
+    processedExpr = processedExpr.replace(/(log|ln|√)\(([^)]+)\)/g, (match, func, num) => {
+      const number = parseFloat(num);
+      if (isNaN(number)) return match;
+      
+      let result;
+      switch (func) {
+        case 'log': result = Math.log10(number); break;
+        case 'ln': result = Math.log(number); break;
+        case '√': result = Math.sqrt(number); break;
+        default: return match;
+      }
+      
+      return roundToPrecision(result, 12).toString();
+    });
+    
+    // Replace symbols
+    processedExpr = processedExpr.replace(/×/g, '*').replace(/÷/g, '/');
+    processedExpr = processedExpr.replace(/\^/g, '**');
+    
+    console.log('Processed expression:', processedExpr);
+    
+    // Evaluation
+    const result = Function('"use strict"; return (' + processedExpr + ')')();
+    const roundedResult = roundToPrecision(result, 12);
+    
+    // ✅ SIMPAN expression ASLI: "sin(30)+cos(60)" bukan "sin(30)+0.5"
+    setDisplay(roundedResult.toString());
+    setExpression(originalExpression + ' = ' + roundedResult);
+    setCurrentOperation(originalExpression + ' = ' + roundedResult);
+    
+    // Reset
+    setIsFunctionMode(false);
+    setPendingFunction('');
+    
+  } catch (error) {
+    console.error('Calculation error:', error);
+    setDisplay('Error');
+    setExpression('');
+    setIsFunctionMode(false);
+    setPendingFunction('');
+  }
+};
+
+  // FUNGSI UTILITAS: Pembulatan
+  const roundToPrecision = (number, precision) => {
+    if (!isFinite(number)) return number;
+    const factor = Math.pow(10, precision);
+    return Math.round(number * factor) / factor;
   };
 
+  // FUNGSI UTILITAS: Faktorial
   const factorial = (n) => {
     if (n === 0 || n === 1) return 1;
+    if (n > 20) return Infinity; // Prevent large numbers
     return n * factorial(n - 1);
   };
 
@@ -464,6 +532,7 @@ const roundToPrecision = (number, precision) => {
     return () => window.removeEventListener('keydown', handleKeyPress);
   }, [display, expression, isRad, isShift, isFunctionMode, pendingFunction]);
 
+  // Komponen Button
   const CalcButton = ({ value, displayText, className = '' }) => (
     <button
       className={`flex items-center justify-center p-3 text-sm font-medium rounded-lg transition-all duration-200 active:scale-95 hover:opacity-90 ${className}`}
