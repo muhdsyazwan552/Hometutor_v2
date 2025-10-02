@@ -154,6 +154,8 @@ export default function QuizPage({ onQuizComplete }) {
   // Load exactly 5 random questions
   const [questions, setQuestions] = useState([]);
 
+  const [submittingResults, setSubmittingResults] = useState(false);
+
   // Initialize questions
   useEffect(() => {
     const randomQuestions = getRandomQuestions(5);
@@ -320,9 +322,16 @@ export default function QuizPage({ onQuizComplete }) {
     setQuizCompleted(true);
     setQuizResults(results);
 
-    if (typeof onQuizComplete === "function") {
-      onQuizComplete(results);
-    }
+    // Show loading state
+    setSubmittingResults(true);
+
+    // Call onQuizComplete after a brief delay to show loading
+    setTimeout(() => {
+      if (typeof onQuizComplete === "function") {
+        onQuizComplete(results);
+      }
+      setSubmittingResults(false);
+    }, 1500); // Show loading for 1.5 seconds
   };
 
   // Show loading state while questions are being loaded
@@ -334,6 +343,24 @@ export default function QuizPage({ onQuizComplete }) {
           <div className="text-lg text-gray-600">🎮 Loading Quest...</div>
         </div>
       </QuestionLayout>
+    );
+  }
+
+ if (submittingQuiz) {
+    return (
+      <div className="min-h-screen bg-cover bg-center text-white flex items-center justify-center" style={{ backgroundImage: 'url(/images/background.jpg)' }}>
+        <div className="text-center bg-gray-800 bg-opacity-90 p-8 rounded-2xl border-2 border-blue-500">
+          <div className="animate-spin rounded-full h-20 w-20 border-b-2 border-blue-500 mx-auto mb-6"></div>
+          <h2 className="text-2xl font-bold text-white mb-4">Processing Your Results</h2>
+          <p className="text-blue-300 mb-2">Calculating your score and rank...</p>
+          <p className="text-gray-400 text-sm">Preparing to return to leaderboard</p>
+          <div className="mt-4 flex justify-center space-x-2">
+            <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce"></div>
+            <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+            <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+          </div>
+        </div>
+      </div>
     );
   }
 

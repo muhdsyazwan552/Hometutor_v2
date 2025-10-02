@@ -20,6 +20,7 @@ const QuizLeaderboard = ({ schools = [], quizSessions = [] }) => {
   const [error, setError] = useState(null);
   const [quizCompleted, setQuizCompleted] = useState(false);
   const [schoolSearch, setSchoolSearch] = useState('');
+  const [submittingQuiz, setSubmittingQuiz] = useState(false);
 
   const selectedSchool = schools?.find(s => s.id == userInfo.school);
   const filteredSchools = schools?.filter(school => 
@@ -86,7 +87,9 @@ const QuizLeaderboard = ({ schools = [], quizSessions = [] }) => {
     }
   };
 
-  const handleQuizComplete = async (results) => {
+const handleQuizComplete = async (results) => {
+    setSubmittingQuiz(true); // Show loading
+    
     const percentage = Math.round((results.correctAnswers / results.totalQuestions) * 100);
     const selectedSchool = schools?.find(s => s.id == userInfo.school);
 
@@ -102,6 +105,7 @@ const QuizLeaderboard = ({ schools = [], quizSessions = [] }) => {
     };
 
     await submitToDatabase(newScore);
+    // Loading will be hidden in submitToDatabase's onSuccess callback
   };
 
   const submitToDatabase = async (scoreData) => {
@@ -118,9 +122,11 @@ const QuizLeaderboard = ({ schools = [], quizSessions = [] }) => {
       onSuccess: (page) => {
         setQuizCompleted(true);
         setQuizStarted(false);
+        setSubmittingQuiz(false);
       },
       onError: (errors) => {
         setError('Failed to save quiz results. Please try again.');
+        setSubmittingQuiz(false);
       }
     });
   };
@@ -129,6 +135,24 @@ const QuizLeaderboard = ({ schools = [], quizSessions = [] }) => {
     const handleQuizFinish = (results) => {
       handleQuizComplete(results);
     };
+
+    if (submittingQuiz) {
+    return (
+      <div className="min-h-screen bg-cover bg-center text-white flex items-center justify-center" style={{ backgroundImage: 'url(/images/background.jpg)' }}>
+        <div className="text-center bg-gray-800 bg-opacity-90 p-8 rounded-2xl border-2 border-blue-500">
+          <div className="animate-spin rounded-full h-20 w-20 border-b-2 border-blue-500 mx-auto mb-6"></div>
+          <h2 className="text-2xl font-bold text-white mb-4">Processing Your Results</h2>
+          <p className="text-blue-300 mb-2">Calculating your score and rank...</p>
+          <p className="text-gray-400 text-sm">Preparing to return to leaderboard</p>
+          <div className="mt-4 flex justify-center space-x-2">
+            <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce"></div>
+            <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+            <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
     return (
       <div className="game-interface">
