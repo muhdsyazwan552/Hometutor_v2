@@ -64,7 +64,7 @@ export default function QuestionNavbar({ title, visible = true }) {
                     <li><Link href="/tekakata-page" className="hover:underline">Teka Kata</Link></li>
                   </ul>
                   <ul className="space-y-1 text-sm text-gray-600">
-                    <li><Link href="/quiz-page" className="hover:underline">Quiz</Link></li>
+                    <li><Link href="/quiz-page" className="hover:underline">Quiz Arena</Link></li>
                   </ul>
                 </div>
               </div>
