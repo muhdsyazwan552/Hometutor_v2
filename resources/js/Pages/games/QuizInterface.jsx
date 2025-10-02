@@ -346,23 +346,163 @@ export default function QuizPage({ onQuizComplete }) {
     );
   }
 
- if (submittingQuiz) {
-    return (
-      <div className="min-h-screen bg-cover bg-center text-white flex items-center justify-center" style={{ backgroundImage: 'url(/images/background.jpg)' }}>
-        <div className="text-center bg-gray-800 bg-opacity-90 p-8 rounded-2xl border-2 border-blue-500">
-          <div className="animate-spin rounded-full h-20 w-20 border-b-2 border-blue-500 mx-auto mb-6"></div>
-          <h2 className="text-2xl font-bold text-white mb-4">Processing Your Results</h2>
-          <p className="text-blue-300 mb-2">Calculating your score and rank...</p>
-          <p className="text-gray-400 text-sm">Preparing to return to leaderboard</p>
-          <div className="mt-4 flex justify-center space-x-2">
-            <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce"></div>
-            <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-            <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
-          </div>
+if (submittingResults) {
+  return (
+    <QuestionLayout title="Submitting Results...">
+      <Head title="Submitting Results" />
+      <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 flex items-center justify-center p-4">
+        {/* Animated Background Elements */}
+        <div className="absolute inset-0 overflow-hidden">
+          {[...Array(20)].map((_, i) => (
+            <motion.div
+              key={i}
+              className="absolute w-2 h-2 bg-yellow-400 rounded-full opacity-60"
+              initial={{
+                x: Math.random() * window.innerWidth,
+                y: Math.random() * window.innerHeight,
+              }}
+              animate={{
+                y: [0, -30, 0],
+                opacity: [0.3, 0.8, 0.3],
+              }}
+              transition={{
+                duration: 2 + Math.random() * 2,
+                repeat: Infinity,
+                delay: Math.random() * 2,
+              }}
+            />
+          ))}
         </div>
+
+        <motion.div
+          initial={{ scale: 0.8, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          className="bg-gray-800 bg-opacity-90 backdrop-blur-lg rounded-3xl border-2 border-yellow-400 shadow-2xl p-8 max-w-md w-full text-center relative overflow-hidden"
+        >
+          {/* Decorative Corner Accents */}
+          <div className="absolute top-0 left-0 w-8 h-8 border-t-2 border-l-2 border-yellow-400 rounded-tl-lg"></div>
+          <div className="absolute top-0 right-0 w-8 h-8 border-t-2 border-r-2 border-yellow-400 rounded-tr-lg"></div>
+          <div className="absolute bottom-0 left-0 w-8 h-8 border-b-2 border-l-2 border-yellow-400 rounded-bl-lg"></div>
+          <div className="absolute bottom-0 right-0 w-8 h-8 border-b-2 border-r-2 border-yellow-400 rounded-br-lg"></div>
+
+          {/* Main Content */}
+          <motion.div
+            animate={{
+              y: [0, -10, 0],
+              rotate: [0, 5, -5, 0],
+            }}
+            transition={{
+              duration: 2,
+              repeat: Infinity,
+              ease: "easeInOut"
+            }}
+            className="text-6xl mb-6"
+          >
+            🏆
+          </motion.div>
+
+          <motion.h2
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ delay: 0.2 }}
+            className="text-2xl font-bold text-white mb-4 bg-gradient-to-r from-yellow-400 to-orange-400 bg-clip-text text-transparent"
+          >
+            Calculating Your Victory!
+          </motion.h2>
+
+          {/* Animated Progress Bar */}
+          <div className="bg-gray-700 rounded-full h-3 mb-6 overflow-hidden">
+            <motion.div
+              className="h-full bg-gradient-to-r from-green-400 to-blue-500 rounded-full"
+              initial={{ width: "0%" }}
+              animate={{ width: "100%" }}
+              transition={{
+                duration: 2,
+                repeat: Infinity,
+                ease: "easeInOut"
+              }}
+            />
+          </div>
+
+          {/* Animated Text */}
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.4 }}
+            className="text-blue-300 mb-2 text-lg font-semibold"
+          >
+            🎮 Processing Your Epic Journey...
+          </motion.p>
+
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.6 }}
+            className="text-gray-400 mb-6 text-sm"
+          >
+            Securing your place in the leaderboard halls!
+          </motion.p>
+
+          {/* Animated Dots */}
+          <div className="flex justify-center space-x-2 mb-4">
+            {[0, 1, 2].map((index) => (
+              <motion.div
+                key={index}
+                className="w-3 h-3 bg-yellow-400 rounded-full"
+                animate={{
+                  scale: [1, 1.5, 1],
+                  opacity: [0.5, 1, 0.5],
+                }}
+                transition={{
+                  duration: 1,
+                  repeat: Infinity,
+                  delay: index * 0.2,
+                }}
+              />
+            ))}
+          </div>
+
+          {/* Floating Icons */}
+          <div className="absolute -top-4 -right-4 text-3xl opacity-50">⚡</div>
+          <div className="absolute -bottom-4 -left-4 text-3xl opacity-50">✨</div>
+
+          {/* Stats Preview */}
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 1 }}
+            className="grid grid-cols-3 gap-4 mt-6 text-xs"
+          >
+            <div className="bg-gray-700 p-2 rounded-lg">
+              <div className="text-green-400 font-bold">✓ Correct</div>
+              <div className="text-white">{firstAnswers.filter(a => a === true).length}/5</div>
+            </div>
+            <div className="bg-gray-700 p-2 rounded-lg">
+              <div className="text-blue-400 font-bold">⏱️ Time</div>
+              <div className="text-white">{Math.floor(timeElapsed / 60)}:{(timeElapsed % 60).toString().padStart(2, '0')}</div>
+            </div>
+            <div className="bg-gray-700 p-2 rounded-lg">
+              <div className="text-yellow-400 font-bold">🎯 Score</div>
+              <div className="text-white">{Math.round((firstAnswers.filter(a => a === true).length / 5) * 100)}%</div>
+            </div>
+          </motion.div>
+
+          {/* Motivational Quote */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 1.5 }}
+            className="mt-6 p-3 bg-blue-900 bg-opacity-50 rounded-lg border border-blue-700"
+          >
+            <p className="text-blue-200 text-xs italic">
+              "Great warriors are measured by their battles, not just their victories!"
+            </p>
+          </motion.div>
+        </motion.div>
       </div>
-    );
-  }
+    </QuestionLayout>
+  );
+}
 
   return (
     <QuestionLayout 
