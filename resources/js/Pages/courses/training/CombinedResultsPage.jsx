@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { Head } from '@inertiajs/react';
 import QuestionLayout from '@/Layouts/QuestionLayout';
-import ResultQuizPage from '@/Pages/ResultQuizPage';
+import ResultQuestion from '@/Pages/ResultQuestion';
 
 export default function CombinedResultsPage() {
   const [objectiveResults, setObjectiveResults] = useState(null);
@@ -27,7 +27,7 @@ export default function CombinedResultsPage() {
   };
 
   return (
-    <ResultQuizPage 
+    <ResultQuestion 
       quizType="combined"
       objectiveResults={objectiveResults}
       subjectiveResults={subjectiveResults}

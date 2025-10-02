@@ -1,14 +1,13 @@
+// components/ModifiedObjectiveBackup.jsx
 import React, { useState, useEffect } from 'react';
 import { Head } from '@inertiajs/react';
 import QuestionLayout from '@/Layouts/QuestionLayout';
 import QuizFooter from '@/Components/QuizFooter';
-import ResultQuizPage from '@/Pages/courses/training/ResultQuizPage';
 import { motion, AnimatePresence } from 'framer-motion';
-import { getRandomQuestions } from './QuestionBankPage';
+import { getRandomQuestions } from '../courses/training/BankObjectiveBackup';
 
-export default function QuizPage() {
+const ModifiedObjectiveBackup = ({ onQuizComplete }) => {
   const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [showScore, setShowScore] = useState(false);
   const [selectedOption, setSelectedOption] = useState(null);
   const [showExplanation, setShowExplanation] = useState(false);
   const [isCorrect, setIsCorrect] = useState(false);
@@ -17,8 +16,6 @@ export default function QuizPage() {
   const [firstAnswers, setFirstAnswers] = useState([]);
   const [explanationVisible, setExplanationVisible] = useState(false);
   const [showRetryOption, setShowRetryOption] = useState(false);
-  const [quizCompleted, setQuizCompleted] = useState(false);
-  const [quizResults, setQuizResults] = useState(null);
   
   // Timer state
   const [timeElapsed, setTimeElapsed] = useState(0);
@@ -65,26 +62,6 @@ export default function QuizPage() {
     const minutes = Math.floor(totalSeconds / 60);
     const seconds = totalSeconds % 60;
     return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-  };
-
-  const resetQuiz = () => {
-    // Get new random questions when resetting
-    const newRandomQuestions = getRandomQuestions(5);
-    setQuestions(newRandomQuestions);
-    
-    setCurrentQuestion(0);
-    setShowScore(false);
-    setSelectedOption(null);
-    setShowExplanation(false);
-    setExplanationVisible(false);
-    setAnsweredQuestions(Array(5).fill(null));
-    setFirstAnswers(Array(5).fill(null));
-    setShowRetryOption(false);
-    setQuizCompleted(false);
-    setQuizResults(null);
-    // Reset timer
-    setTimeElapsed(0);
-    setTimerRunning(true);
   };
 
   const handleOptionSelect = (optionIndex) => {
@@ -213,7 +190,7 @@ export default function QuizPage() {
   // Calculate correct answers count
   const correctAnswersCount = firstAnswers.filter(answer => answer === true).length;
 
-  // Modify the submit function to stop timer
+  // Modified submit function to call onQuizComplete
   const handleSubmit = () => {
     // Stop the timer
     setTimerRunning(false);
@@ -233,9 +210,10 @@ export default function QuizPage() {
       }))
     };
     
-    // Set completed state and pass results
-    setQuizCompleted(true);
-    setQuizResults(results);
+    // Call the parent completion handler
+    if (onQuizComplete) {
+      onQuizComplete(results);
+    }
   };
 
   // Show loading state while questions are being loaded
@@ -250,39 +228,26 @@ export default function QuizPage() {
     );
   }
 
-  // If quiz is completed, show the results page
-  if (quizCompleted && quizResults) {
-    return (
-      <ResultQuizPage 
-        quizType="objective" 
-        objectiveResults={quizResults} 
-        onTryAgain={resetQuiz} 
-      />
-    );
-  }
-
   return (
     <QuestionLayout 
       title="Random Quiz (5 Questions)" 
       firstAnswers={firstAnswers}
       footer={
-        !showScore && (
-          <QuizFooter
-            showExplanation={showExplanation}
-            answeredQuestions={answeredQuestions}
-            currentQuestion={currentQuestion}
-            selectedOption={selectedOption}
-            isCorrect={isCorrect}
-            firstAnswers={firstAnswers}
-            onCheckAnswer={checkAnswer}
-            onNextQuestion={nextQuestion}
-            onTryAgain={tryAgain}
-            onSkipQuestion={skipQuestion}
-            showRetryOption={showRetryOption}
-            questions={questions}
-            onQuestionSelect={goToQuestion}
-          />
-        )
+        <QuizFooter
+          showExplanation={showExplanation}
+          answeredQuestions={answeredQuestions}
+          currentQuestion={currentQuestion}
+          selectedOption={selectedOption}
+          isCorrect={isCorrect}
+          firstAnswers={firstAnswers}
+          onCheckAnswer={checkAnswer}
+          onNextQuestion={nextQuestion}
+          onTryAgain={tryAgain}
+          onSkipQuestion={skipQuestion}
+          showRetryOption={showRetryOption}
+          questions={questions}
+          onQuestionSelect={goToQuestion}
+        />
       }
     >
       <Head title="Random Quiz" />
@@ -464,4 +429,6 @@ export default function QuizPage() {
       </div>
     </QuestionLayout>
   );
-}
+};
+
+export default ModifiedObjectiveBackup;

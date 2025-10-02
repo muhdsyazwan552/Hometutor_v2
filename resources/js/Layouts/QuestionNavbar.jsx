@@ -10,12 +10,11 @@ export default function QuestionNavbar({ title, visible = true }) {
   const [showingNav, setShowingNav] = useState(false);
 
   return (
-    <nav className={`sticky top-0 z-50 border-b border-gray-100 bg-white shadow-sm transition-all duration-300 ${
-      visible ? 'opacity-100' : 'opacity-0 pointer-events-none'
-    }`}>
+    <nav className={`sticky top-0 z-50 border-b border-gray-100 bg-white shadow-sm transition-all duration-300 ${visible ? 'opacity-100' : 'opacity-0 pointer-events-none'
+      }`}>
       <div className="mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex h-20 justify-between items-center">
-          
+
           <div className="relative">
             <button
               onClick={() => setIsOpen(!isOpen)}
@@ -35,11 +34,10 @@ export default function QuestionNavbar({ title, visible = true }) {
               </svg>
             </button>
 
-            <div className={`fixed left-0 top-20 w-screen h-auto bg-white px-6 py-2 shadow-lg transition-all duration-300 ease-in-out z-50 ${
-              isOpen
+            <div className={`fixed left-0 top-20 w-screen h-auto bg-white px-6 py-2 shadow-lg transition-all duration-300 ease-in-out z-50 ${isOpen
                 ? "opacity-100 translate-y-0"
                 : "opacity-0 -translate-y-2 pointer-events-none"
-            }`}>
+              }`}>
               <div className="px-6 py-2 grid grid-cols-3 gap-4">
                 <div>
                   <h4 className="mb-2 text-sm font-semibold text-gray-700 border-b">Subjects</h4>
@@ -59,11 +57,14 @@ export default function QuestionNavbar({ title, visible = true }) {
                   </ul>
                 </div>
                 <div>
-                  <h4 className="mb-2 text-sm font-semibold text-gray-700 border-b">Test Prep</h4>
-                  <ul className="text-sm text-gray-600 space-y-1">
-                    <li><Link href="#">UPSR</Link></li>
-                    <li><Link href="#">PT3</Link></li>
-                    <li><Link href="#">SPM</Link></li>
+                  <h4 className="mb-2 border-b pb-1 text-sm font-semibold text-gray-700">
+                    Games
+                  </h4>
+                  <ul className="space-y-1 text-sm text-gray-600">
+                    <li><Link href="/tekakata-page" className="hover:underline">Teka Kata</Link></li>
+                  </ul>
+                  <ul className="space-y-1 text-sm text-gray-600">
+                    <li><Link href="/quiz-page" className="hover:underline">Quiz</Link></li>
                   </ul>
                 </div>
               </div>
@@ -86,9 +87,9 @@ export default function QuestionNavbar({ title, visible = true }) {
                       className="inline-flex items-center space-x-2 rounded-full border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-700 transition duration-150 ease-in-out hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
                     >
                       {user.avatar ? (
-                        <img 
-                          className="h-8 w-8 rounded-full" 
-                          src={user.avatar} 
+                        <img
+                          className="h-8 w-8 rounded-full"
+                          src={user.avatar}
                           alt={user.name}
                         />
                       ) : (
@@ -98,16 +99,16 @@ export default function QuestionNavbar({ title, visible = true }) {
                           </span>
                         </div>
                       )}
-                      <svg 
-                        className="h-4 w-4 text-gray-400" 
-                        xmlns="http://www.w3.org/2000/svg" 
-                        viewBox="0 0 20 20" 
+                      <svg
+                        className="h-4 w-4 text-gray-400"
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 20 20"
                         fill="currentColor"
                       >
-                        <path 
-                          fillRule="evenodd" 
-                          d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" 
-                          clipRule="evenodd" 
+                        <path
+                          fillRule="evenodd"
+                          d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z"
+                          clipRule="evenodd"
                         />
                       </svg>
                     </button>

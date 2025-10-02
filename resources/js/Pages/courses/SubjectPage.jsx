@@ -2,199 +2,26 @@ import React, { useEffect, useRef, useState } from 'react';
 import SubjectLayout from '@/Layouts/SubjectLayout';
 import { Link, usePage } from "@inertiajs/react";
 import { ArrowRightIcon } from '@heroicons/react/20/solid';
+import { SubjectContent } from '@/Data/SubjectContent'; // Import from separate file
 
-const sectionList = ['Keperihalan', 'Rencana', 'Perbincangan', 'Laporan'];
-
-// Content for different standards
-const standardContent = {
-  'Standard 4': {
-    sections: [
-      {
-        title: 'Keperihalan',
-        practiceType: 'Subjective',
-        videos: [
-          { title: 'BM Standard 4 - Ayat Permulaan Karangan', duration: '05:30', thumbnail: '' },
-          { title: 'Teknik Menulis Standard 4', duration: '03:20', thumbnail: '' },
-          { title: 'BM Standard 4 - Teknik Penulisan Dasar', duration: '04:15', thumbnail: '' },
-        ],
-      },
-      {
-        title: 'Rencana',
-        practiceType: 'Objective',
-        videos: [
-          { title: 'Menulis Karangan Standard 4', duration: '03:45', thumbnail: '' },
-          { title: 'Struktur Ayat Standard 4', duration: '04:10', thumbnail: '' },
-        ],
-      },
-      {
-        title: 'Pendapat',
-        practiceType: 'Subjective',
-        videos: [
-          { title: 'Menyatakan Pendapat Standard 4', duration: '04:50', thumbnail: '' },
-          { title: 'Latihan Pendapat Standard 4', duration: '05:05', thumbnail: '' },
-        ],
-      },
-    ]
-  },
-  'Standard 5': {
-    sections: [
-      {
-        title: 'Keperihalan',
-        practiceType: 'Subjective',
-        videos: [
-          { title: 'BM Standard 2 - Ayat Permulaan Karangan', duration: '06:10', thumbnail: '' },
-          { title: 'Teknik Menulis Standard 2', duration: '04:05', thumbnail: '' },
-          { title: 'BM Standard 2 - Teknik Penulisan Menengah', duration: '05:45', thumbnail: '' },
-        ],
-      },
-      {
-        title: 'Rencana',
-        practiceType: 'Objective',
-        videos: [
-          { title: 'Menulis Karangan Standard 2', duration: '04:30', thumbnail: '' },
-          { title: 'Struktur Ayat Standard 2', duration: '05:15', thumbnail: '' },
-        ],
-      },
-      {
-        title: 'Fakta',
-        practiceType: 'Objective',
-        videos: [
-          { title: 'Menghurai Fakta Standard 2', duration: '05:25', thumbnail: '' },
-          { title: 'Latihan Fakta Standard 2', duration: '06:00', thumbnail: '' },
-        ],
-      },
-    ]
-  },
-  'Standard 5': {
-    sections: [
-      {
-        title: 'Keperihalan',
-        practiceType: 'Subjective',
-        videos: [
-          { title: 'BM Standard 5 - Ayat Permulaan Karangan', duration: '06:45', thumbnail: '' },
-          { title: 'Teknik Menulis Standard 5', duration: '04:30', thumbnail: '' },
-          { title: 'BM Standard 5 - Teknik Penulisan Lanjutan', duration: '06:20', thumbnail: '' },
-        ],
-      },
-      {
-        title: 'Rencana',
-        practiceType: 'Objective',
-        videos: [
-          { title: 'Menulis Karangan Standard 5', duration: '05:00', thumbnail: '' },
-          { title: 'Struktur Ayat Standard 5', duration: '06:00', thumbnail: '' },
-        ],
-      },
-      {
-        title: 'Pendapat',
-        practiceType: 'Subjective',
-        videos: [
-          { title: 'Pendapat Peribadi Standard 5', duration: '04:40', thumbnail: '' },
-          { title: 'Pendapat Umum Standard 5', duration: '05:15', thumbnail: '' },
-        ],
-      },
-    ]
-  },
-  'Standard 4': {
-    sections: [
-      {
-        title: 'Keperihalan',
-        practiceType: 'Subjective',
-        videos: [
-          { title: 'BM Standard 4 - Ayat Permulaan Karangan', duration: '07:10', thumbnail: '' },
-          { title: 'Teknik Menulis Standard 4', duration: '05:05', thumbnail: '' },
-        ],
-      },
-      {
-        title: 'Rencana',
-        practiceType: 'Objective',
-        videos: [
-          { title: 'Menulis Karangan Standard 4', duration: '06:00', thumbnail: '' },
-          { title: 'Struktur Ayat Standard 4', duration: '06:45', thumbnail: '' },
-        ],
-      },
-      {
-        title: 'Fakta',
-        practiceType: 'Objective',
-        videos: [
-          { title: 'Menghurai Fakta Standard 4', duration: '06:15', thumbnail: '' },
-          { title: 'Latihan Fakta Standard 4', duration: '07:00', thumbnail: '' },
-        ],
-      },
-    ]
-  },
-  'Standard 5': {
-    sections: [
-      {
-        title: 'Keperihalan',
-        practiceType: 'Subjective',
-        videos: [
-          { title: 'BM Standard 5 - Teknik Karangan Lanjutan', duration: '07:30', thumbnail: '' },
-          { title: 'Latihan Karangan Standard 5', duration: '06:20', thumbnail: '' },
-        ],
-      },
-      {
-        title: 'Rencana',
-        practiceType: 'Objective',
-        videos: [
-          { title: 'Menulis Karangan Standard 5', duration: '07:15', thumbnail: '' },
-          { title: 'Struktur Ayat Standard 5', duration: '07:45', thumbnail: '' },
-        ],
-      },
-      {
-        title: 'Pendapat',
-        practiceType: 'Subjective',
-        videos: [
-          { title: 'Pendapat Standard 5 - Isu Semasa', duration: '06:30', thumbnail: '' },
-          { title: 'Pendapat Standard 5 - Peribadi', duration: '07:10', thumbnail: '' },
-        ],
-      },
-    ]
-  },
-  'Standard 6': {
-    sections: [
-      {
-        title: 'Keperihalan',
-        practiceType: 'Subjective',
-        videos: [
-          { title: 'BM Standard 6 - Teknik Karangan Tinggi', duration: '08:10', thumbnail: '' },
-          { title: 'Latihan Karangan Standard 6', duration: '07:40', thumbnail: '' },
-        ],
-      },
-      {
-        title: 'Rencana',
-        practiceType: 'Objective',
-        videos: [
-          { title: 'Menulis Karangan Standard 6', duration: '08:00', thumbnail: '' },
-          { title: 'Struktur Ayat Standard 6', duration: '08:20', thumbnail: '' },
-        ],
-      },
-      {
-        title: 'Fakta',
-        practiceType: 'Objective',
-        videos: [
-          { title: 'Menghurai Fakta Standard 6', duration: '07:55', thumbnail: '' },
-          { title: 'Latihan Fakta Standard 6', duration: '08:30', thumbnail: '' },
-        ],
-      },
-    ]
-  }
-
-
-};
-
-export default function SubjectPage() {
+export default function SubjectPage({ selectedStandard }) {
   const { props } = usePage();
   const subjectKey = props.subject;
 
   const sectionRefs = useRef({});
-  const [activeSection, setActiveSection] = useState(sectionList[0]);
-  const [selectedStandard, setSelectedStandard] = useState('Standard 4');
-  const [currentSections, setCurrentSections] = useState(standardContent['Standard 4'].sections);
+  const [activeSection, setActiveSection] = useState('');
+  const [currentStandard, setCurrentStandard] = useState(selectedStandard || 'Form 4');
+
+  // Get current content based on subject and standard
+  const currentContent = SubjectContent[subjectKey]?.[currentStandard] || { 
+    id: 0, 
+    sections: [] 
+  };
+  const currentSections = currentContent.sections;
 
   // Handle standard change
   const handleStandardChange = (standard) => {
-    setSelectedStandard(standard);
-    setCurrentSections(standardContent[standard].sections);
+    setCurrentStandard(standard);
   };
 
   useEffect(() => {
@@ -209,41 +36,51 @@ export default function SubjectPage() {
       { rootMargin: '-20% 0px -60% 0px', threshold: 0.1 }
     );
 
-    sectionList.forEach((section) => {
-      if (sectionRefs.current[section]) {
-        observer.observe(sectionRefs.current[section]);
+    currentSections.forEach((section) => {
+      if (sectionRefs.current[section.title]) {
+        observer.observe(sectionRefs.current[section.title]);
       }
     });
 
     return () => observer.disconnect();
-  }, [currentSections]); // Re-run when sections change
+  }, [currentSections]);
+
+  // Update section list based on current sections
+  const sectionList = currentSections.map(section => section.title);
 
   return (
     <SubjectLayout
       subject={subjectKey}
       activeTab="Practice"
       onStandardChange={handleStandardChange}
+      selectedStandard={currentStandard}
     >
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Contents Sidebar */}
-        <div className="lg:sticky lg:top-24 h-fit  p-6 ">
+        <div className="lg:sticky lg:top-24 h-fit p-6">
           <div className="bg-white shadow-xl rounded-lg p-4 border border-sky-100">
             <h3 className="text-lg font-bold text-sky-700 mb-4 tracking-wide flex items-center">
-              <span className="mr-2">📚</span> Contents for {selectedStandard}
+              <span className="mr-2">📚</span> Contents for {currentStandard}
+              <span className="ml-2 text-sm bg-sky-100 text-sky-700 px-2 py-1 rounded">
+                ID: {currentContent.id}
+              </span>
             </h3>
 
             <nav className="space-y-2">
               {currentSections.map((section) => (
                 <a
-                  key={section.title}
+                  key={section.id}
                   href={`#${section.title}`}
                   ref={(el) => (sectionRefs.current[section.title] = el)}
-                  className={`block px-4 py-3 rounded-lg text-sm font-medium transition-all duration-200  items-center ${activeSection === section.title
-                    ? 'bg-gradient-to-r from-sky-600 to-indigo-600 text-white shadow-md'
-                    : 'text-gray-600 hover:bg-sky-100 hover:text-sky-700 border border-transparent hover:border-sky-200'
-                    }`}
+                  className={`block px-4 py-3 rounded-lg text-sm font-medium transition-all duration-200 items-center ${
+                    activeSection === section.title
+                      ? 'bg-gradient-to-r from-sky-600 to-indigo-600 text-white shadow-md'
+                      : 'text-gray-600 hover:bg-sky-100 hover:text-sky-700 border border-transparent hover:border-sky-200'
+                  }`}
                 >
-                  <span className="mr-2">{activeSection === section.title ? '▶' : '•'}</span>
+                  <span className="mr-2">
+                    {activeSection === section.title ? '▶' : `${section.id}.`}
+                  </span>
                   {section.title}
                 </a>
               ))}
@@ -256,22 +93,33 @@ export default function SubjectPage() {
           <section className="py-6 border-l-4 border-sky-400 pl-6 space-y-12">
             <div className="flex items-center justify-between">
               <h2 className="text-3xl font-bold text-sky-800 flex items-center">
-                <span className="mr-2">📝</span> Karangan - {selectedStandard}
+                <span className="mr-2">📝</span> {subjectKey.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')} - {currentStandard}
               </h2>
-              <span className="bg-sky-100 text-sky-700 px-3 py-1 rounded-full text-sm font-medium">
-                {selectedStandard}
-              </span>
+              <div className="flex items-center space-x-2">
+                <span className="bg-sky-100 text-sky-700 px-3 py-1 rounded-full text-sm font-medium">
+                  {currentStandard}
+                </span>
+                <span className="bg-indigo-100 text-indigo-700 px-3 py-1 rounded-full text-sm font-medium">
+                  Content ID: {currentContent.id}
+                </span>
+              </div>
             </div>
 
             {/* Sections */}
             {currentSections.map((section, index) => (
-              <div key={index} id={section.title} ref={(el) => (sectionRefs.current[section.title] = el)} className="scroll-mt-20 pb-8 border-b-2 border-gray-200">
+              <div 
+                key={section.id} 
+                id={section.title} 
+                ref={(el) => (sectionRefs.current[section.title] = el)} 
+                className="scroll-mt-20 pb-8 border-b-2 border-gray-200"
+              >
                 {/* Title and icon */}
                 <div className="relative pl-12 mb-6">
-                  <div className="absolute left-0 top-0 w-8 h-8 bg-sky-100 rounded-full flex items-center justify-center ">
-                    <span className="text-sky-600 text-lg">{index + 1}</span>
+                  <div className="absolute left-0 top-0 w-8 h-8 bg-sky-100 rounded-full flex items-center justify-center">
+                    <span className="text-sky-600 text-sm font-bold">{section.id}</span>
                   </div>
                   <h2 className="text-xl font-semibold text-gray-800">{section.title}</h2>
+                  <p className="text-sm text-gray-500 mt-1">Section ID: {section.id}</p>
                 </div>
 
                 {/* Section Grid */}
@@ -288,15 +136,24 @@ export default function SubjectPage() {
                         <Link
                           href={
                             section.practiceType === "Objective"
-                              ? route("objective-page", { standard: selectedStandard, section: section.title })
-                              : route("subjective-page", { standard: selectedStandard, section: section.title })
+                              ? route("objective-page", { 
+                                  subject: subjectKey,
+                                  standard: currentStandard,
+                                  sectionId: section.id,
+                                  contentId: currentContent.id
+                                })
+                              : route("subjective-page", { 
+                                  subject: subjectKey,
+                                  standard: currentStandard,
+                                  sectionId: section.id,
+                                  contentId: currentContent.id
+                                })
                           }
                           className="inline-flex items-center bg-gradient-to-r from-sky-600 to-indigo-600 text-white px-4 py-2 rounded-md hover:from-sky-700 hover:to-indigo-700 transition-all shadow-md hover:shadow-lg"
                         >
                           Start Practice
                           <ArrowRightIcon className="ml-2 h-4 w-4" />
                         </Link>
-
                       </div>
                     </div>
                   </div>

@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useEffect } from "react";
 import QuestionLayout from "@/Layouts/QuestionLayout";
-import ResultQuizPage from "@/Pages/courses/training/ResultQuizPage"; // Import the results page
+import ResultQuestion from "@/Pages/courses/training/ResultQuestion"; // Import the results page
 import { getFeedbackMessage, getAnswerType } from "@/utils/answerFeedback";
 // Commented out for now but keeping for future use
 // import { 
@@ -9,7 +9,7 @@ import { getFeedbackMessage, getAnswerType } from "@/utils/answerFeedback";
 //   calculateScore 
 // } from "@/utils/answerCalculator";
 
-export default function SubjectiveQuizPage({ title = "Subjective Quiz" }) {
+export default function SubjectiveQuestion({ title = "Subjective Quiz" }) {
   const [open, setOpen] = useState(false);
 
   // Questions with related images & schema answers
@@ -200,7 +200,7 @@ export default function SubjectiveQuizPage({ title = "Subjective Quiz" }) {
   // If quiz is completed, show the results page
   if (showScore && quizResults) {
     return (
-      <ResultQuizPage 
+      <ResultQuestion 
         quizType="subjective" 
         subjectiveResults={quizResults} 
         onTryAgain={resetQuiz} 

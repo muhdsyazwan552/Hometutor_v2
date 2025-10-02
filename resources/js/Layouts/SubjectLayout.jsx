@@ -1,7 +1,7 @@
 // resources/js/Layouts/SubjectLayout.jsx
 import React, { useState } from 'react';
 import { Link, usePage } from "@inertiajs/react";
-import SubjectNavbar from './SubjectNavbar'; // Fixed import name
+import SubjectNavbar from './SubjectNavbar';
 
 const subjectMap = {
   'bahasa-melayu': 'Bahasa Melayu',
@@ -22,7 +22,7 @@ export default function SubjectLayout({
   subject, 
   activeTab = 'Practice',
   bgColor = "bg-white",
-  onStandardChange // Add this prop
+  onStandardChange
 }) {
   const { url } = usePage();
   const subjectTitle = subjectMap[subject] || 'Subject';
@@ -34,7 +34,6 @@ export default function SubjectLayout({
   const handleStandardSelect = (standard) => {
     setSelectedStandard(standard);
     setIsDropdownOpen(false);
-    // Call the callback function if provided
     if (onStandardChange) {
       onStandardChange(standard);
     }
@@ -42,10 +41,8 @@ export default function SubjectLayout({
 
   return (
     <div className={`min-h-screen ${bgColor}`}>
-      {/* Add the SubjectNavbar */}
       <SubjectNavbar title={subjectTitle} />
       
-      {/* Header Section */}
       <div className="max-w-8xl px-6 sm:px-6 lg:px-0 bg-gradient-to-t from-sky-500 to-indigo-500 py-6 border-b border-gray-200">
         <div className="max-w-6xl mx-auto block items-center">
           <h1 className="text-4xl font-bold text-white mb-1">{title}</h1>
@@ -55,7 +52,7 @@ export default function SubjectLayout({
             <div>
               <button
                 type="button"
-                className="inline-flex justify-center gap-x-1.5  bg-none  py-2 text-sm font-semibold text-white shadow-none ring-none hover:bg-white/10 rounded-md px-2 transition-colors"
+                className="inline-flex justify-center gap-x-1.5 bg-none py-2 text-sm font-semibold text-white shadow-none ring-none hover:bg-white/10 rounded-md px-2 transition-colors"
                 id="standard-filter-button"
                 aria-expanded={isDropdownOpen}
                 aria-haspopup="true"
@@ -127,7 +124,7 @@ export default function SubjectLayout({
 
       {/* Page Content */}
       <div className="py-10 mx-16 mt-0">
-        {children}
+        {React.cloneElement(children, { selectedStandard })}
       </div>
     </div>
   );

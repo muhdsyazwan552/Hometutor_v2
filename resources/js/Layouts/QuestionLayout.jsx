@@ -136,7 +136,7 @@ const QuestionLayout = ({
   return (
     <div className={`min-h-screen ${bgColor}`}>
       {/* Pass navbarVisible prop to QuestionNavbar */}
-      <QuestionNavbar title={title} visible={navbarVisible} />
+      {/* <QuestionNavbar title={title} visible={navbarVisible} /> */}
       
       {/* Floating Calculator Icon */}
       <div 

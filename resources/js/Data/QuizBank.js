@@ -797,15 +797,15 @@ export const questionBank = {
       "category": "Sejarah",
       "difficulty": "medium"
     },
-    {
-      "id": 89,
-      "question": "Apakah slogan Jepun semasa pendudukan mereka di Tanah Melayu?",
-      "options": ["Asia untuk Asia", "Asia Raya", "Jepun Hebat", "Kemakmuran Bersama"],
-      "correctAnswer": 1,
-      "explanation": "Slogan Jepun ialah 'Asia Raya'.",
-      "category": "Sejarah",
-      "difficulty": "easy"
-    },
+ {
+  "id": 89,
+  "question": "Apakah slogan Jepun semasa pendudukan mereka di Tanah Melayu?",
+  "options": ["Asia untuk Asia", "Asia Raya", "Jepun Hebat", "Kemakmuran Bersama"],
+  "correctAnswer": 0,  
+  "explanation": "Slogan yang digunakan ialah “Asia untuk orang Asia”.",
+  "category": "Sejarah",
+  "difficulty": "easy"
+},
     {
       "id": 90,
       "question": "Apakah nama perjanjian yang menyebabkan Negeri-Negeri Selat menjadi tanah jajahan British?",
@@ -1515,7 +1515,7 @@ export const questionBank = {
       "question": "Apakah peranan Dato' Maharajalela dalam Perang Perak?",
       "options": ["Menentang pembinaan landasan kereta api", "Menentang pembunuhan J.W.W Birch", "Menjadi Residen British pertama", "Menyokong Malayan Union"],
       "correctAnswer": 1,
-      "explanation": "Dato' Maharajalela terlibat dalam pembunuhan J.W.W Birch pada 1875.",
+      "explanation": "Dato' Maharajalela merupakan pemimpin utama dalam pembunuhan J.W.W. Birch, Residen British pertama di Perak, pada 2 November 1875 di Pasir Salak. Peristiwa ini mencetuskan Perang Perak.",
       "category": "Sejarah - Penentangan",
       "difficulty": "hard"
     },
