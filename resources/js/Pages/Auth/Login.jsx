@@ -10,11 +10,12 @@ import RegisterForm from './Register';
 
 
 
-   const images = [
-  "https://media.tacdn.com/media/attractions-splice-spp-674x446/10/5e/3f/04.jpg",
-  "https://risemalaysia.com.my/wp-content/uploads/2023/04/1-1.jpg", // Replace with your image URLs
-  "https://www.wallpapersifu.com/wp-content/uploads/2021/07/SMP-City-001-Mural.jpg",
-  "https://mypov.com.my/template/assets/img/visit/masjid2.jpg",
+const images = [
+  "/images/swp.jpg",
+  "/images/swp2.jpg", 
+  "/images/swp3.jpg",
+  "/images/swp4.jpg",
+  "/images/swp5.jpg",
 ];
 
 export default function Login({ status, canResetPassword }) {
@@ -58,46 +59,46 @@ export default function Login({ status, canResetPassword }) {
             <div className="min-h-screen grid grid-cols-1 lg:grid-cols-2">
                 {/* Left side image */}
                 <div className="hidden lg:flex items-center justify-center bg-gray-100 p-3 h-100 overflow-hidden relative">
-      {/* Slides container */}
+  <motion.div
+    className="flex h-full w-full"
+    animate={{ x: `-${currentIndex * 50}%` }}
+    transition={{ duration: 0.8, ease: "easeInOut" }}
+  >
+    {/* Duplicate images untuk seamless loop */}
+    {[...images, ...images].map((image, index) => (
       <motion.div
-        className="flex h-full w-full"
-        animate={{ x: `-${currentIndex * 100}%` }}
-        transition={{ duration: 0.8, ease: "easeInOut" }}
+        key={index}
+        className="flex-shrink-0 w-1/2 h-full px-2"
+        whileHover={{ scale: 1.02 }}
       >
-        {images.map((image, index) => (
-          <motion.div
-            key={index}
-            className="flex-shrink-0 w-full h-full px-2"
-            whileHover={{ scale: 1.02 }}
-          >
-            <motion.img
-              src={image}
-              alt={`Slide ${index + 1}`}
-              className="h-full w-full object-cover rounded-xl shadow-md"
-              initial={{ opacity: 0.8 }}
-              animate={{ 
-                opacity: currentIndex === index ? 1 : 0.8,
-                y: currentIndex === index ? 0 : 5
-              }}
-              transition={{ duration: 0.5 }}
-            />
-          </motion.div>
-        ))}
+        <motion.img
+          src={image}
+          alt={`Slide ${(index % images.length) + 1}`}
+          className="h-full w-full object-cover rounded-xl shadow-md"
+          initial={{ opacity: 0.8 }}
+          animate={{ 
+            opacity: (currentIndex % images.length) === (index % images.length) ? 1 : 0.8,
+            y: (currentIndex % images.length) === (index % images.length) ? 0 : 5
+          }}
+          transition={{ duration: 0.5 }}
+        />
       </motion.div>
+    ))}
+  </motion.div>
 
-      {/* Indicators */}
-      <div className="absolute bottom-4 flex space-x-2">
-        {images.map((_, index) => (
-          <button
-            key={index}
-            onClick={() => setCurrentIndex(index)}
-            className={`h-2 w-2 rounded-full transition-all ${
-              currentIndex === index ? "bg-white w-4" : "bg-white/50"
-            }`}
-          />
-        ))}
-      </div>
-    </div>
+  {/* Indicators - hanya show original images */}
+  <div className="absolute bottom-4 flex space-x-2">
+    {images.map((_, index) => (
+      <button
+        key={index}
+        onClick={() => setCurrentIndex(index)}
+        className={`h-2 w-2 rounded-full transition-all ${
+          (currentIndex % images.length) === index ? "bg-white w-4" : "bg-white/50"
+        }`}
+      />
+    ))}
+  </div>
+</div>
 
                 {/* Right Form */}
                 <div className="flex items-center justify-center p-8 bg-white">

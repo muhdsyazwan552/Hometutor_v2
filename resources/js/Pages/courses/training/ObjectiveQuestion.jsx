@@ -421,7 +421,7 @@ const handleCheckAnswer = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-0">
+    <div className=" " >
       {/* Hidden Audio Elements */}
       <audio ref={correctSoundRef} src="/sounds/correct.mp3" preload="auto" />
       <audio ref={wrongSoundRef} src="/sounds/wrong.mp3" preload="auto" />
@@ -435,7 +435,7 @@ const handleCheckAnswer = () => {
       
       <div className="max-w-8xl mx-auto px-0">
         {/* Header */}
-        <div className="bg-white shadow-xl p-6 mb-6">
+        <div className="bg-white shadow-xl p-6 mb-0">
           <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 mb-4">
             <div className="flex-1">
               <h1 className="text-3xl font-bold text-gray-800 mb-2">
@@ -451,6 +451,7 @@ const handleCheckAnswer = () => {
         </div>
 
         {/* Question Card */}
+        <div className="py-6 bg-cover bg-center bg-no-repeat h-max" style={{ backgroundImage: 'url(/images/background_classroom.jpg)' }}>
         <div className="max-w-4xl mx-auto relative">
           {/* Floating Timer */}
           <div className="absolute -right-44 -top-0 z-10">
@@ -520,7 +521,7 @@ const handleCheckAnswer = () => {
           )}
 
           {/* Question Card */}
-          <div className="bg-white rounded-2xl shadow-xl p-6 mb-6 transition-all duration-300 hover:shadow-2xl">
+          <div className="bg-white opacity-100 rounded-2xl shadow-xl p-6 mb-10 transition-all duration-300 hover:shadow-2xl">
             <div className="flex justify-between items-start mb-6">
               <h2 className="text-xl font-semibold text-gray-800 flex-1 leading-relaxed">
                 {currentQuestion.question}
@@ -533,6 +534,8 @@ const handleCheckAnswer = () => {
                 {currentQuestion.difficulty}
               </span>
             </div>
+
+            <span className="text-gray-600 text-md mb-4 block">Pilih 1 jawapan : </span>
 
             {/* Options */}
             <div className="space-y-3 mb-6">
@@ -565,9 +568,10 @@ const handleCheckAnswer = () => {
             )}
           </div>
         </div>
+        </div>
 
         {/* Footer with Action Buttons */}
-        <div className="bg-white border-t border-gray-200 shadow-lg p-4">
+        <footer className="sticky  bg-white border-t border-gray-200 shadow-lg p-4">
           <div className="max-w-4xl mx-auto flex justify-end items-center">
             {/* Left side - Check Answer / Check Again buttons */}
             <div className="flex items-center space-x-4">
@@ -615,7 +619,7 @@ const handleCheckAnswer = () => {
               </button>
             )}
           </div>
-        </div>
+        </footer>
       </div>
 
       <audio ref={correctSoundRef} src="/sounds/correct.mp3" preload="auto" />

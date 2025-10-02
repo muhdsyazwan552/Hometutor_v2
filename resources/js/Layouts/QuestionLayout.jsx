@@ -96,9 +96,9 @@ const QuestionLayout = ({
   };
 
   const QuizBanner = () => (
-    <div className="sticky top-0 max-w-8xl mx-auto px-6 sm:px-6 lg:px-8 py-4 border-b border-gray-200 bg-white z-40">
-      <div className="max-w-5xl mx-auto flex flex-col md:flex-row items-center justify-between">
-        <div className="flex items-center mb-4 md:mb-0">
+    <div className="sticky top-0 max-w-8xl mx-auto px-6 sm:px-6 lg:px-8 py-4 border-b bg-gradient-to-r from-blue-600 to-purple-600 text-white p-4 shadow-lg z-40">
+      <div className="max-w-5xl mx-auto flex flex-col md:flex-row items-center justify-center">
+        {/* <div className="flex items-center mb-4 md:mb-0">
           <div className="bg-white p-2 rounded-full mr-4">
             <svg className="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
@@ -108,26 +108,26 @@ const QuestionLayout = ({
             <h1 className="text-2xl font-bold">Quiz</h1>
             <p className="text-gray-400">Test your knowledge!</p>
           </div>
-        </div>
+        </div> */}
 
         <div className="flex flex-col items-center">
           {/* Question progress dots */}
-          <div className="flex space-x-3 mb-3">
-            {firstAnswers.map((isCorrect, index) => (
-              <div
-                key={index}
-                className={`w-10 h-10 rounded-full flex items-center justify-center text-xs font-medium border-2 border-gray-300 ${
-                  isCorrect === true
-                    ? 'bg-green-500 text-white'
-                    : isCorrect === false
-                    ? 'bg-red-500 text-white'
-                    : 'bg-transparent'
-                }`}
-              >
-                {index + 1}
-              </div>
-            ))}
-          </div>
+          <div className="flex space-x-3 mb-0">
+  {firstAnswers.map((isCorrect, index) => (
+    <div
+      key={index}
+      className={`w-14 h-14 rounded-full flex items-center justify-center text-xs font-bold border-4 transition-all duration-300 ${
+        isCorrect === true
+          ? 'bg-green-500 border-green-300 text-white shadow-lg shadow-green-500/50 animate-pulse'
+          : isCorrect === false
+          ? 'bg-red-500 border-red-300 text-white shadow-lg shadow-red-500/50'
+          : 'bg-gray-800 border-gray-600 text-gray-300 shadow-inner'
+      }`}
+    >
+      {index + 1}
+    </div>
+  ))}
+</div>
         </div>
       </div>
     </div>

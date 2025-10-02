@@ -176,7 +176,7 @@ const QuizLeaderboard = ({ schools = [], quizSessions = [] }) => {
 
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 to-blue-900 py-8 px-4">
+    <div className="min-h-screen bg-cover bg-center text-white p-4 shadow-lg" style={{ backgroundImage: 'url(/images/background.jpg)' }}>
       <div className="max-w-6xl mx-auto">
         {/* Header */}
        <div className="text-center mb-12 relative">

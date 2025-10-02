@@ -367,7 +367,7 @@ export default function QuizPage({ onQuizComplete }) {
         {showConfetti && <Confetti />}
       </AnimatePresence>
 
-      <div className="bg-[url('https://cdn.vectorstock.com/i/500p/65/08/cartoon-college-classroom-vector-38246508.jpg')] bg-cover bg-top bg-no-repeat min-h-screen">
+      <div className=" bg-cover bg-bottom bg-no-repeat min-h-screen" style={{ backgroundImage: 'url(/images/background_quiz.jpg)' }}>
         <div className="max-w-4xl mx-auto py-6 px-4">
           {/* Compact Header */}
           <div className="flex justify-between items-center mb-4">
