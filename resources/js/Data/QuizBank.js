@@ -889,10 +889,10 @@ export const questionBank = {
     },
     {
       "id": 99,
-      "question": "Siapakah dikenali sebagai 'Bapa Kemerdekaan'?",
-      "options": ["Tun Razak", "Onn Jaafar", "Tunku Abdul Rahman", "Tun Dr. Mahathir"],
+      "question": "Siapakah dikenali sebagai 'Bapa Perpaduan'?",
+      "options": ["Tun Razak", "Onn Jaafar", "Tun Hussein Onn", "Tun Dr. Mahathir"],
       "correctAnswer": 2,
-      "explanation": "Tunku Abdul Rahman dikenali sebagai 'Bapa Kemerdekaan'.",
+      "explanation": "Tun Hussein Onn dikenali sebagai 'Bapa Perpaduan'.",
       "category": "Sejarah",
       "difficulty": "easy"
     },
@@ -1078,10 +1078,10 @@ export const questionBank = {
     },
     {
       "id": 120,
-      "question": "Siapakah tokoh yang digelar 'Bapa Malaysia'?",
+      "question": "Siapakah tokoh yang digelar 'Bapa Kemerdekaan'?",
       "options": ["Tun Abdul Razak", "Tun Hussein Onn", "Tunku Abdul Rahman", "Tun Dr. Mahathir"],
       "correctAnswer": 2,
-      "explanation": "Tunku Abdul Rahman digelar 'Bapa Malaysia' kerana jasanya dalam penubuhan Malaysia.",
+      "explanation": "Tunku Abdul Rahman digelar 'Bapa Kemerdekaan' kerana jasanya dalam penubuhan Malaysia.",
       "category": "Sejarah",
       "difficulty": "easy"
     }
@@ -1388,7 +1388,7 @@ export const questionBank = {
       "id": 154,
       "question": "Kebarangkalian memilih huruf vokal daripada perkataan 'MALAYSIA' ialah?",
       "options": ["3/8", "4/8", "5/8", "6/8"],
-      "correctAnswer": 2,
+      "correctAnswer": 1,
       "explanation": "Vokal = A, A, I, A (4 huruf). Jumlah = 8. 4/8 = 1/2.",
       "category": "Matematik - Kebarangkalian",
       "difficulty": "medium"
@@ -1501,19 +1501,19 @@ export const questionBank = {
       "category": "Sejarah - Politik",
       "difficulty": "medium"
     },
-    {
-      "id": 167,
-      "question": "Siapakah tokoh yang digelar 'Bapa Kemerdekaan' Malaysia?",
-      "options": ["Tun Abdul Razak", "Tunku Abdul Rahman", "Dato' Onn Jaafar", "Tun Hussein Onn"],
-      "correctAnswer": 1,
-      "explanation": "Tunku Abdul Rahman mengetuai rundingan kemerdekaan dengan British.",
-      "category": "Sejarah - Kemerdekaan",
-      "difficulty": "easy"
-    },
+    // {
+    //   "id": 167,
+    //   "question": "Siapakah tokoh yang digelar 'Bapa Transformasi' Malaysia?",
+    //   "options": ["Tun Abdul Razak", "Tunku Abdul Rahman", "Dato' Onn Jaafar", "Tun Hussein Onn"],
+    //   "correctAnswer": 1,
+    //   "explanation": "Tunku Abdul Rahman mengetuai rundingan kemerdekaan dengan British.",
+    //   "category": "Sejarah - Kemerdekaan",
+    //   "difficulty": "easy"
+    // },
     {
       "id": 168,
       "question": "Apakah peranan Dato' Maharajalela dalam Perang Perak?",
-      "options": ["Menentang pembinaan landasan kereta api", "Menentang pembunuhan J.W.W Birch", "Menjadi Residen British pertama", "Menyokong Malayan Union"],
+      "options": ["Menentang pembinaan landasan kereta api", "Memimpin pembunuhan J.W.W Birch", "Menjadi Residen British pertama", "Menyokong Malayan Union"],
       "correctAnswer": 1,
       "explanation": "Dato' Maharajalela merupakan pemimpin utama dalam pembunuhan J.W.W. Birch, Residen British pertama di Perak, pada 2 November 1875 di Pasir Salak. Peristiwa ini mencetuskan Perang Perak.",
       "category": "Sejarah - Penentangan",
@@ -1724,18 +1724,65 @@ class QuestionRotationManager {
   }
 
   // Helper function to get mixed questions from all categories with rotation
-  getMixedQuestions(count = 5) {
-    const allQuestions = Object.values(questionBank).flat();
+  // getMixedQuestions(count = 5) {
+  //   const allQuestions = Object.values(questionBank).flat();
 
-    if (this.currentSet >= this.maxSets) {
+  //   if (this.currentSet >= this.maxSets) {
+  //     this.resetUsedQuestions();
+  //   }
+
+  //   const uniqueQuestions = this.getUniqueQuestions(allQuestions, count);
+  //   this.currentSet++;
+
+  //   return uniqueQuestions;
+  // }
+
+  getMixedQuestions(count = 5) {
+  // Ensure we have questions from all categories
+  const categories = Object.keys(questionBank);
+  
+  if (this.currentSet >= this.maxSets) {
+    this.resetUsedQuestions();
+  }
+
+  // Calculate distribution: 2 Sejarah, 2 Science, 1 Matematik
+  const categoryDistribution = {
+    'history': 2,      // Sejarah
+    'science': 2,      // Science  
+    'mathematic': 1    // Matematik
+  };
+
+  const selectedQuestions = [];
+
+  // Get questions from each category according to distribution
+  for (const [category, neededCount] of Object.entries(categoryDistribution)) {
+    const availableQuestions = questionBank[category]?.filter(q => !this.usedQuestions.has(q.id)) || [];
+    
+    if (availableQuestions.length < neededCount) {
+      // If not enough unique questions, reset and try again
       this.resetUsedQuestions();
+      return this.getMixedQuestions(count);
     }
 
-    const uniqueQuestions = this.getUniqueQuestions(allQuestions, count);
-    this.currentSet++;
-
-    return uniqueQuestions;
+    // Shuffle and take required number of questions
+    const shuffled = shuffleArray(availableQuestions);
+    const categoryQuestions = shuffled.slice(0, neededCount);
+    
+    selectedQuestions.push(...categoryQuestions);
+    
+    // Mark as used
+    categoryQuestions.forEach(q => this.usedQuestions.add(q.id));
   }
+
+  // Shuffle the final set to randomize positions
+  const finalQuestions = shuffleArray(selectedQuestions);
+  
+  // Apply option shuffling to each question
+  const questionsWithShuffledOptions = finalQuestions.map(shuffleQuestionOptions);
+  
+  this.currentSet++;
+  return questionsWithShuffledOptions;
+}
 
   // Helper function to get questions by difficulty with rotation
   getQuestionsByDifficulty(difficulty, count = 5) {
