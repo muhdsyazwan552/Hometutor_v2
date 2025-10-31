@@ -1,7 +1,7 @@
 // components/ModifiedObjectiveBackup.jsx
 import React, { useState, useEffect } from 'react';
 import { Head } from '@inertiajs/react';
-import QuestionLayout from '@/Layouts/QuestionLayout';
+import QuestionLayout from '@/Layouts/ObjectiveQuestionLayout';
 import QuizFooter from '@/Components/QuizFooter';
 import { motion, AnimatePresence } from 'framer-motion';
 import { getRandomQuestions } from '../courses/training/BankObjectiveBackup';

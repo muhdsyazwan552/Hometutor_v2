@@ -41,11 +41,12 @@ export default function SubjectLayout({
 
   return (
     <div className={`min-h-screen ${bgColor}`}>
-      <SubjectNavbar title={subjectTitle} />
+      <SubjectNavbar title={subjectTitle}  />
       
-      <div className="max-w-8xl px-6 sm:px-6 lg:px-0 bg-gradient-to-t from-sky-500 to-indigo-500 py-6 border-b border-gray-200">
-        <div className="max-w-6xl mx-auto block items-center">
-          <h1 className="text-4xl font-bold text-white mb-1">{title}</h1>
+      {/* Header Section */}
+      <div className="px-4 sm:px-6 lg:px-8 bg-gradient-to-t from-sky-500 to-indigo-500 py-4 sm:py-6 border-b border-gray-200">
+        <div className="max-w-6xl mx-auto">
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white mb-2 sm:mb-1">{title}</h1>
 
           {/* Standard Dropdown */}
           <div className="relative inline-block text-start">
@@ -94,12 +95,12 @@ export default function SubjectLayout({
       </div>
 
       {/* Tabs */}
-      <div className="max-w-8xl px-6 sm:px-6 lg:px-0 bg-white pt-3 shadow-b shadow-md border-gray-200">
+      <div className="px-4 sm:px-6 lg:px-8 bg-white pt-3 shadow-b shadow-md border-gray-200">
         <div className="max-w-6xl mx-auto">
-          <div className="flex space-x-4 border-b">
+          <div className="flex space-x-4 sm:space-x-6 border-b overflow-x-auto">
             <Link
               href={`/subject/${subject}`}
-              className={`pb-2 text-md font-medium ${
+              className={`pb-2 text-sm sm:text-md font-medium whitespace-nowrap ${
                 url === `/subject/${subject}`
                   ? "border-b-2 border-sky-500 text-sky-600"
                   : "text-gray-500 hover:text-sky-500"
@@ -110,7 +111,7 @@ export default function SubjectLayout({
 
             <Link
               href={`/subject/${subject}/report`}
-              className={`pb-2 text-md font-medium ${
+              className={`pb-2 text-sm sm:text-md font-medium whitespace-nowrap ${
                 url === `/subject/${subject}/report`
                   ? "border-b-2 border-sky-500 text-sky-600"
                   : "text-gray-500 hover:text-sky-500"
@@ -123,7 +124,7 @@ export default function SubjectLayout({
       </div>
 
       {/* Page Content */}
-      <div className="py-10 mx-16 mt-0">
+      <div className="py-6 sm:py-8 lg:py-10 px-4 sm:px-6 lg:px-16 mt-0">
         {React.cloneElement(children, { selectedStandard })}
       </div>
     </div>

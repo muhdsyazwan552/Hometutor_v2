@@ -1,7 +1,7 @@
 // Pages/CombinedResultsPage.jsx
 import React, { useState, useEffect } from 'react';
 import { Head } from '@inertiajs/react';
-import QuestionLayout from '@/Layouts/QuestionLayout';
+import QuestionLayout from '@/Layouts/ObjectiveQuestionLayout';
 import ResultQuestion from '@/Pages/ResultQuestion';
 
 export default function CombinedResultsPage() {

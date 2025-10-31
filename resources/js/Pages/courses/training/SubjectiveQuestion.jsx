@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect, useRef } from "react";
-import QuestionLayout from "@/Layouts/QuestionLayout";
+import QuestionLayout from "@/Layouts/ObjectiveQuestionLayout";
 import ResultQuestion from "@/Pages/courses/training/ResultQuestion";
 import { getFeedbackMessage, getAnswerType } from "@/utils/answerFeedback";
 import { Head, usePage } from '@inertiajs/react'; // Added usePage
