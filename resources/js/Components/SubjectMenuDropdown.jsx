@@ -1,8 +1,19 @@
-// SubjectMenuDropdown.jsx
 import React from 'react';
-import { Link } from '@inertiajs/react';
+import { Link, usePage } from '@inertiajs/react';
 
 export default function SubjectMenuDropdown({ isOpen, setIsOpen, title }) {
+  const schoolSubjects = usePage().props.schoolSubjects || [];
+
+ 
+const getSubjectUrl = (subject) => {
+    const subjectSlug = subject.name.toLowerCase().replace(/\s+/g, '-');
+    const subjectId = subject.id;
+    const levelId = subject.level_id;
+    const form = levelId === 10 ? 'Form 4' : 'Form 5';
+
+    return `/subject/${subjectSlug}?subject_id=${subjectId}&level_id=${levelId}&form=${form}`;
+};
+
   return (
     <>
       {/* Dropdown Trigger Button */}
@@ -70,19 +81,28 @@ export default function SubjectMenuDropdown({ isOpen, setIsOpen, title }) {
                             >
                                 <div className="px-2 sm:px-6">
                                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-                                        {/* School Subjects */}
-                                        <div>
-                                            <h4 className="mb-2 border-b pb-1 text-sm font-semibold text-gray-700">
-                                                School Subjects
-                                            </h4>
-                                            <ul className="space-y-1 text-sm text-sky-600">
-                                                <li><Link href="/subject/bahasa-melayu" className="hover:underline block py-1">Bahasa Melayu</Link></li>
-                                                <li><Link href="/subject/bahasa-inggeris" className="hover:underline block py-1">Bahasa Inggeris</Link></li>
-                                                <li><Link href="/subject/matematik" className="hover:underline block py-1">Matematik</Link></li>
-                                                <li><Link href="/subject/sains" className="hover:underline block py-1">Sains</Link></li>
-                                                <li><Link href="/subject/matematik-tambahan" className="hover:underline block py-1">Matematik Tambahan</Link></li>
-                                            </ul>
-                                        </div>
+            <div>
+              <h4 className="mb-2 border-b pb-1 text-sm font-semibold text-gray-700">
+                School Subjects (Form 4)
+              </h4>
+              <ul className="space-y-1 text-sm text-sky-600">
+                {schoolSubjects.map((subject) => (
+                  <li key={subject.id}>
+                    <Link
+                      href={getSubjectUrl(subject)}
+                      className="hover:underline block py-1"
+                    >
+                      {subject.name}
+                    </Link>
+                  </li>
+                ))}
+                {schoolSubjects.length === 0 && (
+                  <li className="text-gray-500">
+                    No Form 4 subjects available
+                  </li>
+                )}
+              </ul>
+            </div>
 
                                         {/* VideoTube */}
                                         <div>

@@ -13,6 +13,10 @@ export default function SubjectNavbar({ title }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const menuRef = useRef(null);
 
+    // Debug: Check what title we're receiving
+  console.log('SubjectNavbar received title:', title);
+  // console.log('Page props:', usePage().props);
+
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {

@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { Link, usePage } from "@inertiajs/react";
 import SubjectNavbar from './SubjectNavbar';
+import StandardFooter from '@/Components/StandardFooter';
 
 const subjectMap = {
   'bahasa-melayu': 'Bahasa Melayu',
@@ -22,17 +23,26 @@ export default function SubjectLayout({
   subject, 
   activeTab = 'Practice',
   bgColor = "bg-white",
-  onStandardChange
+  onStandardChange,
+  selectedStandard: propSelectedStandard // Accept as prop from parent
 }) {
   const { url } = usePage();
   const subjectTitle = subjectMap[subject] || 'Subject';
   const title = formatTitle(subject);
   
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const [selectedStandard, setSelectedStandard] = useState('Form 4');
+  
+  // Use prop if provided, otherwise default to 'Form 4'
+  const [internalSelectedStandard, setInternalSelectedStandard] = useState(propSelectedStandard || 'Form 4');
+  
+  // Use prop value if available, otherwise use internal state
+  const selectedStandard = propSelectedStandard !== undefined ? propSelectedStandard : internalSelectedStandard;
 
   const handleStandardSelect = (standard) => {
-    setSelectedStandard(standard);
+    if (propSelectedStandard === undefined) {
+      // Only update internal state if no prop is provided
+      setInternalSelectedStandard(standard);
+    }
     setIsDropdownOpen(false);
     if (onStandardChange) {
       onStandardChange(standard);
@@ -41,7 +51,7 @@ export default function SubjectLayout({
 
   return (
     <div className={`min-h-screen ${bgColor}`}>
-      <SubjectNavbar title={subjectTitle}  />
+      <SubjectNavbar title={subject}  />
       
       {/* Header Section */}
       <div className="px-4 sm:px-6 lg:px-8 bg-gradient-to-t from-sky-500 to-indigo-500 py-4 sm:py-6 border-b border-gray-200">
@@ -123,10 +133,14 @@ export default function SubjectLayout({
         </div>
       </div>
 
-      {/* Page Content */}
+      {/* Page Content - Remove React.cloneElement */}
       <div className="py-6 sm:py-8 lg:py-10 px-4 sm:px-6 lg:px-16 mt-0">
-        {React.cloneElement(children, { selectedStandard })}
+        {children}
       </div>
+      <div className="  mt-10">
+<StandardFooter title={subjectTitle}  />
+      </div>
+      
     </div>
   );
 }

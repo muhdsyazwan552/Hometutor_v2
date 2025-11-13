@@ -3,18 +3,42 @@ import ApplicationLogoImg from '@/Components/ApplicationLogo';
 import Dropdown from '@/Components/Dropdown';
 import NavLink from '@/Components/NavLink';
 import ResponsiveNavLink from '@/Components/ResponsiveNavLink';
-import ProfileDropdown from '@/Components/ProfileDropdown'; // Add this import
+import ProfileDropdown from '@/Components/ProfileDropdown';
 import { Link, usePage } from '@inertiajs/react';
 import { useState } from 'react';
 
 export default function DashboardLayout({ header, children }) {
     const user = usePage().props.auth.user;
+    const schoolSubjects = usePage().props.schoolSubjects || [];
+    
     const [showingNavigationDropdown, setShowingNavigationDropdown] = useState(false);
-
     const [isOpen, setIsOpen] = useState(false);
 
     const toggleDropdown = () => setIsOpen(!isOpen);
     const closeDropdown = () => setIsOpen(false);
+
+    // Debug: Check what data we're receiving
+    console.log('School Subjects:', schoolSubjects);
+
+    // Function to generate subject URL
+    const getSubjectUrl = (subject) => {
+        // Create slug from subject name
+        const subjectSlug = subject.name.toLowerCase().replace(/\s+/g, '-');
+        
+        // Use the subject's level_id, default to 10 if not provided
+        const levelId = subject.level_id || 10;
+        
+        // Map level_id to form name
+        const formMap = {
+            10: 'Form 4',
+            11: 'Form 5',
+            // Add more mappings as needed
+        };
+        
+        const form = formMap[levelId] || 'Form 4';
+
+        return `/subject/${subjectSlug}?subject_id=${subject.id}&level_id=${levelId}&form=${encodeURIComponent(form)}`;
+    };
 
     return (
         <div className="min-h-screen bg-gray-100">
@@ -62,24 +86,38 @@ export default function DashboardLayout({ header, children }) {
 
                             {/* Courses Dropdown with animation */}
                             <div
-                                className={`fixed left-0 top-16 sm:top-20 w-screen h-auto bg-white px-4 sm:px-6 py-2 shadow-lg transition-all duration-300 ease-in-out z-50 ${isOpen
+                                className={`fixed left-0 top-16 sm:top-20 w-screen h-auto bg-white px-4 sm:px-6 py-2 shadow-lg transition-all duration-300 ease-in-out z-50 ${
+                                    isOpen
                                         ? "opacity-100 translate-y-0"
                                         : "opacity-0 -translate-y-2 pointer-events-none"
-                                    }`}
+                                }`}
                             >
                                 <div className="px-2 sm:px-6">
                                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                                         {/* School Subjects */}
                                         <div>
                                             <h4 className="mb-2 border-b pb-1 text-sm font-semibold text-gray-700">
-                                                School Subjects
+                                                School Subjects (Form 4)
                                             </h4>
                                             <ul className="space-y-1 text-sm text-sky-600">
-                                                <li><Link href="/subject/bahasa-melayu" className="hover:underline block py-1">Bahasa Melayu</Link></li>
-                                                <li><Link href="/subject/bahasa-inggeris" className="hover:underline block py-1">Bahasa Inggeris</Link></li>
-                                                <li><Link href="/subject/matematik" className="hover:underline block py-1">Matematik</Link></li>
-                                                <li><Link href="/subject/sains" className="hover:underline block py-1">Sains</Link></li>
-                                                <li><Link href="/subject/matematik-tambahan" className="hover:underline block py-1">Matematik Tambahan</Link></li>
+                                                {schoolSubjects.map((subject) => (
+                                                    <li key={subject.id}>
+                                                        <Link 
+                                                            href={getSubjectUrl(subject)} 
+                                                            className="hover:underline block py-1"
+                                                            onClick={closeDropdown}
+                                                        >
+                                                            {subject.name}
+                                                            {/* Debug: Show IDs */}
+                                                            {/* <span className="text-xs text-gray-500 ml-2">
+                                                                (ID: {subject.id}, Level: {subject.level_id})
+                                                            </span> */}
+                                                        </Link>
+                                                    </li>
+                                                ))}
+                                                {schoolSubjects.length === 0 && (
+                                                    <li className="text-gray-500">No Form 4 subjects available</li>
+                                                )}
                                             </ul>
                                         </div>
 
@@ -89,18 +127,18 @@ export default function DashboardLayout({ header, children }) {
                                                 VideoTube
                                             </h4>
                                             <ul className="space-y-1 text-sm text-red-500">
-                                                <li><Link href="#" className="hover:underline block py-1">General Learning</Link></li>
+                                                <li><Link href="#" className="hover:underline block py-1" onClick={closeDropdown}>General Learning</Link></li>
                                             </ul>
                                         </div>
 
-                                        {/* Test Prep */}
+                                        {/* Games */}
                                         <div>
                                             <h4 className="mb-2 border-b pb-1 text-sm font-semibold text-gray-700">
                                                 Games
                                             </h4>
                                             <ul className="space-y-1 text-sm text-gray-600">
-                                                <li><Link href="/tekakata-page" className="hover:underline block py-1">Teka Kata</Link></li>
-                                                <li><Link href="/quiz-page" className="hover:underline block py-1">Quiz Arena</Link></li>
+                                                <li><Link href="/tekakata-page" className="hover:underline block py-1" onClick={closeDropdown}>Teka Kata</Link></li>
+                                                <li><Link href="/quiz-page" className="hover:underline block py-1" onClick={closeDropdown}>Quiz Arena</Link></li>
                                             </ul>
                                         </div>
                                     </div>
@@ -115,14 +153,14 @@ export default function DashboardLayout({ header, children }) {
                             </Link>
                         </div>
 
-                        {/* Right Side - User Dropdown (Desktop) - REPLACED with ProfileDropdown */}
+                        {/* Right Side - User Dropdown (Desktop) */}
                         <div className="hidden sm:flex sm:items-center">
                             <div className="relative ms-3">
                                 <ProfileDropdown user={user} />
                             </div>
                         </div>
 
-                        {/* Mobile - Profile Icon - REPLACED with ProfileDropdown */}
+                        {/* Mobile - Profile Icon */}
                         <div className="flex sm:hidden items-center space-x-3">
                             <div className="relative">
                                 <ProfileDropdown user={user} />
@@ -130,8 +168,6 @@ export default function DashboardLayout({ header, children }) {
                         </div>
                     </div>
                 </div>
-
-                {/* Remove the old responsive navigation dropdown since ProfileDropdown handles mobile */}
             </nav>
 
             {/* Optional Header */}

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useMemo, memo } from 'react';
 import { Head } from '@inertiajs/react';
-import QuestionLayout from '@/Layouts/ObjectiveQuestionLayout';
+import QuizLayout from '@/Layouts/QuizLayout';
 import QuizFooter from '@/Components/QuizFooter';
 import { motion, AnimatePresence } from 'framer-motion';
 import { getRandomQuestions } from '../../Data/QuizBank';
@@ -337,18 +337,18 @@ export default function QuizPage({ onQuizComplete }) {
   // Show loading state while questions are being loaded
   if (questions.length === 0) {
     return (
-      <QuestionLayout title="Loading Quiz...">
+      <QuizLayout title="Loading Quiz...">
         <Head title="Loading Quiz" />
         <div className="flex justify-center items-center h-64">
           <div className="text-lg text-gray-600">🎮 Loading Quest...</div>
         </div>
-      </QuestionLayout>
+      </QuizLayout>
     );
   }
 
 if (submittingResults) {
   return (
-    <QuestionLayout title="Submitting Results...">
+    <QuizLayout title="Submitting Results...">
       <Head title="Submitting Results" />
       <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 flex items-center justify-center p-4">
         {/* Animated Background Elements */}
@@ -500,12 +500,12 @@ if (submittingResults) {
           </motion.div>
         </motion.div>
       </div>
-    </QuestionLayout>
+    </QuizLayout>
   );
 }
 
   return (
-    <QuestionLayout 
+    <QuizLayout 
       title="Random Quiz (5 Questions)" 
       firstAnswers={firstAnswers}
       footer={
@@ -637,6 +637,6 @@ if (submittingResults) {
           </motion.div>
         </div>
       </div>
-    </QuestionLayout>
+    </QuizLayout>
   );
 }

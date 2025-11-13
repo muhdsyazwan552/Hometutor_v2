@@ -5,6 +5,9 @@ namespace App\Http\Middleware;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
+use App\Http\Controllers\MenuController;
+
+
 class HandleInertiaRequests extends Middleware
 {
     /**
@@ -28,12 +31,13 @@ class HandleInertiaRequests extends Middleware
      * @return array<string, mixed>
      */
     public function share(Request $request): array
-    {
-        return [
-            ...parent::share($request),
-            'auth' => [
-                'user' => $request->user(),
-            ],
-        ];
-    }
+{
+    return array_merge(parent::share($request), [
+        'auth' => [
+            'user' => $request->user(),
+        ],
+        // 🔽 Make sure all pages have access to schoolSubjects
+        'schoolSubjects' => (new MenuController())->getSchoolSubjects(),
+    ]);
+}
 }
