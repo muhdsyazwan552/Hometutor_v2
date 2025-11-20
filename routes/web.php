@@ -10,7 +10,9 @@ use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
 use App\Http\Controllers\QuizController;
+use App\Http\Controllers\ReportController;
 use App\Http\Controllers\SubjectiveController;
+use App\Http\Controllers\MissionController;
 use Illuminate\Support\Facades\Auth;
 
 Route::get('/', function () {
@@ -37,39 +39,16 @@ Route::middleware('auth')->group(function () {
 
 
     Route::get('/subject/{subject}', [SubjectContentController::class, 'index'])->name('subject-page');
+    Route::get('/subject/{subject}/report', [ReportController::class, 'index'])->name('subject-report-page');
+    Route::get('/subject/{subject}/mission', [MissionController::class, 'index'])->name('subject-mission-page');
 
     Route::get('/objective-page', [ObjectiveController::class, 'index'])->name('objective-page');
-
     Route::get('/subjective-page', [SubjectiveController::class, 'index'])->name('subjective-page');
 
 
-    // Route::get('/subjective-page', function () {
-    //     return Inertia::render('courses/training/SubjectiveQuestion', [
-    //         'subject' => request('subject'),
-    //         'standard' => request('standard'),
-    //         'sectionId' => request('sectionId'),
-    //         'contentId' => request('contentId'),
-    //         'topic' => request('topic'),
-    //         'topic_id' => request('topic_id'), // Add this
-    //     ]);
-    // })->name('subjective-page');
 
 
-    Route::get('/subject/{subject}/report', function ($subject) {
-        $allowed = [
-            'bahasa-melayu' => 'Bahasa Melayu',
-            'bahasa-inggeris' => 'Bahasa Inggeris',
-            'matematik' => 'Matematik',
-            'sains' => 'Sains',
-        ];
-
-        abort_unless(array_key_exists($subject, $allowed), 404);
-
-        return Inertia::render('courses/SubjectReportPage', [
-            'subject' => $subject,
-            'subjectTitle' => '' . $allowed[$subject],
-        ]);
-    });
+Route::get('/debug/topics/{subject}', [ReportController::class, 'debugTopics']);
 
 
     Route::post('/objective-page/restart', [ObjectiveController::class, 'restart'])->name('objective-page.restart');

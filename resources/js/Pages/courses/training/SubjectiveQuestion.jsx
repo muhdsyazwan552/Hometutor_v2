@@ -1,9 +1,8 @@
 import React, { useState, useMemo, useEffect, useRef } from "react";
-import SubjectiveQuestionLayout from "@/Layouts/SubjectiveQuestionLayout"; // Changed import
+import SubjectiveQuestionLayout from "@/Layouts/SubjectiveQuestionLayout";
 import ResultQuestion from "@/Pages/courses/training/ResultQuestion";
 import { getFeedbackMessage, getAnswerType } from "@/utils/answerFeedback";
 import { Head, usePage } from '@inertiajs/react';
-import { getSubjectiveQuestionsBySubjectFormTopic } from '@/Data/QuestionBankSubjective';
 
 export default function SubjectiveQuestion({ title = "Subjective Quiz" }) {
   const pageProps = usePage().props;
@@ -17,6 +16,8 @@ export default function SubjectiveQuestion({ title = "Subjective Quiz" }) {
     sectionTitle,
     questions: initialQuestions,
     topic_id,
+    subject_id,  
+    level_id,
     question_count,
     total_available
   } = pageProps;
@@ -266,9 +267,9 @@ export default function SubjectiveQuestion({ title = "Subjective Quiz" }) {
     setTimerRunning(true);
   };
 
-  // Progress Circles Component for Layout
+  // Responsive Progress Circles Component
   const ProgressCircles = () => (
-    <div className="flex justify-center space-x-3">
+    <div className="flex justify-center space-x-2 md:space-x-3 overflow-x-auto py-2 px-2">
       {questions.map((_, index) => {
         let circleColor = 'bg-gray-300';
 
@@ -281,8 +282,9 @@ export default function SubjectiveQuestion({ title = "Subjective Quiz" }) {
         return (
           <div
             key={index}
-            className={`w-10 h-10 rounded-full flex items-center justify-center text-white font-semibold transition-all duration-300 ${circleColor} ${index === currentIndex ? 'ring-4 ring-blue-200 scale-110' : ''
-              }`}
+            className={`w-8 h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center text-white font-semibold transition-all duration-300 ${circleColor} ${
+              index === currentIndex ? 'ring-2 md:ring-4 ring-blue-200 scale-110' : ''
+            } flex-shrink-0`}
           >
             {index + 1}
           </div>
@@ -291,44 +293,64 @@ export default function SubjectiveQuestion({ title = "Subjective Quiz" }) {
     </div>
   );
 
-  // Footer Content for Layout
+  // Responsive Footer Content
   const footerContent = (
-   <div className="max-w-full mx-auto flex flex-wrap justify-end items-center gap-3">
-  {/* Check Answer button */}
-  {!checked[currentIndex] && (
-    <button
-      onClick={handleCheckAnswer}
-      disabled={!answers[currentIndex].trim()}
-      className={`px-8 py-4 rounded-lg font-medium shadow-md transition-all duration-300 text-lg hover:scale-105 ${
-        !answers[currentIndex].trim()
-          ? 'bg-gray-400 text-gray-200 cursor-not-allowed'
-          : 'bg-green-600 text-white hover:bg-green-700 animate-pulse'
-      }`}
-    >
-      Check Answer
-    </button>
-  )}
+    <div className="w-full flex flex-col sm:flex-row justify-between items-center gap-3 px-4 md:px-10 py-3">
+      {/* Tools Button - Hidden on mobile, visible on tablet and up */}
+      <button className="hidden sm:flex items-center gap-2 px-4 py-2 border-2 border-gray-300 text-gray-700 rounded-lg hover:border-blue-500 hover:text-blue-600 hover:bg-blue-50 transition-all duration-200">
+        <span>🔧</span>
+        <span className="hidden md:inline">Tools</span>
+      </button>
 
-  {/* Next/Finish button */}
-  {checked[currentIndex] && (
-    <button
-      onClick={handleNext}
-      className="bg-blue-600 text-white px-8 py-4 rounded-lg hover:bg-blue-700 transition-all duration-300 font-medium shadow-md text-lg hover:scale-105"
-    >
-      {currentIndex < questions.length - 1 ? 'Next Question →' : 'Finish Quiz 🎉'}
-    </button>
-  )}
-</div>
+      {/* Mobile Tools Button */}
+      <button className="sm:hidden flex items-center gap-2 px-3 py-2 border-2 border-gray-300 text-gray-700 rounded-lg hover:border-blue-500 hover:text-blue-600 hover:bg-blue-50 transition-all duration-200">
+        <span>🔧</span>
+      </button>
 
+      <div className="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto">
+        {/* Check Answer button */}
+        {!checked[currentIndex] && (
+          <button
+            onClick={handleCheckAnswer}
+            disabled={!answers[currentIndex].trim()}
+            className={`w-full sm:w-auto px-4 py-3 md:px-6 md:py-3 rounded-lg font-medium shadow-md transition-all duration-300 text-sm md:text-base hover:scale-105 ${
+              !answers[currentIndex].trim()
+                ? 'bg-gray-400 text-gray-200 cursor-not-allowed'
+                : 'bg-green-600 text-white hover:bg-green-700 animate-pulse'
+            }`}
+          >
+            Check Answer
+          </button>
+        )}
+
+        {/* Next/Finish button */}
+        {checked[currentIndex] && (
+          <button
+            onClick={handleNext}
+            className="w-full sm:w-auto bg-blue-600 text-white px-6 py-3 md:px-8 md:py-4 rounded-lg hover:bg-blue-700 transition-all duration-300 font-medium shadow-md text-sm md:text-lg hover:scale-105"
+          >
+            {currentIndex < questions.length - 1 ? (
+              <>
+                <span className="hidden sm:inline">Next Question</span>
+                <span className="sm:hidden">Next</span>
+                <span className="hidden md:inline"> →</span>
+              </>
+            ) : (
+              'Finish Quiz 🎉'
+            )}
+          </button>
+        )}
+      </div>
+    </div>
   );
 
   // Main content for children prop
   const mainContent = (
-    <div className="py-6 bg-cover bg-center bg-no-repeat h-max" style={{ backgroundImage: 'url(/images/background_classroom.jpg)' }}>
-      <div className="max-w-4xl mx-auto relative">
-        {/* Floating Feedback Messages */}
+    <div className="py-4 md:py-6 bg-cover bg-center bg-no-repeat min-h-screen" style={{ backgroundImage: 'url(/images/background_classroom.jpg)' }}>
+      <div className="max-w-4xl mx-auto relative px-4 md:px-0">
+        {/* Floating Feedback Messages - Hidden on mobile */}
         {isCorrect[currentIndex] === true && (
-          <div className="absolute -right-44 top-1/2 transform -translate-y-1/2 z-10 w-40">
+          <div className="hidden lg:block absolute -right-44 top-1/2 transform -translate-y-1/2 z-10 w-40">
             <div className="bg-green-50 border-2 border-green-200 rounded-xl p-4 shadow-lg min-w-[200px] animate-bounce">
               <div className="flex items-center">
                 <svg className="w-6 h-6 text-green-600 mr-3 flex-shrink-0 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -342,19 +364,34 @@ export default function SubjectiveQuestion({ title = "Subjective Quiz" }) {
           </div>
         )}
 
+        {/* Mobile Feedback Banner */}
+        {isCorrect[currentIndex] === true && (
+          <div className="lg:hidden bg-green-50 border-2 border-green-200 rounded-xl p-3 mb-4 animate-fade-in">
+            <div className="flex items-center justify-center">
+              <svg className="w-5 h-5 text-green-600 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <span className="text-green-800 font-medium text-sm">
+                Answer submitted! ✓
+              </span>
+            </div>
+          </div>
+        )}
+
         {/* Question Card */}
-        <div className="bg-white opacity-100 rounded-2xl shadow-xl p-6 mb-10 transition-all duration-300 hover:shadow-2xl">
-          {/* <div className="flex justify-between items-start mb-6">
-            <h2 className="text-xl font-semibold text-gray-800 flex-1 leading-relaxed">
+        <div className="bg-white opacity-100 rounded-xl md:rounded-2xl shadow-lg md:shadow-xl p-4 md:p-6 mb-6 md:mb-10 transition-all duration-300 hover:shadow-xl md:hover:shadow-2xl">
+          {/* Mobile Question Counter */}
+          <div className="lg:hidden mb-4 pb-3 border-b border-gray-200">
+            <h2 className="text-lg font-semibold text-gray-800 text-center">
               Question {currentIndex + 1} of {questions.length}
             </h2>
-          </div> */}
+          </div>
 
           {/* Question content with HTML rendering */}
-          <div className="text-gray-700 mb-6 text-lg question-content">
+          <div className="text-gray-700 mb-4 md:mb-6 text-base md:text-lg question-content">
             {questions[currentIndex]?.question ? (
               <div
-                className="prose max-w-none"
+                className="prose max-w-none prose-sm md:prose-base"
                 dangerouslySetInnerHTML={{ __html: questions[currentIndex].question }}
               />
             ) : (
@@ -362,22 +399,22 @@ export default function SubjectiveQuestion({ title = "Subjective Quiz" }) {
             )}
           </div>
 
-          <span className="text-gray-600 text-md mb-4 block">Type your answer below:</span>
+          <span className="text-gray-600 text-sm md:text-md mb-3 md:mb-4 block">Type your answer below:</span>
 
           {/* Answer input */}
           <textarea
             value={answers[currentIndex]}
             onChange={(e) => handleAnswerChange(e.target.value)}
-            rows={6}
-            className="w-full resize-none border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-lg font-medium mb-6 p-4 bg-white transition-all duration-200"
+            rows={4}
+            className="w-full resize-none border-2 border-gray-300 rounded-lg md:rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-base md:text-lg font-medium mb-4 md:mb-6 p-3 md:p-4 bg-white transition-all duration-200"
             placeholder="Type your detailed answer with explanations and working here..."
             disabled={checked[currentIndex]}
           />
 
           {/* Error */}
           {error && (
-            <div className="bg-red-50 border border-red-200 rounded-xl p-4 mb-4 animate-shake">
-              <p className="text-red-600 font-medium">{error}</p>
+            <div className="bg-red-50 border border-red-200 rounded-lg md:rounded-xl p-3 md:p-4 mb-3 md:mb-4 animate-shake">
+              <p className="text-red-600 font-medium text-sm md:text-base">{error}</p>
             </div>
           )}
 
@@ -386,22 +423,22 @@ export default function SubjectiveQuestion({ title = "Subjective Quiz" }) {
             <div className="mb-4">
               <button
                 onClick={toggleSchema}
-                className="mb-2 px-6 py-3 rounded-xl shadow bg-yellow-500 hover:bg-yellow-600 text-white font-medium transition-all duration-300 hover:scale-105"
+                className="w-full sm:w-auto mb-2 px-4 py-2 md:px-6 md:py-3 rounded-lg md:rounded-xl shadow bg-yellow-500 hover:bg-yellow-600 text-white font-medium transition-all duration-300 hover:scale-105 text-sm md:text-base"
               >
                 {showSchema[currentIndex] ? "Hide Schema Answer" : "Show Schema Answer"}
               </button>
 
               {showSchema[currentIndex] && (
-                <div className="p-4 bg-green-50 border-2 border-green-200 rounded-xl shadow-sm animate-fade-in">
-                  <h3 className="text-green-800 font-semibold mb-2 flex items-center">
-                    <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="p-3 md:p-4 bg-green-50 border-2 border-green-200 rounded-lg md:rounded-xl shadow-sm animate-fade-in">
+                  <h3 className="text-green-800 font-semibold mb-2 flex items-center text-sm md:text-base">
+                    <svg className="w-4 h-4 md:w-5 md:h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                     Schema Answer:
                   </h3>
                   {questions[currentIndex]?.schema ? (
                     <div
-                      className="text-green-700 text-lg prose max-w-none"
+                      className="text-green-700 text-base md:text-lg prose max-w-none prose-sm md:prose-base"
                       dangerouslySetInnerHTML={{ __html: questions[currentIndex].schema }}
                     />
                   ) : (
@@ -417,7 +454,7 @@ export default function SubjectiveQuestion({ title = "Subjective Quiz" }) {
       {/* Zoom Modal */}
       {open && (
         <div
-          className="fixed inset-0 bg-black/70 flex items-center justify-center z-50"
+          className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4"
           onClick={() => setOpen(false)}
         >
           <img
@@ -437,6 +474,16 @@ export default function SubjectiveQuestion({ title = "Subjective Quiz" }) {
         subjectiveResults={quizResults}
         onTryAgain={resetQuiz}
         quizType="subjective"
+        subject={subject}
+        standard={standard}
+        sectionId={sectionId}
+        contentId={contentId}
+        topic={topic}
+        sectionTitle={sectionTitle}
+        topic_id={topic_id}
+        form={standard}
+        level_id={level_id}
+        subject_id={subject_id}
       />
     );
   }
@@ -454,7 +501,6 @@ export default function SubjectiveQuestion({ title = "Subjective Quiz" }) {
         subject={subject}
         standard={standard}
         currentTopic={topic || "Subjective Questions"}
-
         progressCircles={<ProgressCircles />}
         timeElapsed={timeElapsed}
         getTimeColor={getTimeColor}
@@ -465,7 +511,7 @@ export default function SubjectiveQuestion({ title = "Subjective Quiz" }) {
         {mainContent}
       </SubjectiveQuestionLayout>
 
-      {/* Custom CSS for animations */}
+      {/* Custom CSS for animations and responsive design */}
       <style>{`
         @keyframes shake {
           0%, 100% { transform: translateX(0); }
@@ -502,6 +548,23 @@ export default function SubjectiveQuestion({ title = "Subjective Quiz" }) {
         .prose p {
           margin-bottom: 1rem;
           line-height: 1.6;
+        }
+
+        /* Mobile-specific styles */
+        @media (max-width: 640px) {
+          .prose ol {
+            margin-left: 1rem;
+          }
+          .prose img {
+            margin: 0.5rem auto;
+          }
+        }
+
+        /* Tablet-specific styles */
+        @media (min-width: 641px) and (max-width: 1024px) {
+          .prose ol {
+            margin-left: 1.25rem;
+          }
         }
       `}</style>
     </>

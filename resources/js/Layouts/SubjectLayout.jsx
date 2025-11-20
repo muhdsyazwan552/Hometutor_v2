@@ -1,15 +1,8 @@
 // resources/js/Layouts/SubjectLayout.jsx
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, usePage } from "@inertiajs/react";
 import SubjectNavbar from './SubjectNavbar';
 import StandardFooter from '@/Components/StandardFooter';
-
-const subjectMap = {
-  'bahasa-melayu': 'Bahasa Melayu',
-  'bahasa-inggeris': 'Bahasa Inggeris',
-  'matematik': 'Matematik',
-  'sains': 'Sains',
-};
 
 const formatTitle = (slug) => {
   return slug
@@ -18,29 +11,107 @@ const formatTitle = (slug) => {
     .join(' ');
 };
 
-export default function SubjectLayout({ 
-  children, 
-  subject, 
-  activeTab = 'Practice',
+// Function to decode URL and normalize paths
+const normalizeUrl = (url) => {
+  try {
+    // Decode URL encoded characters (%20, etc)
+    const decodedUrl = decodeURIComponent(url);
+    // Remove trailing slashes and normalize
+    return decodedUrl.replace(/\/+$/, '');
+  } catch (error) {
+    return url;
+  }
+};
+
+// Get clean path without query parameters
+const getCleanPath = (url) => {
+  try {
+    const normalized = normalizeUrl(url);
+    return normalized.split('?')[0]; // Remove query parameters
+  } catch (error) {
+    return url.split('?')[0];
+  }
+};
+
+// Flexible tab configuration with better URL handling
+const TAB_CONFIG = [
+  {
+    key: 'practice',
+    label: 'Practice',
+    href: (subject, form, level_id, subject_id) => 
+      route('subject-page', { 
+        subject: subject, 
+        form: form, 
+        level_id: level_id, 
+        subject_id: subject_id 
+      }),
+    isActive: () => route().current('subject-page')
+  },
+    {
+    key: 'mission',
+    label: 'Mission', 
+    href: (subject, form, level_id, subject_id) =>
+      route('subject-mission-page', { 
+        subject: subject, 
+        form: form, 
+        level_id: level_id, 
+        subject_id: subject_id 
+      }),
+    isActive: () => route().current('subject-mission-page')
+  },
+  {
+    key: 'report',
+    label: 'Report', 
+    href: (subject, form, level_id, subject_id) =>
+      route('subject-report-page', { 
+        subject: subject, 
+        form: form, 
+        level_id: level_id, 
+        subject_id: subject_id 
+      }),
+    isActive: () => route().current('subject-report-page')
+  },
+];
+
+export default function SubjectLayout({
+  children,
+  subject,
   bgColor = "bg-white",
   onStandardChange,
-  selectedStandard: propSelectedStandard // Accept as prop from parent
+  selectedStandard: propSelectedStandard
 }) {
-  const { url } = usePage();
-  const subjectTitle = subjectMap[subject] || 'Subject';
+  const { url, props } = usePage();
+  const { form, level_id, subject_id } = props;
+
   const title = formatTitle(subject);
-  
+
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  
-  // Use prop if provided, otherwise default to 'Form 4'
   const [internalSelectedStandard, setInternalSelectedStandard] = useState(propSelectedStandard || 'Form 4');
-  
-  // Use prop value if available, otherwise use internal state
   const selectedStandard = propSelectedStandard !== undefined ? propSelectedStandard : internalSelectedStandard;
+
+  // Handle browser extension errors
+  useEffect(() => {
+    const handleError = (event) => {
+      if (event.error && event.error.message &&
+        event.error.message.includes('asynchronous response') &&
+        event.error.message.includes('message channel closed')) {
+        event.preventDefault();
+        console.warn('Browser extension error suppressed');
+        return true;
+      }
+    };
+
+    window.addEventListener('error', handleError);
+    window.addEventListener('unhandledrejection', handleError);
+
+    return () => {
+      window.removeEventListener('error', handleError);
+      window.removeEventListener('unhandledrejection', handleError);
+    };
+  }, []);
 
   const handleStandardSelect = (standard) => {
     if (propSelectedStandard === undefined) {
-      // Only update internal state if no prop is provided
       setInternalSelectedStandard(standard);
     }
     setIsDropdownOpen(false);
@@ -49,10 +120,30 @@ export default function SubjectLayout({
     }
   };
 
+  // Debug current URL and tab states
+  useEffect(() => {
+    const cleanPath = getCleanPath(url);
+    const normalizedSubject = normalizeUrl(subject);
+    
+    console.log('🎯 === CURRENT PAGE ANALYSIS ===');
+    console.log('Full URL:', url);
+    console.log('Clean Path:', cleanPath);
+    console.log('Subject:', subject);
+    console.log('Normalized Subject:', normalizedSubject);
+    console.log('Expected Practice Path:', `/subject/${normalizedSubject}`);
+    console.log('Expected Report Path:', `/subject/${normalizedSubject}/report`);
+    
+    TAB_CONFIG.forEach(tab => {
+      const isActive = tab.isActive(url, subject);
+      console.log(`Tab "${tab.label}" active:`, isActive);
+    });
+    console.log('================================');
+  }, [url, subject]);
+
   return (
     <div className={`min-h-screen ${bgColor}`}>
-      <SubjectNavbar title={subject}  />
-      
+      <SubjectNavbar title={subject} />
+
       {/* Header Section */}
       <div className="px-4 sm:px-6 lg:px-8 bg-gradient-to-t from-sky-500 to-indigo-500 py-4 sm:py-6 border-b border-gray-200">
         <div className="max-w-6xl mx-auto">
@@ -104,43 +195,42 @@ export default function SubjectLayout({
         </div>
       </div>
 
-      {/* Tabs */}
+      {/* Tabs - Fixed with better URL handling */}
       <div className="px-4 sm:px-6 lg:px-8 bg-white pt-3 shadow-b shadow-md border-gray-200">
         <div className="max-w-6xl mx-auto">
-          <div className="flex space-x-4 sm:space-x-6 border-b overflow-x-auto">
-            <Link
-              href={`/subject/${subject}`}
-              className={`pb-2 text-sm sm:text-md font-medium whitespace-nowrap ${
-                url === `/subject/${subject}`
-                  ? "border-b-2 border-sky-500 text-sky-600"
-                  : "text-gray-500 hover:text-sky-500"
-              }`}
-            >
-              Practice
-            </Link>
-
-            <Link
-              href={`/subject/${subject}/report`}
-              className={`pb-2 text-sm sm:text-md font-medium whitespace-nowrap ${
-                url === `/subject/${subject}/report`
-                  ? "border-b-2 border-sky-500 text-sky-600"
-                  : "text-gray-500 hover:text-sky-500"
-              }`}
-            >
-              Report
-            </Link>
+          <div className="flex space-x-6 border-b border-gray-200">
+            {TAB_CONFIG.map((tab) => {
+              const isActive = tab.isActive(url, subject);
+              return (
+                <Link
+                  key={tab.key}
+                  href={tab.href(subject, form, level_id, subject_id)}
+                  className={`pb-4 relative text-sm font-medium whitespace-nowrap transition-all duration-200 ${
+                    isActive
+                      ? "text-sky-600 font-semibold border-b-2 border-sky-500"
+                      : "text-gray-500 hover:text-gray-700 hover:border-b-2 hover:border-gray-300"
+                  }`}
+                  preserveScroll
+                >
+                  {tab.label}
+                  {isActive && (
+                    <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-sky-500 animate-pulse"></div>
+                  )}
+                </Link>
+              );
+            })}
           </div>
         </div>
       </div>
 
-      {/* Page Content - Remove React.cloneElement */}
+      {/* Page Content */}
       <div className="py-6 sm:py-8 lg:py-10 px-4 sm:px-6 lg:px-16 mt-0">
         {children}
       </div>
-      <div className="  mt-10">
-<StandardFooter title={subjectTitle}  />
-      </div>
       
+      <div className="mt-10">
+        <StandardFooter />
+      </div>
     </div>
   );
 }

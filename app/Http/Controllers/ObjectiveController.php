@@ -65,20 +65,22 @@ private function getQuestionsByTopic($topicId)
 {
     Log::info("🚨 TEMPORARY DEBUG MODE - bypassing all filters");
     
-    // Temporary: bypass all filters to test
+    // Using model scopes
     $questions = Question::with('answers')
         ->where('topic_id', $topicId)
         ->where('question_type_id', 1)
+        ->active()      // Uses the scopeActive method
+        // ->published()   // Uses the scopePublished method
         ->inRandomOrder()
         // ->limit($limit)
         ->get();
 
-    Log::info("🚨 DEBUG - Questions found (no filters): " . $questions->count());
+    Log::info("🚨 DEBUG - Questions found (using scopes): " . $questions->count());
     
     if ($questions->count() > 0) {
         Log::info("🚨 DEBUG - Question details:");
         foreach ($questions as $q) {
-            Log::info("   - ID: {$q->id}, Status: {$q->status}, Published: {$q->ispublished}, Approved: {$q->isapproved}");
+            Log::info("   - ID: {$q->id}, Active: {$q->is_active}, Published: {$q->is_published}, Approved: {$q->approval_status}");
         }
     }
 

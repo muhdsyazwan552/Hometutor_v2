@@ -19,10 +19,10 @@ class SubjectiveController extends Controller
         // Get questions from database based on topic_id
         $questions = [];
         $topicName = 'General';
-        
+
         // Focus on topic_id only
         $topicId = $request->query('topic_id');
-        
+
         Log::info('SubjectiveQuestion Request - Topic ID:', ['topic_id' => $topicId]);
 
         if ($topicId) {
@@ -47,8 +47,10 @@ class SubjectiveController extends Controller
             'sectionTitle' => $request->query('sectionTitle'),
             'contentId' => $request->query('contentId'),
             'topic' => $topicName,
-            'topic_id' => $topicId, // This is the key parameter
+            'topic_id' => $topicId,
             'questions' => $questions,
+            'subject_id' => $request->subject_id,
+            'level_id' => $request->level_id,
             'question_count' => count($questions),
             'total_available' => $topicId ? $this->getTotalAvailableQuestions($topicId) : 0,
         ]);
@@ -60,16 +62,18 @@ class SubjectiveController extends Controller
     private function getQuestionsByTopic($topicId)
     {
         Log::info("🚨 TEMPORARY DEBUG MODE - bypassing all filters for subjective questions");
-        
+
         // Temporary: bypass all filters to test
         $questions = Question::with('answers')
             ->where('topic_id', $topicId)
             ->where('question_type_id', 2) // 2 for subjective questions
+            ->active()      // Uses the scopeActive method
+            // ->published()   // Uses the scopePublished method
             ->inRandomOrder()
             ->get();
 
         Log::info("🚨 DEBUG - Subjective questions found (no filters): " . $questions->count());
-        
+
         if ($questions->count() > 0) {
             Log::info("🚨 DEBUG - Subjective question details:");
             foreach ($questions as $q) {
@@ -85,18 +89,18 @@ class SubjectiveController extends Controller
      */
     private function getQuestionsByTopicName($topicName, $subjectName = null, $limit = 5)
     {
-        $query = Topic::with(['questions' => function($query) {
+        $query = Topic::with(['questions' => function ($query) {
             $query->where('question_type_id', 2) // Subjective questions
-                  ->active()->published()->approved()
-                  ->with(['answers' => function($q) {
-                      $q->active()->ordered();
-                  }]);
+                ->active()->published()->approved()
+                ->with(['answers' => function ($q) {
+                    $q->active()->ordered();
+                }]);
         }])
-        ->where('name', 'like', '%' . $topicName . '%')
-        ->active();
+            ->where('name', 'like', '%' . $topicName . '%')
+            ->active();
 
         if ($subjectName) {
-            $query->whereHas('subject', function($q) use ($subjectName) {
+            $query->whereHas('subject', function ($q) use ($subjectName) {
                 $q->where('name', 'like', '%' . $subjectName . '%');
             });
         }
@@ -140,7 +144,7 @@ class SubjectiveController extends Controller
      */
     private function formatQuestions($questions)
     {
-        return $questions->map(function($question, $index) {
+        return $questions->map(function ($question, $index) {
             return [
                 'id' => $question->id,
                 'question_text' => $question->question_text,
@@ -156,75 +160,75 @@ class SubjectiveController extends Controller
         })->toArray();
     }
 
-/**
- * Get schema answer for subjective questions
- */
-private function getSubjectiveSchema($question)
-{
-    // First, check if any answer has sample_answer (specific for subjective)
-    $sampleAnswer = $question->answers->first(function($answer) {
-        return !empty($answer->sample_answer);
-    });
+    /**
+     * Get schema answer for subjective questions
+     */
+    private function getSubjectiveSchema($question)
+    {
+        // First, check if any answer has sample_answer (specific for subjective)
+        $sampleAnswer = $question->answers->first(function ($answer) {
+            return !empty($answer->sample_answer);
+        });
 
-    if ($sampleAnswer) {
-        return $sampleAnswer->sample_answer;
+        if ($sampleAnswer) {
+            return $sampleAnswer->sample_answer;
+        }
+
+        // If sample_answer is null, check for sample_answer_file
+        $sampleAnswerFile = $question->answers->first(function ($answer) {
+            return !empty($answer->sample_answer_file);
+        });
+
+        if ($sampleAnswerFile) {
+            return $this->getSampleAnswerFileUrl($sampleAnswerFile->sample_answer_file);
+        }
+
+        // Then check for answers with reason
+        $reasonAnswer = $question->answers->first(function ($answer) {
+            return !empty($answer->reason);
+        });
+
+        if ($reasonAnswer) {
+            return $reasonAnswer->reason;
+        }
+
+        // Finally, check correct answer text
+        $correctAnswer = $question->answers->first(function ($answer) {
+            return $answer->iscorrectanswer;
+        });
+
+        if ($correctAnswer && !empty($correctAnswer->answer_text)) {
+            return $correctAnswer->answer_text;
+        }
+
+        // Fallback to any answer text
+        $anyAnswer = $question->answers->first();
+        if ($anyAnswer && !empty($anyAnswer->answer_text)) {
+            return $anyAnswer->answer_text;
+        }
+
+        return "Schema answer not available for this question.";
     }
 
-    // If sample_answer is null, check for sample_answer_file
-    $sampleAnswerFile = $question->answers->first(function($answer) {
-        return !empty($answer->sample_answer_file);
-    });
+    /**
+     * Get sample answer file URL
+     */
+    private function getSampleAnswerFileUrl($filename)
+    {
+        // If filename is already a full URL, return it as is
+        if (filter_var($filename, FILTER_VALIDATE_URL)) {
+            return $filename;
+        }
 
-    if ($sampleAnswerFile) {
-        return $this->getSampleAnswerFileUrl($sampleAnswerFile->sample_answer_file);
+        // If it's a full S3 path stored in database, return it
+        if (strpos($filename, 'https://ptrs-elearning.s3.ap-southeast-1.amazonaws.com/') === 0) {
+            return $filename;
+        }
+
+        // For relative paths, construct the S3 URL
+        // Adjust the path based on where sample answer files are stored in S3
+        return 'https://ptrs-elearning.s3.ap-southeast-1.amazonaws.com/sample-answers/' . $filename;
     }
-
-    // Then check for answers with reason
-    $reasonAnswer = $question->answers->first(function($answer) {
-        return !empty($answer->reason);
-    });
-
-    if ($reasonAnswer) {
-        return $reasonAnswer->reason;
-    }
-
-    // Finally, check correct answer text
-    $correctAnswer = $question->answers->first(function($answer) {
-        return $answer->iscorrectanswer;
-    });
-
-    if ($correctAnswer && !empty($correctAnswer->answer_text)) {
-        return $correctAnswer->answer_text;
-    }
-
-    // Fallback to any answer text
-    $anyAnswer = $question->answers->first();
-    if ($anyAnswer && !empty($anyAnswer->answer_text)) {
-        return $anyAnswer->answer_text;
-    }
-
-    return "Schema answer not available for this question.";
-}
-
-/**
- * Get sample answer file URL
- */
-private function getSampleAnswerFileUrl($filename)
-{
-    // If filename is already a full URL, return it as is
-    if (filter_var($filename, FILTER_VALIDATE_URL)) {
-        return $filename;
-    }
-    
-    // If it's a full S3 path stored in database, return it
-    if (strpos($filename, 'https://ptrs-elearning.s3.ap-southeast-1.amazonaws.com/') === 0) {
-        return $filename;
-    }
-    
-    // For relative paths, construct the S3 URL
-    // Adjust the path based on where sample answer files are stored in S3
-    return 'https://ptrs-elearning.s3.ap-southeast-1.amazonaws.com/sample-answers/' . $filename;
-}
 
     /**
      * Determine question display type
@@ -234,7 +238,7 @@ private function getSampleAnswerFileUrl($filename)
         // Check if question_text exists and is not empty
         if (!empty($question->question_text)) {
             return 'html';
-        } 
+        }
         // Check if question_file exists and is not empty
         elseif (!empty($question->question_file)) {
             return 'image';
@@ -249,30 +253,30 @@ private function getSampleAnswerFileUrl($filename)
     private function getExplanation($question)
     {
         // Check if any answer has a reason
-        $answerWithReason = $question->answers->first(function($answer) {
+        $answerWithReason = $question->answers->first(function ($answer) {
             return !empty($answer->reason);
         });
 
         if ($answerWithReason) {
             // Check if reason contains HTML
             $hasHtml = preg_match('/<p[^>]*>|<br>|<div/i', $answerWithReason->reason);
-            
+
             if ($hasHtml) {
                 // Process HTML explanation
                 return $this->processExplanationHtml($answerWithReason->reason);
             }
-            
+
             return $answerWithReason->reason;
         }
 
         // Fallback: check question explanation field if it exists
         if (!empty($question->explanation)) {
             $hasHtml = preg_match('/<p[^>]*>|<br>|<div/i', $question->explanation);
-            
+
             if ($hasHtml) {
                 return $this->processExplanationHtml($question->explanation);
             }
-            
+
             return $question->explanation;
         }
 
@@ -286,10 +290,10 @@ private function getSampleAnswerFileUrl($filename)
     {
         // Add Tailwind classes to paragraphs and clean up HTML
         $processedHtml = preg_replace('/<p([^>]*)>/', '<p$1 class="mb-3 text-gray-700 leading-relaxed">', $html);
-        
+
         // Remove data attributes for cleaner output if desired
         $processedHtml = preg_replace('/\s+data-[^=]+="[^"]*"/', '', $processedHtml);
-        
+
         return $processedHtml;
     }
 
@@ -302,12 +306,12 @@ private function getSampleAnswerFileUrl($filename)
         if (filter_var($filename, FILTER_VALIDATE_URL)) {
             return $filename;
         }
-        
+
         // If it's a full S3 path stored in database, return it
         if (strpos($filename, 'https://ptrs-elearning.s3.ap-southeast-1.amazonaws.com/') === 0) {
             return $filename;
         }
-        
+
         // For relative paths, construct the S3 URL
         // Assuming your files are stored in S3 with this structure
         return 'https://ptrs-elearning.s3.ap-southeast-1.amazonaws.com/questions/' . $filename;
@@ -322,12 +326,12 @@ private function getSampleAnswerFileUrl($filename)
         if (filter_var($filename, FILTER_VALIDATE_URL)) {
             return $filename;
         }
-        
+
         // If it's a full S3 path stored in database, return it
         if (strpos($filename, 'https://ptrs-elearning.s3.ap-southeast-1.amazonaws.com/') === 0) {
             return $filename;
         }
-        
+
         // For relative paths, construct the S3 URL
         // Adjust the path based on where answer files are stored in S3
         return 'https://ptrs-elearning.s3.ap-southeast-1.amazonaws.com/answers/' . $filename;
@@ -340,7 +344,7 @@ private function getSampleAnswerFileUrl($filename)
     {
         $difficultyMap = [
             1 => 'easy',
-            2 => 'medium', 
+            2 => 'medium',
             3 => 'hard'
         ];
 
@@ -380,7 +384,7 @@ private function getSampleAnswerFileUrl($filename)
         ]);
 
         $questions = [];
-        
+
         if ($request->topic_id) {
             $questions = $this->getQuestionsByTopic($request->topic_id);
         } elseif ($request->topic) {

@@ -33,7 +33,7 @@ const SubjectiveQuestionLayout = ({
         // At the very top - show navbar and white header
         setShowNavbar(true);
         setShowBlueHeader(false);
-      } else if (currentY > lastScrollY && currentY > 50) {
+      } else if (currentY > lastScrollY && currentY > 70) {
         // Scrolling down past 100px - hide everything
         setShowNavbar(false);
         setShowBlueHeader(true);
@@ -101,20 +101,20 @@ const SubjectiveQuestionLayout = ({
 
       {/* ✅ Blue compact header (appears when scrolling up after hiding) */}
       <div
-        className={`bg-blue-100 text-white p-3 shadow-lg fixed py-6 top-0 left-0 right-0 z-40 transition-transform duration-300 ${
+        className={`bg-blue-800 text-white p-3 shadow-lg fixed py-4 top-0 left-0 right-0 z-40 transition-transform duration-300 ${
           showBlueHeader ? 'translate-y-0' : '-translate-y-full'
         }`}
       >
         <div className="flex max-auto h-100 flex-col md:flex-row justify-between items-start md:items-center gap-3">
           <div>
-            <h1 className="text-xl md:text-2xl lg:text-3xl font-bold text-gray-800 flex items-center gap-3">
+            <h1 className="text-xl md:text-2xl lg:text-3xl font-bold text-gray-50 flex items-center gap-3">
               <button
                 onClick={() => window.history.back()}
-                className="w-8 h-8 md:w-10 md:h-10 bg-gray-100 hover:bg-gray-200 rounded-full flex items-center justify-center transition-colors"
+                className="w-8 h-8 md:w-10 md:h-10 bg-gray-700 hover:bg-gray-200 rounded-full flex items-center justify-center transition-colors"
                 title="Back"
               >
                 <svg
-                  className="w-4 h-4 md:w-5 md:h-5 text-gray-600"
+                  className="w-4 h-4 md:w-5 md:h-5 text-gray-50 hover:text-gray-800"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -129,7 +129,7 @@ const SubjectiveQuestionLayout = ({
               </button>
               {sectionTitle}
             </h1>
-            <p className="text-gray-600 text-sm px-12 md:text-base">
+            <p className="text-gray-50 text-sm px-12 md:text-base">
               Topic: {currentTopic}
             </p>
           </div>
@@ -171,7 +171,7 @@ const SubjectiveQuestionLayout = ({
       </div>
 
       {/* ✅ Footer */}
-      <footer className="sticky bottom-0 bg-white border-t border-gray-200 shadow-lg p-2 z-30">
+      <footer className=" bg-white border-t border-gray-200 shadow-lg p-2 z-30">
         {footerContent}
       </footer>
     </div>

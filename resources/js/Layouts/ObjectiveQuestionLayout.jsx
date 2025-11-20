@@ -172,7 +172,7 @@ const ObjectiveQuestionLayout = ({
       </div>
 
       {/* Footer - Adjusted to be closer to content */}
-      <footer className="sticky bottom-0 bg-white border-t border-gray-200 shadow-lg p-2 mt-0 z-30"> {/* Added mt-0 */}
+      <footer className=" bg-white border-t border-gray-200 shadow-lg p-2 mt-0 z-30"> {/* Added mt-0 */}
         {footerContent}
         {/* <StandardFooter /> */}
       </footer>

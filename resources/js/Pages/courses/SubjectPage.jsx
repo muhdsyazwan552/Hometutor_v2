@@ -184,7 +184,7 @@ export default function SubjectPage({ selectedStandard }) {
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-3 sm:gap-6 lg:gap-8">
         {/* Contents Sidebar */}
-        <div className="lg:sticky lg:top-24 h-fit px-0 order-1 lg:order-1">
+        <div className="lg:sticky lg:grid-cols-5 lg:top-24 h-fit px-0 order-1 lg:order-1">
           <div className="bg-white shadow-lg sm:shadow-xl rounded-lg p-3 sm:p-4 border">
             <h3 className="text-base sm:text-lg font-bold text-sky-700 mb-3 sm:mb-4 tracking-wide flex items-center">
               <span className="mr-2">📚</span>
@@ -192,22 +192,26 @@ export default function SubjectPage({ selectedStandard }) {
               <span className="sm:hidden">Contents</span>
             </h3>
 
-            <nav className="space-y-1 sm:space-y-2">
-              {currentSections.map((section) => (
-                <div key={section.id} className="space-y-1">
-                  <button
-                    onClick={() => handleScrollTo(section.title)}
-                    className={`block w-full text-left px-3 sm:px-4 py-2 sm:py-3 rounded-lg text-xs sm:text-sm font-medium transition-all duration-200 ${activeSection === section.title
-                      ? 'bg-gradient-to-r from-sky-600 to-indigo-600 text-white shadow-md'
-                      : 'text-gray-600 hover:bg-sky-100 hover:text-sky-700'
-                      }`}
-                  >
-                   
-                    <span className="line-clamp-1 font-bold">{section.title}</span>
-                  </button>
-                </div>
-              ))}
-            </nav>
+            {/* Added max-height and overflow for scrolling */}
+            <div className="max-h-64 sm:max-h-80 overflow-y-auto pr-1">
+              <nav className="space-y-1 sm:space-y-2">
+                {currentSections.map((section) => (
+                  <div key={section.id} className="space-y-1">
+                    <button
+                      onClick={() => handleScrollTo(section.title)}
+                      className={`block w-full text-left px-3 sm:px-4 py-2 sm:py-3 rounded-lg text-xs sm:text-sm font-medium transition-all duration-200 ${activeSection === section.title
+                        ? 'bg-gradient-to-r from-sky-600 to-indigo-600 text-white shadow-md'
+                        : 'text-gray-600 hover:bg-sky-100 hover:text-sky-700'
+                        }`}
+                    >
+                      <span className="line-clamp-2 sm:line-clamp-3 font-bold leading-snug break-words">
+                        {section.title}
+                      </span>
+                    </button>
+                  </div>
+                ))}
+              </nav>
+            </div>
           </div>
         </div>
 
@@ -343,7 +347,49 @@ export default function SubjectPage({ selectedStandard }) {
                                 </div>
                               )}
 
-                              
+                              {/* Subjective Card - Only show if subjective questions exist */}
+                              {subSection.questionCounts?.subjective > 0 && (
+                                <div className="border border-gray-200 rounded-lg p-3 sm:p-4 lg:p-5 bg-white hover:shadow-md transition-all duration-200">
+                                  <div className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-4">
+                                    <div className="w-6 h-6 sm:w-7 sm:h-7 lg:w-8 lg:h-8 rounded-full border border-sky-400 flex items-center justify-center flex-shrink-0">
+                                      <DocumentTextIcon className="w-3 h-3 sm:w-4 sm:h-4 text-sky-600" />
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                      <h4 className="font-semibold text-gray-900 text-sm sm:text-base line-clamp-1">
+                                        {subSection.practiceTitle || 'Subjective Practice'}
+                                      </h4>
+                                      <p className="text-xs text-gray-500 uppercase tracking-wide">Subjective</p>
+                                      <p className="text-xs text-gray-600 mt-1">
+                                        {subSection.questionCounts.subjective} questions available
+                                      </p>
+                                    </div>
+                                  </div>
+                                  <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 mx-0 sm:mx-4">
+                                    <button
+                                      onClick={() =>
+                                        router.get(route('subjective-page'), {
+                                          subject: subject,
+                                          standard: currentStandard,
+                                          sectionId: section.id,
+                                          sectionTitle: section.title,
+                                          contentId: currentContent.id,
+                                          topic: subSection.title,
+                                          topic_id: subSection.id,
+                                          subject_id: subject_id,
+                                          level_id: level_id
+                                        })
+                                      }
+                                      className="px-3 sm:px-4 py-1.5 text-blue-600 border border-blue-600 rounded-md text-xs sm:text-sm font-medium hover:bg-blue-50 transition-all duration-200 w-full sm:w-auto text-center"
+                                    >
+                                      Practice
+                                    </button>
+                                    <div className="text-left">
+                                      <p className="text-xs text-gray-500">Last Practice</p>
+                                      <p className="text-xs sm:text-sm font-medium text-gray-800">Dec 26th, 12:27 PM</p>
+                                    </div>
+                                  </div>
+                                </div>
+                              )}
 
                               {/* Show message if no practice available */}
                               {(!subSection.questionCounts?.objective || subSection.questionCounts.objective === 0) &&

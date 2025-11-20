@@ -21,24 +21,16 @@ export default function DashboardLayout({ header, children }) {
     console.log('School Subjects:', schoolSubjects);
 
     // Function to generate subject URL
-    const getSubjectUrl = (subject) => {
-        // Create slug from subject name
-        const subjectSlug = subject.name.toLowerCase().replace(/\s+/g, '-');
-        
-        // Use the subject's level_id, default to 10 if not provided
-        const levelId = subject.level_id || 10;
-        
-        // Map level_id to form name
-        const formMap = {
-            10: 'Form 4',
-            11: 'Form 5',
-            // Add more mappings as needed
-        };
-        
-        const form = formMap[levelId] || 'Form 4';
+  // STANDARDIZED VERSION - guna dalam kedua-dua files
+const getSubjectUrl = (subject) => {
+    // PASTIKAN GUNA subject.abbr untuk consistency
+    const subjectSlug = subject.abbr || subject.name.toLowerCase().replace(/\s+/g, '-');
+    const levelId = subject.level_id || 10;
+    const form = levelId === 10 ? 'Form 4' : 'Form 5';
 
-        return `/subject/${subjectSlug}?subject_id=${subject.id}&level_id=${levelId}&form=${encodeURIComponent(form)}`;
-    };
+    // Standard encoding
+    return `/subject/${subjectSlug}?subject_id=${subject.id}&level_id=${levelId}&form=${encodeURIComponent(form)}`;
+};
 
     return (
         <div className="min-h-screen bg-gray-100">
