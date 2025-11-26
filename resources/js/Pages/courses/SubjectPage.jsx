@@ -30,6 +30,7 @@ export default function SubjectPage({ selectedStandard }) {
   const [activeSection, setActiveSection] = useState('');
   const [currentStandard, setCurrentStandard] = useState(selectedStandard || form || 'Form 4');
   const [isManualScroll, setIsManualScroll] = useState(false);
+  
 
   const currentContent = content || { id: 0, sections: [] };
   const currentSections = currentContent?.sections || [];
@@ -259,7 +260,10 @@ export default function SubjectPage({ selectedStandard }) {
                   </div>
 
                   <div className="space-y-4 sm:space-y-6 lg:space-y-8 relative">
-                    {section.subSections?.map((subSection, subIndex) => (
+                    {section.subSections?.map((subSection, subIndex) => {
+                      const hasScore = !!subSection.lastPractice?.objective;
+
+                      return (
                       <section
                         key={subSection.id}
                         id={subSection.title}
@@ -289,60 +293,121 @@ export default function SubjectPage({ selectedStandard }) {
                             <div className="grid grid-cols-1 gap-3 sm:gap-4">
                               {/* Objective Card - Only show if objective questions exist */}
                               {subSection.questionCounts?.objective > 0 && (
-                                <div className="border border-gray-200 rounded-lg p-3 sm:p-4 lg:p-5 bg-white hover:shadow-md transition-all duration-200">
-                                  <div className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-4">
-                                    <div className="w-6 h-6 sm:w-7 sm:h-7 lg:w-8 lg:h-8 rounded-full border border-sky-400 flex items-center justify-center flex-shrink-0">
-                                      <DocumentTextIcon className="w-3 h-3 sm:w-4 sm:h-4 text-sky-600" />
-                                    </div>
-                                    <div className="flex-1 min-w-0">
-                                      <h4 className="font-semibold text-gray-900 text-sm sm:text-base line-clamp-1">
-                                        {subSection.practiceTitle || 'Objective Practice'}
-                                      </h4>
-                                      <p className="text-xs text-gray-500 uppercase tracking-wide">Objective</p>
-                                      <p className="text-xs text-gray-600 mt-1">
-                                        {subSection.questionCounts.objective} questions available
-                                      </p>
-                                    </div>
-                                  </div>
-                                  <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 mx-0 sm:mx-4">
-                                    <button
-                                      onClick={() => {
-                                        console.log('🚀 DEBUG - Clicking Practice Button:', {
-                                          section: {
-                                            id: section.id,
-                                            title: section.title,
-                                            fullSection: section
-                                          },
-                                          subSection: {
-                                            id: subSection.id,
-                                            title: subSection.title,
-                                            fullSubSection: subSection
-                                          },
-                                          subject: subject,
-                                          standard: currentStandard,
-                                          currentContent: currentContent
-                                        });
 
-                                        router.get(route('objective-page'), {
-                                          subject: subject,
-                                          standard: currentStandard,
-                                          sectionId: section.id,
-                                          sectionTitle: section.title,
-                                          contentId: currentContent.id,
-                                          topic: subSection.title,
-                                          topic_id: subSection.id,
-                                          subject_id: subject_id,
-                                          level_id: level_id
-                                        });
-                                      }}
-                                      className="px-3 sm:px-4 py-1.5 bg-blue-600 text-white border border-blue-600 rounded-md text-xs sm:text-sm font-medium hover:bg-blue-700 transition-all duration-200 w-full sm:w-auto text-center"
-                                    >
-                                      Practice
-                                    </button>
-                                    <div className="text-left">
-                                      <p className="text-xs text-gray-500">Last Practice</p>
-                                      <p className="text-xs sm:text-sm font-medium text-gray-800">Dec 26th, 12:27 PM</p>
+                                <div className="border border-gray-200 rounded-lg  bg-white hover:shadow-md transition-all duration-200">
+                                  <div className="grid grid-cols-4 gap-3 sm:gap-4">
+
+                                    
+
+                                    <div className={`${hasScore ? 'col-span-3' : 'col-span-4'} p-3 sm:p-4 lg:p-3`}>
+                                      <div className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-4 ">
+                                        <div className="w-6 h-6 sm:w-7 sm:h-7 lg:w-8 lg:h-8 rounded-full border border-sky-400 flex items-center justify-center flex-shrink-0">
+                                          <DocumentTextIcon className="w-3 h-3 sm:w-4 sm:h-4 text-sky-600" />
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                          <h4 className="font-semibold text-gray-900 text-sm sm:text-base line-clamp-1">
+                                            {subSection.practiceTitle || 'Objective Practice'}
+                                          </h4>
+                                          <p className="text-xs text-gray-500 uppercase tracking-wide">Objective</p>
+                                          <p className="text-xs text-gray-600 mt-1">
+                                            {subSection.questionCounts.objective} questions available
+                                          </p>
+                                        </div>
+                                      </div>
+                                      <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 mx-0 sm:mx-4">
+                                        <button
+                                          onClick={() => {
+                                            console.log('🚀 DEBUG - Clicking Practice Button:', {
+                                              section: {
+                                                id: section.id,
+                                                title: section.title,
+                                                fullSection: section
+                                              },
+                                              subSection: {
+                                                id: subSection.id,
+                                                title: subSection.title,
+                                                fullSubSection: subSection
+                                              },
+                                              subject: subject,
+                                              standard: currentStandard,
+                                              currentContent: currentContent
+                                            });
+
+                                            router.get(route('objective-page'), {
+                                              subject: subject,
+                                              standard: currentStandard,
+                                              sectionId: section.id,
+                                              sectionTitle: section.title,
+                                              contentId: currentContent.id,
+                                              topic: subSection.title,
+                                              topic_id: subSection.id,
+                                              subject_id: subject_id,
+                                              level_id: level_id
+                                            });
+                                          }}
+                                          className="px-3 sm:px-4 py-1.5 bg-blue-600 text-white border border-blue-600 rounded-md text-xs sm:text-sm font-medium hover:bg-blue-700 transition-all duration-200 w-full sm:w-auto text-center"
+                                        >
+                                          Practice
+                                        </button>
+
+                                        {/* Last Practice Data for OBJECTIVE */}
+                                        <div className="text-left">
+                                          {subSection.lastPractice?.objective ? (
+                                            <div className="space-y-1">
+                                              <p className="text-xs text-gray-500">Last Practice</p>
+                                              <div className="flex items-center gap-2">
+
+                                                <p className="text-xs sm:text-sm font-medium text-gray-800">
+                                                  {subSection.lastPractice.objective.last_practice_at}
+                                                </p>
+                                              </div>
+
+                                            </div>
+                                          ) : (
+                                            <div className="text-left">
+                                              <p className="text-xs text-gray-500">Last Practice</p>
+                                              <p className="text-xs sm:text-sm font-medium text-gray-800">Not practiced yet</p>
+                                            </div>
+                                          )}
+                                        </div>
+                                      </div>
                                     </div>
+
+                                    
+                                      {subSection.lastPractice?.objective && (
+                                        <div className='col-span-1 h-full flex justify-center items-center border-l-2 border-gray-200 text-center '>
+                                        <div className="flex flex-col items-center justify-center">
+
+                                          {/* Trophy Icon + Score */}
+                                          <div className="flex flex-col items-center justify-center">
+                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                              strokeWidth="1.5" stroke="currentColor"
+                                              className="w-12 h-12 text-yellow-400 rounded-full border-2 border-yellow-400 p-1 mb-1">
+                                              <path strokeLinecap="round" strokeLinejoin="round"
+                                                d="M16.5 18.75h-9m9 0a3 3 0 0 1 3 3h-15a3 3 0 0 1 3-3m9 0v-3.375c0-.621-.503-1.125-1.125-1.125h-.871M7.5 18.75v-3.375c0-.621.504-1.125 1.125-1.125h.872m5.007 0H9.497m5.007 0a7.454 7.454 0 0 1-.982-3.172M9.497 14.25a7.454 7.454 0 0 0 .981-3.172M5.25 4.236c-.982.143-1.954.317-2.916.52A6.003 6.003 0 0 0 7.73 9.728M5.25 4.236V4.5c0 2.108.966 3.99 2.48 5.228M5.25 4.236V2.721C7.456 2.41 9.71 2.25 12 2.25c2.291 0 4.545.16 6.75.47v1.516M7.73 9.728a6.726 6.726 0 0 0 2.748 1.35m8.272-6.842V4.5c0 2.108-.966 3.99-2.48 5.228m2.48-5.492a46.32 46.32 0 0 1 2.916.52 6.003 6.003 0 0 1-5.395 4.972m0 0a6.726 6.726 0 0 1-2.749 1.35m0 0a6.772 6.772 0 0 1-3.044 0" />
+                                            </svg>
+
+                                            <span className={`text-xs font-bold ${subSection.lastPractice.objective.score >= 80 ? 'text-green-600' :
+                                                subSection.lastPractice.objective.score >= 60 ? 'text-yellow-600' :
+                                                  'text-red-600'
+                                              }`}>
+                                              {subSection.lastPractice.objective.score}
+                                              <span className='text-gray-600'>/100 Point</span>
+                                            </span>
+                                          </div>
+
+                                          {/* Performance */}
+                                          <p className="text-xs text-gray-500 mt-1">
+                                            {subSection.lastPractice.objective.score >= 80 ? 'Excellent' :
+                                              subSection.lastPractice.objective.score >= 60 ? 'Good' :
+                                                'Needs Practice'}
+                                          </p>
+
+                                        </div>
+                                        </div>
+                                      )}
+                                    
+
                                   </div>
                                 </div>
                               )}
@@ -383,9 +448,33 @@ export default function SubjectPage({ selectedStandard }) {
                                     >
                                       Practice
                                     </button>
+
+                                    {/* Last Practice Data for SUBJECTIVE */}
                                     <div className="text-left">
-                                      <p className="text-xs text-gray-500">Last Practice</p>
-                                      <p className="text-xs sm:text-sm font-medium text-gray-800">Dec 26th, 12:27 PM</p>
+                                      {subSection.lastPractice?.subjective ? (
+                                        <div className="space-y-1">
+                                          <p className="text-xs text-gray-500">Last Practice</p>
+                                          <div className="flex items-center gap-2">
+                                            <div className={`w-2 h-2 rounded-full ${subSection.lastPractice.subjective.score >= 80 ? 'bg-green-500' :
+                                              subSection.lastPractice.subjective.score >= 60 ? 'bg-yellow-500' : 'bg-red-500'
+                                              }`}></div>
+                                            <p className="text-xs sm:text-sm font-medium text-gray-800">
+                                              {subSection.lastPractice.subjective.score}% • {subSection.lastPractice.subjective.time_ago}
+                                            </p>
+                                          </div>
+                                          <p className="text-xs text-gray-600">
+                                            {subSection.lastPractice.subjective.total_correct}/{subSection.lastPractice.subjective.total_questions} correct
+                                            {subSection.lastPractice.subjective.average_time_per_question && (
+                                              <span> • {Math.round(subSection.lastPractice.subjective.average_time_per_question)}s/q</span>
+                                            )}
+                                          </p>
+                                        </div>
+                                      ) : (
+                                        <div className="text-left">
+                                          <p className="text-xs text-gray-500">Last Practice</p>
+                                          <p className="text-xs sm:text-sm font-medium text-gray-800">Not practiced yet</p>
+                                        </div>
+                                      )}
                                     </div>
                                   </div>
                                 </div>
@@ -440,7 +529,8 @@ export default function SubjectPage({ selectedStandard }) {
                           </div>
                         </div>
                       </section>
-                    ))}
+                      );
+})}
                   </div>
                 </div>
               </div>

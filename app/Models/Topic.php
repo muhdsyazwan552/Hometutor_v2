@@ -45,17 +45,25 @@ public function subject()
     return $this->belongsTo(Subject::class, 'subject_id', 'id');
 }
 
-// Topik boleh ada parent (jika nested)
+public function isSubtopic()
+{
+    return $this->parent_id != 0; // Check if parent_id is not 0
+}
+
+public function isMainTopic()
+{
+    return $this->parent_id == 0; // Check if parent_id is 0
+}
+
+// Relationships still work the same
 public function parent()
 {
     return $this->belongsTo(Topic::class, 'parent_id');
 }
 
-// Topik boleh ada banyak child (subtopic)
 public function children()
 {
     return $this->hasMany(Topic::class, 'parent_id');
 }
-
 
 }

@@ -1,13 +1,16 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Web;
+use App\Http\Controllers\Controller;
 
 use Inertia\Inertia;
 use Illuminate\Http\Request;
 use App\Models\Question;
 use App\Models\Topic;
 use App\Models\Answer;
+use App\Models\PracticeSession;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Auth;
 
 
 class ObjectiveController extends Controller
@@ -364,4 +367,44 @@ private function processExplanationHtml($html)
             'success' => true
         ]);
     }
+
+public function completePractice(Request $request)
+{
+    // Get the topic to check if it's a subtopic
+    $topic = Topic::find($request->topic_id);
+    
+    $isSubtopic = false;
+    $mainTopicId = $request->topic_id;
+    $subtopicId = null;
+
+    // Check if this is a subtopic (parent_id != 0)
+    if ($topic && $topic->parent_id != 0) {
+        $isSubtopic = true;
+        $subtopicId = $topic->parent_id; // Current topic is the subtopic
+    }
+
+    $session = PracticeSession::create([
+        'user_id' => Auth::id(),
+        'subject_id' => $request->subject_id,
+        'topic_id' => $mainTopicId, // Always the main topic ID
+        'subtopic_id' => $subtopicId, // Only set if it's a subtopic
+        'question_type_id' => 1, // Objective
+        'start_at' => $request->start_at,
+        'end_at' => now(),
+        'total_correct' => $request->total_correct,
+        'total_skipped' => $request->total_skipped,
+        'score' => $request->score,
+        'total_time_seconds' => $request->total_time_seconds,
+    ]);
+
+    return response()->json([
+        'success' => true,
+        'session_id' => $session->id,
+        'topic_info' => [
+            'is_subtopic' => $isSubtopic,
+            'main_topic_id' => $mainTopicId,
+            'subtopic_id' => $subtopicId,
+        ]
+    ]);
+}
 }

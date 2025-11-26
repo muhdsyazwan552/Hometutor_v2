@@ -1,18 +1,20 @@
 <?php
 
-use App\Http\Controllers\MenuController;
-use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\GamesController;
-use App\Http\Controllers\SubjectContentController;
-use App\Http\Controllers\ObjectiveController;
+use App\Http\Controllers\Web\MenuController;
+use App\Http\Controllers\Web\ProfileController;
+use App\Http\Controllers\Web\GamesController;
+use App\Http\Controllers\Web\SubjectContentController;
+use App\Http\Controllers\Web\ObjectiveController;
+use App\Http\Controllers\Web\FriendController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
-use App\Http\Controllers\QuizController;
-use App\Http\Controllers\ReportController;
-use App\Http\Controllers\SubjectiveController;
-use App\Http\Controllers\MissionController;
+use App\Http\Controllers\Web\QuizController;
+use App\Http\Controllers\Web\ReportController;
+use App\Http\Controllers\Web\SubjectiveController;
+use App\Http\Controllers\Web\MissionController;
+use App\Http\Controllers\Web\DashboardController;
 use Illuminate\Support\Facades\Auth;
 
 Route::get('/', function () {
@@ -23,14 +25,9 @@ Route::get('/', function () {
     return Inertia::render('Auth/Login');
 });
 
-Route::get('/dashboard', function () {
-    $menuController = new MenuController();
-    $schoolSubjects = $menuController->getSchoolSubjects();
-
-    return Inertia::render('Dashboard', [
-        'schoolSubjects' => $schoolSubjects
-    ]);
-})->middleware(['auth', 'verified'])->name('dashboard');
+Route::get('/dashboard', [DashboardController::class, 'index'])
+    ->middleware(['auth', 'verified'])
+    ->name('dashboard');
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
@@ -44,6 +41,19 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/objective-page', [ObjectiveController::class, 'index'])->name('objective-page');
     Route::get('/subjective-page', [SubjectiveController::class, 'index'])->name('subjective-page');
+
+    Route::post('/practice-session/complete', [ObjectiveController::class, 'completePractice']);
+
+    Route::get('/subtopic/{subtopicId}/details', [ReportController::class, 'getSubtopicDetails'])
+    ->name('subtopic-details');
+
+    Route::middleware(['auth', 'verified'])->group(function () {
+    Route::get('/friends', [FriendController::class, 'index'])->name('friends.index');
+    Route::post('/friends/send-request', [FriendController::class, 'sendRequest'])->name('friends.send-request');
+    Route::post('/friends/accept-request/{requestId}', [FriendController::class, 'acceptRequest'])->name('friends.accept-request');
+    Route::post('/friends/reject-request/{requestId}', [FriendController::class, 'rejectRequest'])->name('friends.reject-request');
+    Route::delete('/friends/remove/{friendId}', [FriendController::class, 'removeFriend'])->name('friends.remove');
+});
 
 
 

@@ -83,7 +83,7 @@ const getSubjectUrl = (subject) => {
                                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
             <div>
               <h4 className="mb-2 border-b pb-1 text-sm font-semibold text-gray-700">
-                School Subjects (Form 4)
+                School Subjects
               </h4>
               <ul className="space-y-1 text-sm text-sky-600">
                 {schoolSubjects.map((subject) => (

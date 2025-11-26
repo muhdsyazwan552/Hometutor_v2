@@ -4,9 +4,8 @@ namespace App\Http\Middleware;
 
 use Illuminate\Http\Request;
 use Inertia\Middleware;
-
-use App\Http\Controllers\MenuController;
-
+use App\Models\Student;
+use App\Http\Controllers\Web\MenuController;
 
 class HandleInertiaRequests extends Middleware
 {
@@ -31,13 +30,27 @@ class HandleInertiaRequests extends Middleware
      * @return array<string, mixed>
      */
     public function share(Request $request): array
-{
-    return array_merge(parent::share($request), [
-        'auth' => [
-            'user' => $request->user(),
-        ],
-        // 🔽 Make sure all pages have access to schoolSubjects
-        'schoolSubjects' => (new MenuController())->getSchoolSubjects(),
-    ]);
-}
+    {
+        return array_merge(parent::share($request), [
+            'auth' => [
+                'user' => $request->user(),
+                'student' => function () use ($request) {
+                    if (!$request->user()) {
+                        return null;
+                    }
+                    
+                    // Eager load student with school and level relationships
+                    return Student::with(['school', 'level'])
+                        ->where('user_id', $request->user()->id)
+                        ->first();
+                },
+            ],
+            'schoolSubjects' => fn () => (new MenuController())->getSchoolSubjects(),
+            'flash' => [
+                'message' => fn () => $request->session()->get('message'),
+                'success' => fn () => $request->session()->get('success'),
+                'error' => fn () => $request->session()->get('error'),
+            ],
+        ]);
+    }
 }

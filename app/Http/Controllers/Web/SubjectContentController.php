@@ -1,7 +1,8 @@
 <?php
 // app/Http/Controllers/SubjectContentController.php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Web;
+use App\Http\Controllers\Controller;
 
 use App\Models\Subject;
 use App\Models\Topic;
@@ -9,6 +10,7 @@ use App\Models\Level;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Auth;
 
 class SubjectContentController extends Controller
 {
@@ -17,6 +19,10 @@ class SubjectContentController extends Controller
         $subjectId = $request->get('subject_id');
         $levelId = $request->get('level_id');
         $form = $request->get('form', 'Form 4');
+
+        $userId = Auth::id();
+
+
         
         Log::info('SubjectPage Request:', [
             'subject_param' => $subject,
@@ -131,7 +137,7 @@ class SubjectContentController extends Controller
         Log::info('Topics found:', ['count' => $topics->count()]);
 
         // Transform the data
-        $contentData = $this->transformTopicsToContent($topics, $form);
+        $contentData = $this->transformTopicsToContent($topics, $form, $userId);
 
         Log::info('Transformed content:', ['sections_count' => count($contentData['sections'])]);
 
@@ -170,7 +176,7 @@ class SubjectContentController extends Controller
     // Rest of your existing methods...
 // In your SubjectContentController.php
 
-private function transformTopicsToContent($topics, $standard)
+private function transformTopicsToContent($topics, $standard, $userId = null)
 {
     $sections = [];
     
@@ -184,14 +190,18 @@ private function transformTopicsToContent($topics, $standard)
         foreach ($topic->children as $subTopic) {
             // Get question counts for this subtopic
             $objectiveCount = \App\Models\Question::where('topic_id', $subTopic->id)
-                ->where('question_type_id', 1)
+                ->where('question_type_id', 1) // Objective = 1
                 ->where('is_active', true)
                 ->count();
                 
             $subjectiveCount = \App\Models\Question::where('topic_id', $subTopic->id)
-                ->where('question_type_id', 2)
+                ->where('question_type_id', 2) // Subjective = 2
                 ->where('is_active', true)
                 ->count();
+
+            // Get last practice data for OBJECTIVE questions only
+            $lastObjectivePractice = $userId ? $this->getLastPracticeData($userId, $subTopic->id, 1) : null;
+            $lastSubjectivePractice = $userId ? $this->getLastPracticeData($userId, $subTopic->id, 2) : null;
 
             $subSection = [
                 'id' => $subTopic->id,
@@ -201,6 +211,10 @@ private function transformTopicsToContent($topics, $standard)
                 'questionCounts' => [
                     'objective' => $objectiveCount,
                     'subjective' => $subjectiveCount
+                ],
+                'lastPractice' => [
+                    'objective' => $lastObjectivePractice,
+                    'subjective' => $lastSubjectivePractice
                 ]
             ];
 
@@ -210,14 +224,18 @@ private function transformTopicsToContent($topics, $standard)
         if (empty($section['subSections'])) {
             // Get question counts for the main topic
             $objectiveCount = \App\Models\Question::where('topic_id', $topic->id)
-                ->where('question_type_id', 1)
+                ->where('question_type_id', 1) // Objective = 1
                 ->where('is_active', true)
                 ->count();
                 
             $subjectiveCount = \App\Models\Question::where('topic_id', $topic->id)
-                ->where('question_type_id', 2)
+                ->where('question_type_id', 2) // Subjective = 2
                 ->where('is_active', true)
                 ->count();
+
+            // Get last practice data for main topic
+            $lastObjectivePractice = $userId ? $this->getLastPracticeData($userId, $topic->id, 1) : null;
+            $lastSubjectivePractice = $userId ? $this->getLastPracticeData($userId, $topic->id, 2) : null;
 
             $section['subSections'][] = [
                 'id' => $topic->id,
@@ -227,6 +245,10 @@ private function transformTopicsToContent($topics, $standard)
                 'questionCounts' => [
                     'objective' => $objectiveCount,
                     'subjective' => $subjectiveCount
+                ],
+                'lastPractice' => [
+                    'objective' => $lastObjectivePractice,
+                    'subjective' => $lastSubjectivePractice
                 ]
             ];
         }
@@ -237,6 +259,40 @@ private function transformTopicsToContent($topics, $standard)
     return [
         'id' => 1,
         'sections' => $sections
+    ];
+}
+
+private function getLastPracticeData($userId, $topicId, $questionType = null)
+{
+    if (!$userId) {
+        return null;
+    }
+
+    $query = \App\Models\PracticeSession::where('user_id', $userId)
+        ->where(function($query) use ($topicId) {
+            $query->where('topic_id', $topicId)
+                  ->orWhere('subtopic_id', $topicId);
+        });
+
+    if ($questionType) {
+        $query->where('question_type_id', $questionType);
+    }
+
+    $lastSession = $query->orderBy('created_at', 'desc')->first();
+
+    if (!$lastSession) {
+        return null;
+    }
+
+    $totalQuestions = $lastSession->total_correct + $lastSession->total_skipped;
+    $averageTime = $totalQuestions > 0 ? $lastSession->total_time_seconds / $totalQuestions : 0;
+
+    return [
+        'score' => $lastSession->score,
+        'total_correct' => $lastSession->total_correct,
+        'total_questions' => $totalQuestions,
+        'last_practice_at' => $lastSession->created_at->format('j M y, g:i A'),
+        'average_time_per_question' => $averageTime
     ];
 }
 

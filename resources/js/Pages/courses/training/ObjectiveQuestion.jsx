@@ -198,11 +198,56 @@ export default function ObjectiveQuestion() {
   const [loading, setLoading] = useState(false);
   const [timeElapsed, setTimeElapsed] = useState(0);
   const [timerRunning, setTimerRunning] = useState(false);
+  const [practiceStartTime, setPracticeStartTime] = useState(null);
 
   // Audio refs
   const correctSoundRef = useRef(null);
   const wrongSoundRef = useRef(null);
   const successSoundRef = useRef(null);
+
+  useEffect(() => {
+  if (initialQuestions && initialQuestions.length > 0) {
+    const startTime = new Date().toISOString();
+    setPracticeStartTime(startTime);
+    setTimerRunning(true);
+    console.log('📝 Practice session started at:', startTime);
+  }
+}, [initialQuestions]);
+
+const savePracticeSession = async () => {
+  const endTime = new Date().toISOString();
+  
+  try {
+    const response = await router.post('/practice-session/complete', {
+      subject_id: subject_id,
+      topic_id: topic_id,
+      start_at: practiceStartTime, // When practice began
+      end_at: endTime, // When practice ended (now)
+      total_correct: score,
+      total_skipped: questions.length - answeredQuestions.size,
+      total_time_seconds: timeElapsed,
+      score: Math.round((score / questions.length) * 100), // Percentage score
+    });
+    
+    console.log('✅ Practice session saved:', {
+      session_id: response.props.session_id,
+      start: practiceStartTime,
+      end: endTime,
+      duration: timeElapsed + ' seconds',
+      correct: score + '/' + questions.length
+    });
+  } catch (error) {
+    console.error('❌ Failed to save practice session:', error);
+  }
+};
+
+// Call this when quiz completes
+useEffect(() => {
+  if (quizCompleted) {
+    savePracticeSession();
+  }
+}, [quizCompleted]);
+
 
   // Initialize questions from props
   useEffect(() => {

@@ -10,7 +10,7 @@ import { useState } from 'react';
 export default function DashboardLayout({ header, children }) {
     const user = usePage().props.auth.user;
     const schoolSubjects = usePage().props.schoolSubjects || [];
-    
+
     const [showingNavigationDropdown, setShowingNavigationDropdown] = useState(false);
     const [isOpen, setIsOpen] = useState(false);
 
@@ -18,19 +18,21 @@ export default function DashboardLayout({ header, children }) {
     const closeDropdown = () => setIsOpen(false);
 
     // Debug: Check what data we're receiving
-    console.log('School Subjects:', schoolSubjects);
+    // console.log('School Subjects:', schoolSubjects);
+
+   
 
     // Function to generate subject URL
-  // STANDARDIZED VERSION - guna dalam kedua-dua files
-const getSubjectUrl = (subject) => {
-    // PASTIKAN GUNA subject.abbr untuk consistency
-    const subjectSlug = subject.abbr || subject.name.toLowerCase().replace(/\s+/g, '-');
-    const levelId = subject.level_id || 10;
-    const form = levelId === 10 ? 'Form 4' : 'Form 5';
+    // STANDARDIZED VERSION - guna dalam kedua-dua files
+    const getSubjectUrl = (subject) => {
+        // PASTIKAN GUNA subject.abbr untuk consistency
+        const subjectSlug = subject.abbr || subject.name.toLowerCase().replace(/\s+/g, '-');
+        const levelId = subject.level_id || 10;
+        const form = levelId === 10 ? 'Form 4' : 'Form 5';
 
-    // Standard encoding
-    return `/subject/${subjectSlug}?subject_id=${subject.id}&level_id=${levelId}&form=${encodeURIComponent(form)}`;
-};
+        // Standard encoding
+        return `/subject/${subjectSlug}?subject_id=${subject.id}&level_id=${levelId}&form=${encodeURIComponent(form)}`;
+    };
 
     return (
         <div className="min-h-screen bg-gray-100">
@@ -45,10 +47,10 @@ const getSubjectUrl = (subject) => {
                                 className="flex items-center text-sm font-semibold text-gray-700 hover:text-gray-900 focus:outline-none"
                             >
                                 {/* Hamburger icon for mobile */}
-                                <svg 
-                                    className="h-5 w-5 sm:hidden" 
-                                    fill="none" 
-                                    stroke="currentColor" 
+                                <svg
+                                    className="h-5 w-5 sm:hidden"
+                                    fill="none"
+                                    stroke="currentColor"
                                     viewBox="0 0 24 24"
                                 >
                                     <path
@@ -58,10 +60,10 @@ const getSubjectUrl = (subject) => {
                                         d="M4 6h16M4 12h16M4 18h16"
                                     />
                                 </svg>
-                                
+
                                 {/* Courses text for tablet and desktop */}
                                 <span className="hidden sm:inline">Courses</span>
-                                
+
                                 {/* Chevron icon for tablet and desktop */}
                                 <svg
                                     className={`hidden sm:block ml-1 h-4 w-4 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}
@@ -78,24 +80,23 @@ const getSubjectUrl = (subject) => {
 
                             {/* Courses Dropdown with animation */}
                             <div
-                                className={`fixed left-0 top-16 sm:top-20 w-screen h-auto bg-white px-4 sm:px-6 py-2 shadow-lg transition-all duration-300 ease-in-out z-50 ${
-                                    isOpen
+                                className={`fixed left-0 top-16 sm:top-20 w-screen h-auto bg-white px-4 sm:px-6 py-2 shadow-lg transition-all duration-300 ease-in-out z-50 ${isOpen
                                         ? "opacity-100 translate-y-0"
                                         : "opacity-0 -translate-y-2 pointer-events-none"
-                                }`}
+                                    }`}
                             >
                                 <div className="px-2 sm:px-6">
                                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                                         {/* School Subjects */}
                                         <div>
                                             <h4 className="mb-2 border-b pb-1 text-sm font-semibold text-gray-700">
-                                                School Subjects (Form 4)
+                                                School Subjects
                                             </h4>
                                             <ul className="space-y-1 text-sm text-sky-600">
                                                 {schoolSubjects.map((subject) => (
                                                     <li key={subject.id}>
-                                                        <Link 
-                                                            href={getSubjectUrl(subject)} 
+                                                        <Link
+                                                            href={getSubjectUrl(subject)}
                                                             className="hover:underline block py-1"
                                                             onClick={closeDropdown}
                                                         >
