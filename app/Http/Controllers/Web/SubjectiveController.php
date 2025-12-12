@@ -8,7 +8,10 @@ use Illuminate\Http\Request;
 use App\Models\Question;
 use App\Models\Topic;
 use App\Models\Answer;
+use App\Models\QuizAttempt;
+use App\Models\PracticeSession;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Auth;
 
 class SubjectiveController extends Controller
 {
@@ -397,4 +400,98 @@ class SubjectiveController extends Controller
             'success' => true
         ]);
     }
+
+public function completePractice(Request $request)
+{
+    $topic = Topic::find($request->topic_id);
+    
+    $isSubtopic = false;
+    $mainTopicId = $request->topic_id;
+    $subtopicId = null;
+
+    if ($topic && $topic->parent_id != 0) {
+        $isSubtopic = true;
+        $mainTopicId = $topic->parent_id;
+        $subtopicId = $topic->id;
+    }
+
+    $session = PracticeSession::create([
+        'user_id' => Auth::id(),
+        'subject_id' => $request->subject_id,
+        'topic_id' => $mainTopicId,
+        'subtopic_id' => $subtopicId,
+        'question_type_id' => 2, // Subjective
+        'start_at' => $request->start_at,
+        'end_at' => now(),
+        'total_time_seconds' => $request->total_time_seconds,
+        'total_correct' => $request->total_correct,
+        'total_skipped' => $request->total_skipped,
+        'score' => null,
+    ]);
+
+    // Save quiz attempts if provided
+    $questionAttempts = $request->get('question_attempts', []);
+    if (!empty($questionAttempts)) {
+        $this->saveSubjectiveQuizAttempts($questionAttempts, $session->id, $mainTopicId, $subtopicId);
+    }
+
+    return response()->json([
+        'success' => true,
+        'session_id' => $session->id,
+        'message' => 'Subjective practice session saved'
+    ]);
+}
+
+private function saveSubjectiveQuizAttempts($attempts, $sessionId, $mainTopicId, $subtopicId)
+{
+    $userId = Auth::id();
+    $quizAttempts = [];
+
+    foreach ($attempts as $attempt) {
+        // Get the question
+        $questionId = $attempt['question_id'] ?? 0;
+        $question = null;
+        
+        if ($questionId) {
+            $question = Question::find($questionId);
+        }
+        
+        // Get parent_id from question if it exists
+        $parentId = $question ? $question->parent_id : 0;
+        
+        // For subjective questions, choosen_answer_id should be 0
+        // and subjective_answer should contain the user's answer
+        $chosenAnswerId = 0; // Always 0 for subjective
+        $subjectiveAnswer = $attempt['subjective_answer'] ?? null;
+        $answerStatus = 1; // Always 1 (considered "correct" for subjective)
+        
+        $quizAttempts[] = [
+            'user_id' => $userId,
+            'parent_id' => $parentId,
+            'question_id' => $questionId,
+            'topic_id' => $mainTopicId,
+            'subtopic_id' => $subtopicId,
+            'choosen_answer_id' => $chosenAnswerId, // Always 0 for subjective
+            'answer_status' => $answerStatus, // Always 1 for subjective
+            'subjective_answer' => $subjectiveAnswer, // User's written answer
+            'session_id' => $sessionId,
+            'time_taken' => $attempt['time_taken'] ?? 0,
+            'question_type_id' => 2, // Subjective
+            'created_at' => now(),
+            'updated_at' => now(),
+        ];
+    }
+
+    if (!empty($quizAttempts)) {
+        // Use QuizAttempt model
+        QuizAttempt::insert($quizAttempts);
+        
+        Log::info('Subjective quiz attempts saved:', [
+            'session_id' => $sessionId,
+            'attempts_count' => count($quizAttempts),
+            'user_id' => $userId,
+            'question_type' => 'subjective'
+        ]);
+    }
+}
 }

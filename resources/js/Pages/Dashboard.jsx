@@ -1,23 +1,31 @@
 import DashboardLayout from '@/Layouts/DashboardLayout';
 import React, { useState, useEffect } from 'react';
-import AlertMessage from '@/Components/AlertMessage';
 import { Head, usePage, router } from '@inertiajs/react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useLanguage } from '@/Contexts/LanguageContext';
+
 
 export default function Dashboard() {
+  const { t, locale, translations } = useLanguage();
+  const pageProps = usePage().props;
+
+    useEffect(() => {
+    console.log('Current locale:', locale);
+    console.log('Available translations:', translations);
+    console.log('Test translation:', t('school'));
+    console.log('Page props:', pageProps);
+  }, [locale, translations, t, pageProps]); // Hanya log ketika dependencies ini berubah
+
   const [hoveredIndex, setHoveredIndex] = useState(null);
   const [showEmoji, setShowEmoji] = useState(false);
   const [showNewPostForm, setShowNewPostForm] = useState(false);
   const [activeFilter, setActiveFilter] = useState('all');
-  
 
   const { auth, profileData, courses, assignments, quizSessions, friends, pendingRequests } = usePage().props;
   const user = auth.user;
-  //  console.log('Maklumat:', user);
-  
+
   const friendsData = friends || [];
   const friendRequestsData = pendingRequests || [];
-
 
   // Format time to MM:SS
   const formatTime = (seconds) => {
@@ -97,8 +105,6 @@ export default function Dashboard() {
       }
     });
   };
-
-
 
   // Chat data class structure
   class Chat {
@@ -204,10 +210,6 @@ export default function Dashboard() {
     }
   }
 
-
-
-
-
   const filterButtons = [
     { id: 'all', label: 'All' },
     { id: 'bahasa', label: 'BM' },
@@ -286,13 +288,14 @@ export default function Dashboard() {
   };
 
   return (
+    
     <DashboardLayout>
       <Head title="Dashboard" />
 
       <div className="max-w-full px-4 py-4 xl:py-6 xl:px-12 lg:py-4 lg:px-4 ">
         <div className="grid grid-cols-1 gap-4 sm:gap-6  lg:grid-cols-8  xl:grid-cols-11">
 
-          {/* Column 1  */}
+          {/* Column 1 */}
           <div className="lg:col-span-2 xl:col-span-3">
             <div className="grid md:grid-cols-2 md:gap-4">
               {/* Profile Card */}
@@ -313,7 +316,7 @@ export default function Dashboard() {
                     >
                       <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
                     </svg>
-                    Profile
+                    {t( 'profile', 'Profile')}
                   </h2>
                 </div>
 
@@ -360,10 +363,12 @@ export default function Dashboard() {
                         >
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                         </svg>
-                        <span className="text-xs sm:text-sm text-gray-600">School</span>
+                        <span className="text-xs sm:text-sm text-gray-600">
+                          {t( 'school','School')}
+                        </span>
                       </div>
                       <span className="text-xs sm:text-sm font-medium text-gray-800 truncate ml-2 max-w-[120px] sm:max-w-none">
-                         {profileData?.school || 'Not specified'}
+                        {profileData?.school || 'Not specified'}
                       </span>
                     </div>
 
@@ -378,7 +383,9 @@ export default function Dashboard() {
                         >
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7" />
                         </svg>
-                        <span className="text-xs sm:text-sm text-gray-600">Grade</span>
+                        <span className="text-xs sm:text-sm text-gray-600">
+                          {t('grade','Grade')}
+                        </span>
                       </div>
                       <span className="text-xs sm:text-sm font-medium text-gray-800">
                         {profileData?.grade || 'Form 5'}
@@ -399,8 +406,12 @@ export default function Dashboard() {
                   {/* Header with Search */}
                   <div className="p-4 border-b border-gray-100">
                     <div className="flex items-center justify-between mb-3">
-                      <h2 className="text-lg font-semibold text-gray-900">Kawan PTRS</h2>
-                      <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-full">{friendsData.length}</span>
+                      <h2 className="text-lg font-semibold text-gray-900">
+                        {t('friends_ptrs','Friends_ptrs')}
+                      </h2>
+                      <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-full">
+                        {friendsData.length}
+                      </span>
                     </div>
 
                     {/* Search Bar */}
@@ -412,7 +423,7 @@ export default function Dashboard() {
                       </div>
                       <input
                         type="text"
-                        placeholder="Search friends..."
+                        placeholder={t('search_friends', 'Search friends...')}
                         className="w-full pl-10 pr-3 py-2.5 bg-gray-50 border-0 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all"
                       />
                     </div>
@@ -421,7 +432,9 @@ export default function Dashboard() {
                   {/* Friends List */}
                   <div className="p-3 border-b border-gray-100">
                     <div className="flex items-center justify-between mb-2">
-                      <h3 className="text-sm font-medium text-gray-700">Online</h3>
+                      <h3 className="text-sm font-medium text-gray-700">
+                        Online
+                      </h3>
                     </div>
 
                     <div className="space-y-2">
@@ -433,15 +446,21 @@ export default function Dashboard() {
                                 {friend.avatar}
                               </div>
                               <div className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-white ${friend.status === 'online' ? 'bg-green-400' :
-                                friend.status === 'away' ? 'bg-yellow-400' : 'bg-gray-300'
+                                  friend.status === 'away' ? 'bg-yellow-400' : 'bg-gray-300'
                                 }`} />
                             </div>
                             <div>
                               <p className="text-sm font-medium text-gray-900">{friend.name}</p>
-                              <p className="text-xs text-gray-500">{friend.mutualFriends} mutual</p>
+                              <p className="text-xs text-gray-500">
+                                {friend.mutualFriends} mutual
+                              </p>
                             </div>
                           </div>
-                          <button className="opacity-0 group-hover:opacity-100 transition-all duration-200 text-xs bg-blue-500 hover:bg-blue-600 text-white px-2.5 py-1.5 rounded-lg font-medium">
+
+                          <button
+                            className="opacity-0 group-hover:opacity-100 transition-all duration-200 text-xs bg-blue-500 hover:bg-blue-600 text-white px-2.5 py-1.5 rounded-lg font-medium"
+                            onClick={() => router.get(route('chat.lobby'))}
+                          >
                             Chat
                           </button>
                         </div>
@@ -452,9 +471,13 @@ export default function Dashboard() {
                   {/* Friend Requests */}
                   <div className="p-3">
                     <div className="flex items-center justify-between mb-2">
-                      <h3 className="text-sm font-semibold ">Requests Kawan</h3>
+                      <h3 className="text-sm font-semibold">
+                        Friend Requests
+                      </h3>
                       {friendRequestsData.length > 0 && (
-                        <span className="text-xs text-blue-600 font-medium">See all</span>
+                        <span className="text-xs text-blue-600 font-medium">
+                          See all
+                        </span>
                       )}
                     </div>
 
@@ -467,7 +490,9 @@ export default function Dashboard() {
                             </div>
                             <div className="min-w-0">
                               <p className="text-sm font-medium text-gray-900 truncate">{request.name}</p>
-                              <p className="text-xs text-gray-500">{request.mutualFriends} mutual friends</p>
+                              <p className="text-xs text-gray-500">
+                                {request.mutualFriends} mutual friends
+                              </p>
                             </div>
                           </div>
                           <div className="flex space-x-1">
@@ -493,7 +518,9 @@ export default function Dashboard() {
 
                       {friendRequestsData.length === 0 && (
                         <div className="text-center py-3">
-                          <p className="text-sm text-gray-400">No pending requests</p>
+                          <p className="text-sm text-gray-400">
+                            No pending requests
+                          </p>
                         </div>
                       )}
                     </div>
@@ -501,14 +528,10 @@ export default function Dashboard() {
                 </motion.div>
               </div>
             </div>
-
-
           </div>
 
           {/* Column 2 - Assignments and Courses */}
           <div className="lg:col-span-3 xl:col-span-4">
-
-
             {/* Assignment Card */}
             {assignments && assignments.map((assignment, index) => (
               <motion.div
@@ -564,6 +587,7 @@ export default function Dashboard() {
                 ))}
               </div>
             </motion.div>
+
             {/* Chat List Card */}
             <div className="lg:col-span-2 xl:col-span-2">
               <motion.div
@@ -585,7 +609,6 @@ export default function Dashboard() {
                     </svg>
                     Perbincangan PTRS
                   </h2>
-                  {/* <p className="text-xs text-gray-500 mt-1">{chatData.length} active conversations</p> */}
                 </div>
 
                 {/* Chat List */}
@@ -635,36 +658,16 @@ export default function Dashboard() {
                     </div>
                   ))}
                 </div>
-
-                {/* Footer */}
-                {/* <div className="px-4 sm:px-5 py-3 bg-gray-50 border-t border-gray-100">
-      <button 
-        className="w-full py-2 bg-white border border-gray-300 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-50 transition duration-200 flex items-center justify-center"
-        onClick={handleNewChat}
-      >
-        <svg 
-          xmlns="http://www.w3.org/2000/svg" 
-          className="h-4 w-4 mr-2" 
-          viewBox="0 0 20 20" 
-          fill="currentColor"
-        >
-          <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" />
-        </svg>
-        Start New Chat
-      </button>
-    </div> */}
               </motion.div>
             </div>
-
           </div>
 
-
           {/* Column 3 - Leaderboard - Table Version */}
-          <div className="lg:col-span-3 xl:col-span-4 relative   ">
+          <div className="lg:col-span-3 xl:col-span-4 relative">
             <div className='relative mb-2'>
               {/* Background Image */}
               <div
-                className="absolute  inset-0 bg-cover bg-top bg-no-repeat z-0 rounded-lg"
+                className="absolute inset-0 bg-cover bg-top bg-no-repeat z-0 rounded-lg"
                 style={{ backgroundImage: 'url(/images/bg_leaderboard.jpg)' }}
               />
               <div className="relative z-10">
@@ -675,7 +678,7 @@ export default function Dashboard() {
                   transition={{ duration: 0.3, delay: 0.3 }}
                 >
                   {/* Header */}
-                  <div className="px-2 sm:px-3 pt-3 sm:pt-4 ">
+                  <div className="px-2 sm:px-3 pt-3 sm:pt-4">
                     <div className="flex flex-col items-center justify-center space-y-1 sm:space-y-2">
                       <img
                         src="/images/child_celeb.png"
@@ -697,7 +700,7 @@ export default function Dashboard() {
                       <div className="space-y-1 sm:space-y-2">
                         {/* Table Header */}
                         <div className="grid grid-cols-12 gap-1 sm:gap-2 px-2 sm:px-3 py-2 sm:py-3 bg-gray-100 rounded-b-xl text-xs font-semibold text-gray-600 uppercase tracking-wider border-b border-gray-200">
-                          <div className="col-span-1 text-center text-xs ">Rank</div>
+                          <div className="col-span-1 text-center text-xs">Rank</div>
                           <div className="col-span-4 text-xs lg:ms-2">Name</div>
                           <div className="col-span-5 text-xs">School</div>
                           <div className="col-span-2 text-right text-xs">Time</div>
@@ -764,10 +767,8 @@ export default function Dashboard() {
                         <p className="text-xs sm:text-sm text-gray-400 mt-1 sm:mt-2">Take a quiz to appear on the leaderboard!</p>
                       </div>
                     )}
-
-
-
                   </div>
+
                   {/* Footer */}
                   <div className="p-3 border-t-4 border-gray-100 bg-transparent opacity-90 rounded-b-md">
                     <button className="w-full text-center py-1.5 text-gray-50 hover:text-purple-700 text-sm font-medium transition duration-200">
@@ -777,6 +778,7 @@ export default function Dashboard() {
                 </motion.div>
               </div>
             </div>
+
             {/* Teacher/PTS List Box - Interactive */}
             <div className="lg:col-span-2 xl:col-span-2">
               <motion.div
@@ -856,5 +858,6 @@ export default function Dashboard() {
         </div>
       </div>
     </DashboardLayout>
+
   );
 }

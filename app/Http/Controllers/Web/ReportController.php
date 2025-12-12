@@ -7,12 +7,15 @@ use App\Models\Subject;
 use App\Models\Topic;
 use App\Models\Level;
 use App\Models\Question;
+use App\Models\QuizAttempt;
 use App\Models\Answer;
 use App\Models\PracticeSession;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
+
 
 class ReportController extends Controller
 {
@@ -241,14 +244,18 @@ class ReportController extends Controller
     /**
      * Calculate progress statistics for a topic using PracticeSession model
      */
- private function calculateTopicProgress($topicId, $questionTypeId)
+private function calculateTopicProgress($topicId, $questionTypeId)
 {
     $stats = [
         'total_sessions' => 0,
         'average_score' => 0,
         'last_session' => null,
         'score_statistic' => '—',
-        'score_history' => [], 
+        'score_history' => [],
+        // Add subjective-specific fields
+        'total_answered' => 0,
+        'total_questions' => 0,
+        'completion_rate' => 0,
     ];
 
     try {
@@ -258,12 +265,17 @@ class ReportController extends Controller
                       ->orWhere('subtopic_id', $topicId);
             })
             ->where('question_type_id', $questionTypeId)
+            ->where('user_id', Auth::id())
             ->select(
                 DB::raw('COUNT(DISTINCT id) as total_sessions'),
                 DB::raw('AVG(score) as average_score'),
                 DB::raw('MAX(score) as max_score'),
                 DB::raw('MIN(score) as min_score'),
-                DB::raw('MAX(created_at) as last_session')
+                DB::raw('MAX(created_at) as last_session'),
+                // Subjective-specific calculations
+                DB::raw('SUM(total_correct) as total_answered'),
+                DB::raw('SUM(total_correct + total_skipped) as total_questions'),
+                DB::raw('AVG(total_correct) as avg_answered')
             )
             ->first();
 
@@ -273,7 +285,8 @@ class ReportController extends Controller
                       ->orWhere('subtopic_id', $topicId);
             })
             ->where('question_type_id', $questionTypeId)
-            ->orderBy('created_at', 'asc') // Chronological order
+            ->where('user_id', Auth::id())
+            ->orderBy('created_at', 'asc')
             ->limit(8)
             ->pluck('score')
             ->map(function($score) {
@@ -283,27 +296,50 @@ class ReportController extends Controller
 
         if ($sessionData && $sessionData->total_sessions > 0) {
             $stats['total_sessions'] = $sessionData->total_sessions;
-            $stats['average_score'] = $sessionData->average_score 
-                ? round($sessionData->average_score, 1)
-                : 0;
             
-            // Add score history for sparkline
-            $stats['score_history'] = $recentScores;
-            
-            // Calculate score statistic (min - max)
-            if ($sessionData->max_score !== null && $sessionData->min_score !== null) {
-                $stats['score_statistic'] = round($sessionData->min_score, 0) . ' - ' . round($sessionData->max_score, 0);
-            }
-                
+            // Format last session date - JUST DATE AND TIME (no "Today" or "Yesterday")
             if ($sessionData->last_session) {
                 $lastSession = \Carbon\Carbon::parse($sessionData->last_session);
-                $stats['last_session'] = $lastSession->isToday() 
-                    ? 'Today, ' . $lastSession->format('g:i A')
-                    : ($lastSession->isYesterday() 
-                        ? 'Yesterday, ' . $lastSession->format('g:i A')
-                        : $lastSession->format('M j, g:i A'));
+                // Format: "15 Dec, 14:30" or "15 Dec 2024, 14:30" if not current year
+                if ($lastSession->year == date('Y')) {
+                    $stats['last_session'] = $lastSession->format('d M, H:i A'); // "15 Dec, 14:30"
+                } else {
+                    $stats['last_session'] = $lastSession->format('d M Y, H:i A'); // "15 Dec 2023, 14:30"
+                }
             } else {
                 $stats['last_session'] = '-';
+            }
+            
+            // Different calculations for Objective vs Subjective
+            if ($questionTypeId == 1) { // Objective
+                $stats['average_score'] = $sessionData->average_score 
+                    ? round($sessionData->average_score, 1)
+                    : 0;
+                
+                // Calculate score statistic (min - max)
+                if ($sessionData->max_score !== null && $sessionData->min_score !== null) {
+                    $stats['score_statistic'] = round($sessionData->min_score, 0) . ' - ' . round($sessionData->max_score, 0);
+                }
+                
+                $stats['score_history'] = $recentScores;
+                
+            } else { // Subjective
+                // For subjective, use different metrics
+                $stats['total_answered'] = (int) ($sessionData->total_answered ?? 0);
+                $stats['total_questions'] = (int) ($sessionData->total_questions ?? 0);
+                
+                // Calculate completion rate
+                $stats['completion_rate'] = $stats['total_questions'] > 0 
+                    ? round(($stats['total_answered'] / $stats['total_questions']) * 100, 1)
+                    : 0;
+                
+                // For subjective, we can use avg_answered as a metric
+                $stats['average_score'] = $sessionData->avg_answered 
+                    ? round($sessionData->avg_answered, 1)
+                    : 0;
+                
+                // Subjective doesn't have score_statistic in the same way
+                $stats['score_statistic'] = $stats['total_answered'] . ' answered';
             }
         }
 
@@ -339,48 +375,85 @@ public function getSubtopicDetails($subtopicId, Request $request)
                       ->orWhere('subtopic_id', $subtopicId);
             })
             ->where('question_type_id', $questionTypeId)
+            ->where('user_id', Auth::id())
             ->orderBy('created_at', 'desc')
             ->get();
 
         $sessionData = [];
         
-        foreach ($sessions as $session) {
-            // Calculate total questions for this session
-            $totalQuestions = $session->total_correct + $session->total_skipped;
+        foreach ($sessions as $index => $session) {
+            if ($questionTypeId == 1) { // Objective
+                // Objective calculations (existing logic)
+                $totalQuestions = $session->total_correct + $session->total_skipped;
+                
+                // For objective, calculate wrong answers
+                $totalWrong = 5 - $session->total_correct - $session->total_skipped;
+                $totalWrong = max($totalWrong, 0);
+                $totalQuestions = $session->total_correct + $totalWrong + $session->total_skipped;
+                
+                // Calculate score percentage
+                $scorePercentage = $totalQuestions > 0 ? ($session->total_correct / $totalQuestions) * 100 : 0;
+                
+            } else { // Subjective (questionTypeId == 2)
+                // Subjective calculations
+                // total_correct = questions answered (any attempt)
+                // total_skipped = questions not attempted
+                
+                $totalAnswered = $session->total_correct ?? 0;
+                $totalSkipped = $session->total_skipped ?? 0;
+                
+                // For subjective, total questions = 5 (as per your requirement)
+                $totalQuestions = 5;
+                
+                // Recalculate skipped to ensure consistency
+                $totalSkipped = $totalQuestions - $totalAnswered;
+                $totalSkipped = max($totalSkipped, 0);
+                
+                // For subjective, there's no "wrong" - just answered or skipped
+                $totalWrong = 0;
+                
+                // Calculate completion rate (not score)
+                $completionRate = $totalQuestions > 0 ? ($totalAnswered / $totalQuestions) * 100 : 0;
+            }
             
-            // Calculate wrong answers - assuming 5 questions per session as per your requirement
-            // Adjust this logic based on your actual question count per session
-            $totalWrong = 5 - $session->total_correct - $session->total_skipped; // Assuming 5 questions per session
-            
-            // Ensure wrong answers is not negative
-            $totalWrong = max($totalWrong, 0);
-            $totalQuestions = $session->total_correct + $totalWrong + $session->total_skipped;
-            
-            // Calculate score percentage
-            $scorePercentage = $totalQuestions > 0 ? ($session->total_correct / $totalQuestions) * 100 : 0;
-            
-            // Format time
+            // Format time (same for both)
             $totalTime = $this->formatTime($session->total_time_seconds ?? 0);
-            $averageTime = $totalQuestions > 0 ? $this->formatTime(($session->total_time_seconds ?? 0) / $totalQuestions) : '0 min 0 secs';
             
+            // Calculate average time per question
+            $averageTime = $totalQuestions > 0 
+                ? $this->formatTime(($session->total_time_seconds ?? 0) / $totalQuestions)
+                : '0 min 0 secs';
+            
+            // Format session date
+            $sessionDate = $session->created_at->format('d M Y, H:i');
+            
+            // Prepare session data
             $sessionData[] = [
                 'id' => $session->id,
-                'session_date' => $session->created_at->format('d/m/Y g:i A'),
+                'session_no' => $index + 1,
+                'session_date' => $sessionDate,
                 'total_questions' => $totalQuestions,
-                'total_correct' => $session->total_correct,
+                'total_correct' => $questionTypeId == 1 ? ($session->total_correct ?? 0) : $totalAnswered,
                 'total_wrong' => $totalWrong,
-                'total_skipped' => $session->total_skipped,
-                'score' => round($scorePercentage, 1) . '%',
+                'total_skipped' => $questionTypeId == 1 ? ($session->total_skipped ?? 0) : $totalSkipped,
+                // Different display for Objective vs Subjective
+                'score' => $questionTypeId == 1 
+                    ? round($scorePercentage, 1) . '%'
+                    : round($completionRate, 1) . '%',
+                'score_percentage' => $questionTypeId == 1 ? $scorePercentage : $completionRate,
                 'total_time' => $totalTime,
-                'average_time' => $averageTime,
                 'total_time_seconds' => $session->total_time_seconds ?? 0,
+                'average_time' => $averageTime,
+                'question_type' => $questionTypeId,
             ];
         }
 
         return response()->json([
             'sessions' => $sessionData,
             'subtopic_name' => $subtopic->name,
-            'total_sessions' => count($sessionData)
+            'total_sessions' => count($sessionData),
+            'question_type' => $questionType,
+            'question_type_label' => $questionTypeId == 1 ? 'Objective' : 'Subjective',
         ]);
 
     } catch (\Exception $e) {
@@ -406,5 +479,287 @@ private function formatTime($seconds)
     $remainingSeconds = $seconds % 60;
     
     return "{$minutes} min {$remainingSeconds} secs";
+}
+
+
+// public function getQuestionAttempts($sessionId)
+// {
+//     try {
+//         Log::info('Fetching question attempts for session:', ['session_id' => $sessionId]);
+
+//         // Get the session with topic
+//         $session = PracticeSession::with('topic')->findOrFail($sessionId);
+        
+//         // Get all quiz attempts for this session
+//         $attempts = QuizAttempt::with([
+//             'question' => function($query) {
+//                 $query->with(['answers' => function($q) {
+//                     $q->orderBy('seq', 'asc');
+//                 }]);
+//             },
+//             'chosenAnswer'
+//         ])
+//         ->where('session_id', $sessionId)
+//         ->orderBy('created_at', 'asc')
+//         ->get();
+
+//         // Format the data for frontend
+//         $formattedAttempts = [];
+        
+//         foreach ($attempts as $attempt) {
+//             $question = $attempt->question;
+            
+//             if (!$question) {
+//                 Log::warning('Question not found for attempt:', ['attempt_id' => $attempt->id]);
+//                 continue;
+//             }
+            
+//             // Get answers for this question
+//             $answers = $question->answers ?? collect();
+            
+//             // Get correct answer
+//             $correctAnswer = $answers->where('iscorrectanswer', true)->first();
+            
+//             // Format answers with selection status
+//             $formattedAnswers = $answers->map(function($answer) use ($attempt, $correctAnswer) {
+//                 $isChosen = $attempt->chosenAnswer && $attempt->chosenAnswer->id === $answer->id;
+//                 $isCorrect = $answer->iscorrectanswer;
+                
+//                 // Check if answer contains HTML
+//                 $hasHtmlContent = $answer->answer_text && preg_match('/<[^>]+>/', $answer->answer_text);
+                
+//                 return [
+//                     'id' => $answer->id,
+//                     'text' => $answer->answer_text,
+//                     'file' => $answer->answer_option_file,
+//                     'is_correct' => (bool)$isCorrect,
+//                     'is_chosen' => $isChosen,
+//                     'was_correct' => $isChosen && $isCorrect,
+//                     'was_wrong' => $isChosen && !$isCorrect,
+//                     // Add HTML detection fields
+//                     'has_html' => $hasHtmlContent,
+//                     'type' => $hasHtmlContent ? 'html' : (!empty($answer->answer_text) ? 'text' : 'image'),
+//                 ];
+//             });
+
+//             // Get explanation from any answer
+//             $explanation = null;
+//             $answerWithReason = $answers->first(function($answer) {
+//                 return !empty($answer->reason);
+//             });
+            
+//             if ($answerWithReason) {
+//                 $explanation = $answerWithReason->reason;
+//             } else {
+//                 $explanation = "Explanation not available.";
+//             }
+
+//             $formattedAttempts[] = [
+//                 'id' => $attempt->id,
+//                 'question_id' => $question->id,
+//                 'question_text' => $question->question_text,
+//                 'question_file' => $question->question_file,
+//                 'question_type' => $question->question_type_id == 1 ? 'objective' : 'subjective',
+//                 'answers' => $formattedAnswers,
+//                 'chosen_answer_id' => $attempt->choosen_answer_id,
+//                 'answer_status' => $attempt->answer_status,
+//                 'is_correct' => $attempt->answer_status == 1,
+//                 'time_taken' => $attempt->time_taken,
+//                 'topic_name' => $question->topic ? $question->topic->name : 'Unknown',
+//                 'explanation' => $explanation,
+//                 'created_at' => $attempt->created_at->format('Y-m-d H:i:s'),
+//             ];
+//         }
+
+//         return response()->json([
+//             'session' => [
+//                 'id' => $session->id,
+//                 'total_correct' => $session->total_correct,
+//                 'total_skipped' => $session->total_skipped,
+//                 'score' => $session->score,
+//                 'total_time_seconds' => $session->total_time_seconds,
+//                 'created_at' => $session->created_at->format('d M Y, H:i'),
+//                 'topic_name' => $session->topic ? $session->topic->name : 'Unknown',
+//             ],
+//             'attempts' => $formattedAttempts,
+//             'total_questions' => count($formattedAttempts),
+//             'success' => true
+//         ]);
+
+//     } catch (\Exception $e) {
+//         Log::error('Error fetching question attempts:', [
+//             'session_id' => $sessionId,
+//             'error' => $e->getMessage(),
+//             'trace' => $e->getTraceAsString()
+//         ]);
+
+//         return response()->json([
+//             'error' => 'Failed to load question attempts: ' . $e->getMessage(),
+//             'success' => false
+//         ], 500);
+//     }
+// }
+
+// Helper method to get explanation from question
+private function getExplanationFromQuestion($question)
+{
+    // Check if any answer has a reason
+    $answerWithReason = $question->answers->first(function($answer) {
+        return !empty($answer->reason);
+    });
+
+    if ($answerWithReason) {
+        return $answerWithReason->reason;
+    }
+
+    return "Explanation not available.";
+}
+
+public function reviewPage($sessionId, Request $request)
+{
+    return Inertia::render('courses/review/QuestionReviewPage', [
+        'sessionId' => $sessionId,
+        'backUrl' => url()->previous(),
+    ]);
+}
+
+public function getQuestionAttempts($sessionId)
+{
+    try {
+        Log::info('Fetching question attempts for session:', ['session_id' => $sessionId]);
+
+        $session = PracticeSession::with('topic')->findOrFail($sessionId);
+        
+        $attempts = QuizAttempt::with([
+            'question' => function($query) {
+                $query->with(['answers' => function($q) {
+                    $q->orderBy('seq', 'asc');
+                }]);
+            },
+            'chosenAnswer'
+        ])
+        ->where('session_id', $sessionId)
+        ->orderBy('created_at', 'asc')
+        ->get();
+
+        $formattedAttempts = [];
+        
+        foreach ($attempts as $attempt) {
+            $question = $attempt->question;
+            
+            if (!$question) {
+                Log::warning('Question not found for attempt:', ['attempt_id' => $attempt->id]);
+                continue;
+            }
+            
+            $answers = $question->answers ?? collect();
+            
+            // Get correct answer (for objective)
+            $correctAnswer = $answers->where('iscorrectanswer', true)->first();
+            
+            // Format answers with selection status (for objective)
+            $formattedAnswers = [];
+            if ($question->question_type_id == 1) { // Objective
+                $formattedAnswers = $answers->map(function($answer) use ($attempt, $correctAnswer) {
+                    $isChosen = $attempt->chosenAnswer && $attempt->chosenAnswer->id === $answer->id;
+                    $isCorrect = $answer->iscorrectanswer;
+                    
+                    $hasHtmlContent = $answer->answer_text && preg_match('/<[^>]+>/', $answer->answer_text);
+                    
+                    return [
+                        'id' => $answer->id,
+                        'text' => $answer->answer_text,
+                        'file' => $answer->answer_option_file,
+                        'is_correct' => (bool)$isCorrect,
+                        'is_chosen' => $isChosen,
+                        'was_correct' => $isChosen && $isCorrect,
+                        'was_wrong' => $isChosen && !$isCorrect,
+                        'has_html' => $hasHtmlContent,
+                        'type' => $hasHtmlContent ? 'html' : (!empty($answer->answer_text) ? 'text' : 'image'),
+                    ];
+                });
+            }
+
+            // Get explanation from any answer
+            $explanation = null;
+            $answerWithReason = $answers->first(function($answer) {
+                return !empty($answer->reason);
+            });
+            
+            if ($answerWithReason) {
+                $explanation = $answerWithReason->reason;
+            } else {
+                $explanation = "Explanation not available.";
+            }
+
+            // Get schema answer for subjective questions
+            $schemaAnswer = null;
+            if ($question->question_type_id == 2) { // Subjective
+                // Get sample answer from answers
+                $sampleAnswer = $answers->first(function($answer) {
+                    return !empty($answer->sample_answer);
+                });
+                
+                if ($sampleAnswer) {
+                    $schemaAnswer = $sampleAnswer->sample_answer;
+                } else {
+                    // Fallback to reason or any answer text
+                    $reasonAnswer = $answers->first(function($answer) {
+                        return !empty($answer->reason);
+                    });
+                    
+                    $schemaAnswer = $reasonAnswer ? $reasonAnswer->reason : "Schema answer not available.";
+                }
+            }
+
+            $formattedAttempts[] = [
+                'id' => $attempt->id,
+                'question_id' => $question->id,
+                'question_text' => $question->question_text,
+                'question_file' => $question->question_file,
+                'question_type' => $question->question_type_id == 1 ? 'objective' : 'subjective',
+                'question_type_id' => $question->question_type_id, // Keep ID for easy checking
+                'answers' => $formattedAnswers,
+                'chosen_answer_id' => $attempt->choosen_answer_id,
+                'answer_status' => $attempt->answer_status,
+                'is_correct' => $attempt->answer_status == 1,
+                'time_taken' => $attempt->time_taken,
+                'topic_name' => $question->topic ? $question->topic->name : 'Unknown',
+                'explanation' => $explanation,
+                // Add subjective-specific fields
+                'subjective_answer' => $attempt->subjective_answer,
+                'schema_answer' => $schemaAnswer,
+                'created_at' => $attempt->created_at->format('Y-m-d H:i:s'),
+            ];
+        }
+
+        return response()->json([
+            'session' => [
+                'id' => $session->id,
+                'total_correct' => $session->total_correct,
+                'total_skipped' => $session->total_skipped,
+                'score' => $session->score,
+                'total_time_seconds' => $session->total_time_seconds,
+                'created_at' => $session->created_at->format('d M Y, H:i'),
+                'topic_name' => $session->topic ? $session->topic->name : 'Unknown',
+                'question_type_id' => $session->question_type_id,
+            ],
+            'attempts' => $formattedAttempts,
+            'total_questions' => count($formattedAttempts),
+            'success' => true
+        ]);
+
+    } catch (\Exception $e) {
+        Log::error('Error fetching question attempts:', [
+            'session_id' => $sessionId,
+            'error' => $e->getMessage(),
+            'trace' => $e->getTraceAsString()
+        ]);
+
+        return response()->json([
+            'error' => 'Failed to load question attempts: ' . $e->getMessage(),
+            'success' => false
+        ], 500);
+    }
 }
 }

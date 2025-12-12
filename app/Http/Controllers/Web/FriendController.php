@@ -53,6 +53,7 @@ class FriendController extends Controller
                 'message' => 'Friend request already exists or you are already friends'
             ], 400);
         }
+        
 
         // Check if already friends
         $existingFriend = Friend::where(function ($query) use ($user, $request) {

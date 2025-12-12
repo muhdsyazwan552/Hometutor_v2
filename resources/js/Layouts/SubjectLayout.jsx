@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, usePage } from "@inertiajs/react";
 import SubjectNavbar from './SubjectNavbar';
 import StandardFooter from '@/Components/StandardFooter';
+import { useLanguage } from '@/Contexts/LanguageContext';
 
 const formatTitle = (slug) => {
   return slug
@@ -14,9 +15,7 @@ const formatTitle = (slug) => {
 // Function to decode URL and normalize paths
 const normalizeUrl = (url) => {
   try {
-    // Decode URL encoded characters (%20, etc)
     const decodedUrl = decodeURIComponent(url);
-    // Remove trailing slashes and normalize
     return decodedUrl.replace(/\/+$/, '');
   } catch (error) {
     return url;
@@ -27,51 +26,11 @@ const normalizeUrl = (url) => {
 const getCleanPath = (url) => {
   try {
     const normalized = normalizeUrl(url);
-    return normalized.split('?')[0]; // Remove query parameters
+    return normalized.split('?')[0];
   } catch (error) {
     return url.split('?')[0];
   }
 };
-
-// Flexible tab configuration with better URL handling
-const TAB_CONFIG = [
-  {
-    key: 'practice',
-    label: 'Practice',
-    href: (subject, form, level_id, subject_id) => 
-      route('subject-page', { 
-        subject: subject, 
-        form: form, 
-        level_id: level_id, 
-        subject_id: subject_id 
-      }),
-    isActive: () => route().current('subject-page')
-  },
-    {
-    key: 'mission',
-    label: 'Mission', 
-    href: (subject, form, level_id, subject_id) =>
-      route('subject-mission-page', { 
-        subject: subject, 
-        form: form, 
-        level_id: level_id, 
-        subject_id: subject_id 
-      }),
-    isActive: () => route().current('subject-mission-page')
-  },
-  {
-    key: 'report',
-    label: 'Report', 
-    href: (subject, form, level_id, subject_id) =>
-      route('subject-report-page', { 
-        subject: subject, 
-        form: form, 
-        level_id: level_id, 
-        subject_id: subject_id 
-      }),
-    isActive: () => route().current('subject-report-page')
-  },
-];
 
 export default function SubjectLayout({
   children,
@@ -82,12 +41,64 @@ export default function SubjectLayout({
 }) {
   const { url, props } = usePage();
   const { form, level_id, subject_id } = props;
+  
+  // Use the language hook
+  const { t, locale } = useLanguage();
+
+  // Tab configuration - moved inside component to access t()
+  const TAB_CONFIG = [
+    {
+      key: 'practice',
+      label: t('practice', 'Practice'),
+      href: (subject, form, level_id, subject_id) =>
+        route('subject-page', {
+          subject: subject,
+          form: form,
+          level_id: level_id,
+          subject_id: subject_id
+        }),
+      isActive: () => route().current('subject-page')
+    },
+    {
+      key: 'mission',
+      label: t('mission', 'Mission'),
+      href: (subject, form, level_id, subject_id) =>
+        route('subject-mission-page', {
+          subject: subject,
+          form: form,
+          level_id: level_id,
+          subject_id: subject_id
+        }),
+      isActive: () => route().current('subject-mission-page')
+    },
+    {
+      key: 'report',
+      label: t('report', 'Report'),
+      href: (subject, form, level_id, subject_id) =>
+        route('subject-report-page', {
+          subject: subject,
+          form: form,
+          level_id: level_id,
+          subject_id: subject_id
+        }),
+      isActive: () => route().current('subject-report-page')
+    },
+  ];
 
   const title = formatTitle(subject);
 
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [internalSelectedStandard, setInternalSelectedStandard] = useState(propSelectedStandard || 'Form 4');
   const selectedStandard = propSelectedStandard !== undefined ? propSelectedStandard : internalSelectedStandard;
+
+  // Helper function to translate form levels
+  const translateFormLevel = (form) => {
+    const formMap = {
+      'Form 4': t('form_4', 'Form 4'),
+      'Form 5': t('form_5', 'Form 5'),
+    };
+    return formMap[form] || form;
+  };
 
   // Handle browser extension errors
   useEffect(() => {
@@ -120,32 +131,12 @@ export default function SubjectLayout({
     }
   };
 
-  // Debug current URL and tab states
-  useEffect(() => {
-    const cleanPath = getCleanPath(url);
-    const normalizedSubject = normalizeUrl(subject);
-    
-    console.log('🎯 === CURRENT PAGE ANALYSIS ===');
-    console.log('Full URL:', url);
-    console.log('Clean Path:', cleanPath);
-    console.log('Subject:', subject);
-    console.log('Normalized Subject:', normalizedSubject);
-    console.log('Expected Practice Path:', `/subject/${normalizedSubject}`);
-    console.log('Expected Report Path:', `/subject/${normalizedSubject}/report`);
-    
-    TAB_CONFIG.forEach(tab => {
-      const isActive = tab.isActive(url, subject);
-      console.log(`Tab "${tab.label}" active:`, isActive);
-    });
-    console.log('================================');
-  }, [url, subject]);
-
   return (
     <div className={`min-h-screen ${bgColor}`}>
       <SubjectNavbar title={subject} />
 
       {/* Header Section */}
-      <div className="px-4 sm:px-6 lg:px-8 bg-gradient-to-t from-sky-500 to-indigo-500 py-4 sm:py-6 border-b border-gray-200">
+      <div className="px-4 sm:px-6 lg:px-8 bg-[#8F3091] py-4 sm:py-6 border-b border-gray-200">
         <div className="max-w-6xl mx-auto">
           <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white mb-2 sm:mb-1">{title}</h1>
 
@@ -160,7 +151,7 @@ export default function SubjectLayout({
                 aria-haspopup="true"
                 onClick={() => setIsDropdownOpen(!isDropdownOpen)}
               >
-                {selectedStandard}
+                {translateFormLevel(selectedStandard)}
                 <svg className="-mr-1 h-5 w-5 text-white/80" viewBox="0 0 20 20" fill="currentColor">
                   <path fillRule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clipRule="evenodd" />
                 </svg>
@@ -176,16 +167,19 @@ export default function SubjectLayout({
                 tabIndex="-1"
               >
                 <div className="py-1" role="none">
-                  {['Form 4', 'Form 5'].map((standard) => (
+                  {[
+                    { value: 'Form 4', label: t('form_4', 'Form 4') },
+                    { value: 'Form 5', label: t('form_5', 'Form 5') }
+                  ].map((standard) => (
                     <button
-                      key={standard}
+                      key={standard.value}
                       type="button"
-                      className={`block w-full px-4 py-2 text-left text-sm ${selectedStandard === standard ? 'bg-sky-100 text-sky-700' : 'text-gray-700 hover:bg-gray-100'}`}
+                      className={`block w-full px-4 py-2 text-left text-sm ${selectedStandard === standard.value ? 'bg-sky-100 text-sky-700' : 'text-gray-700 hover:bg-gray-100'}`}
                       role="menuitem"
                       tabIndex="-1"
-                      onClick={() => handleStandardSelect(standard)}
+                      onClick={() => handleStandardSelect(standard.value)}
                     >
-                      {standard}
+                      {standard.label}
                     </button>
                   ))}
                 </div>
@@ -205,16 +199,15 @@ export default function SubjectLayout({
                 <Link
                   key={tab.key}
                   href={tab.href(subject, form, level_id, subject_id)}
-                  className={`pb-4 relative text-sm font-medium whitespace-nowrap transition-all duration-200 ${
-                    isActive
-                      ? "text-sky-600 font-semibold border-b-2 border-sky-500"
-                      : "text-gray-500 hover:text-gray-700 hover:border-b-2 hover:border-gray-300"
-                  }`}
+                  className={`pb-4 relative text-sm font-medium whitespace-nowrap transition-all duration-200 ${isActive
+                    ? "text-[#8F3091] font-semibold border-b-2 border-[#8F3091]"
+                    : "text-gray-500 hover:text-gray-700 hover:border-b-2 hover:border-gray-300"
+                    }`}
                   preserveScroll
                 >
                   {tab.label}
                   {isActive && (
-                    <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-sky-500 animate-pulse"></div>
+                    <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#8F3091] animate-pulse"></div>
                   )}
                 </Link>
               );
@@ -227,7 +220,7 @@ export default function SubjectLayout({
       <div className="py-6 sm:py-8 lg:py-10 px-4 sm:px-6 lg:px-16 mt-0">
         {children}
       </div>
-      
+
       <div className="mt-10">
         <StandardFooter />
       </div>

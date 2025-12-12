@@ -4,10 +4,15 @@ import Dropdown from '@/Components/Dropdown';
 import NavLink from '@/Components/NavLink';
 import ResponsiveNavLink from '@/Components/ResponsiveNavLink';
 import ProfileDropdown from '@/Components/ProfileDropdown';
+import LanguageSwitcher from '@/Components/LanguageSwitcher';
 import { Link, usePage } from '@inertiajs/react';
 import { useState } from 'react';
+import { useLanguage } from '@/Contexts/LanguageContext';
+
+
 
 export default function DashboardLayout({ header, children }) {
+    const { t, locale, translations } = useLanguage();
     const user = usePage().props.auth.user;
     const schoolSubjects = usePage().props.schoolSubjects || [];
 
@@ -17,31 +22,24 @@ export default function DashboardLayout({ header, children }) {
     const toggleDropdown = () => setIsOpen(!isOpen);
     const closeDropdown = () => setIsOpen(false);
 
-    // Debug: Check what data we're receiving
-    // console.log('School Subjects:', schoolSubjects);
-
-   
-
     // Function to generate subject URL
-    // STANDARDIZED VERSION - guna dalam kedua-dua files
     const getSubjectUrl = (subject) => {
-        // PASTIKAN GUNA subject.abbr untuk consistency
         const subjectSlug = subject.abbr || subject.name.toLowerCase().replace(/\s+/g, '-');
         const levelId = subject.level_id || 10;
         const form = levelId === 10 ? 'Form 4' : 'Form 5';
 
-        // Standard encoding
         return `/subject/${subjectSlug}?subject_id=${subject.id}&level_id=${levelId}&form=${encodeURIComponent(form)}`;
     };
 
     return (
+     
         <div className="min-h-screen bg-gray-100">
             <nav className="sticky top-0 z-50 border-b border-gray-100 bg-white shadow-lg px-4 sm:px-8 lg:px-24">
                 <div className="mx-0 max-w-full px-0 sm:px-3 lg:px-3">
                     <div className="flex h-16 sm:h-20 items-center justify-between relative">
                         {/* Left Side - Courses Nav */}
                         <div className="relative z-40">
-                            {/* Courses Button with animated icon - Always visible */}
+                            {/* Courses Button with animated icon */}
                             <button
                                 onClick={toggleDropdown}
                                 className="flex items-center text-sm font-semibold text-gray-700 hover:text-gray-900 focus:outline-none"
@@ -62,7 +60,7 @@ export default function DashboardLayout({ header, children }) {
                                 </svg>
 
                                 {/* Courses text for tablet and desktop */}
-                                <span className="hidden sm:inline">Courses</span>
+                                <span className="hidden sm:inline">{t( 'courses','Courses')}</span>
 
                                 {/* Chevron icon for tablet and desktop */}
                                 <svg
@@ -90,7 +88,7 @@ export default function DashboardLayout({ header, children }) {
                                         {/* School Subjects */}
                                         <div>
                                             <h4 className="mb-2 border-b pb-1 text-sm font-semibold text-gray-700">
-                                                School Subjects
+                                                {t( 'school subjects','School Subjects ')}
                                             </h4>
                                             <ul className="space-y-1 text-sm text-sky-600">
                                                 {schoolSubjects.map((subject) => (
@@ -101,10 +99,6 @@ export default function DashboardLayout({ header, children }) {
                                                             onClick={closeDropdown}
                                                         >
                                                             {subject.name}
-                                                            {/* Debug: Show IDs */}
-                                                            {/* <span className="text-xs text-gray-500 ml-2">
-                                                                (ID: {subject.id}, Level: {subject.level_id})
-                                                            </span> */}
                                                         </Link>
                                                     </li>
                                                 ))}
@@ -127,7 +121,7 @@ export default function DashboardLayout({ header, children }) {
                                         {/* Games */}
                                         <div>
                                             <h4 className="mb-2 border-b pb-1 text-sm font-semibold text-gray-700">
-                                                Games
+                                                {t( 'games','Games')}
                                             </h4>
                                             <ul className="space-y-1 text-sm text-gray-600">
                                                 <li><Link href="/tekakata-page" className="hover:underline block py-1" onClick={closeDropdown}>Teka Kata</Link></li>
@@ -146,15 +140,19 @@ export default function DashboardLayout({ header, children }) {
                             </Link>
                         </div>
 
-                        {/* Right Side - User Dropdown (Desktop) */}
-                        <div className="hidden sm:flex sm:items-center">
-                            <div className="relative ms-3">
-                                <ProfileDropdown user={user} />
+                        {/* Right Side - Language Switcher & User Dropdown */}
+                        <div className="flex items-center space-x-4">
+                            {/* Language Switcher */}
+                            <div className="hidden sm:block">
+                                <LanguageSwitcher type="buttons" />
                             </div>
-                        </div>
+                            
+                            {/* Mobile Language Switcher (Simplified) */}
+                            <div className="sm:hidden">
+                                <LanguageSwitcher type="dropdown" className="text-sm" />
+                            </div>
 
-                        {/* Mobile - Profile Icon */}
-                        <div className="flex sm:hidden items-center space-x-3">
+                            {/* User Dropdown */}
                             <div className="relative">
                                 <ProfileDropdown user={user} />
                             </div>
@@ -174,5 +172,7 @@ export default function DashboardLayout({ header, children }) {
 
             <main>{children}</main>
         </div>
+       
     );
 }
+

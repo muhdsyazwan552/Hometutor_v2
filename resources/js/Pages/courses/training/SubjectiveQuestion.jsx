@@ -2,7 +2,7 @@ import React, { useState, useMemo, useEffect, useRef } from "react";
 import SubjectiveQuestionLayout from "@/Layouts/SubjectiveQuestionLayout";
 import ResultQuestion from "@/Pages/courses/training/ResultQuestion";
 import { getFeedbackMessage, getAnswerType } from "@/utils/answerFeedback";
-import { Head, usePage } from '@inertiajs/react';
+import { Head, usePage, router } from '@inertiajs/react'; // Added router import
 
 export default function SubjectiveQuestion({ title = "Subjective Quiz" }) {
   const pageProps = usePage().props;
@@ -24,30 +24,62 @@ export default function SubjectiveQuestion({ title = "Subjective Quiz" }) {
 
   const [open, setOpen] = useState(false);
   const [zoomedImage, setZoomedImage] = useState("");
+  
+  // Add missing state variables
+  const [practiceStartTime, setPracticeStartTime] = useState(new Date().toISOString());
+  const [quizCompleted, setQuizCompleted] = useState(false);
 
-  // Default fallback question
-  const defaultQuestion = {
-    id: 1,
-    question: "No questions available",
-    schema: "No schema available",
-    explanation: "",
-    difficulty: "medium",
-    type: 'subjective',
-    question_type: 'html'
-  };
+  // Initialize practice start time when component mounts
+  useEffect(() => {
+    setPracticeStartTime(new Date().toISOString());
+  }, []);
 
-  const getSectionTitle = () => {
-    return sectionTitle || topic || `Section ${sectionId}`;
+
+
+  // Call this when quiz completes
+  useEffect(() => {
+    if (quizCompleted) {
+      savePracticeSession();
+    }
+  }, [quizCompleted]);
+
+  // Update handleSubmit to set quizCompleted
+  const handleSubmit = () => {
+    // Stop the timer
+    setTimerRunning(false);
+
+    // Calculate results
+    const answered = answers.filter(answer => answer.trim() !== "").length;
+    const skipped = questions.length - answered;
+
+    const results = {
+      totalQuestions: questions.length,
+      score: answered,
+      answered: answered,
+      skipped: skipped,
+      timeElapsed: timeElapsed,
+      questions: questions.map((q, index) => ({
+        question: q.question,
+        answered: answers[index].trim() !== "",
+        correct: true
+      }))
+    };
+
+    // Set completed state and pass results
+    setShowScore(true);
+    setQuizResults(results);
+    setQuizCompleted(true); // Add this line
   };
 
   // Get questions from subjective question bank with better error handling
   const questions = useMemo(() => {
     try {
-      const controllerQuestions = initialQuestions || []; // ✅ Use initialQuestions
+      const controllerQuestions = initialQuestions || [];
 
       if (!controllerQuestions || controllerQuestions.length === 0) {
         console.log('No questions from controller, using fallback');
-        return [defaultQuestion];
+        // You need to define defaultQuestion or handle this case
+        return [];
       }
 
       // Transform controller questions to match component format
@@ -64,9 +96,9 @@ export default function SubjectiveQuestion({ title = "Subjective Quiz" }) {
       return transformedQuestions;
     } catch (error) {
       console.error('Error processing questions:', error);
-      return [defaultQuestion];
+      return [];
     }
-  }, [initialQuestions]); // ✅ Use initialQuestions
+  }, [initialQuestions]);
 
   const [currentIndex, setCurrentIndex] = useState(0);
   const [answers, setAnswers] = useState(Array(questions.length).fill(""));
@@ -174,44 +206,114 @@ export default function SubjectiveQuestion({ title = "Subjective Quiz" }) {
     setError("");
   };
 
-  const handleCheckAnswer = () => {
-    if (!answers[currentIndex].trim()) {
-      setError("⚠️ Please enter your answer first.");
-      return;
-    }
+// In SubjectiveQuestion.jsx, update the handleCheckAnswer function:
 
-    const newChecked = [...checked];
-    newChecked[currentIndex] = true;
-    setChecked(newChecked);
+const handleCheckAnswer = () => {
+  if (!answers[currentIndex].trim()) {
+    setError("⚠️ Please enter your answer first.");
+    return;
+  }
 
-    const newShowSchema = [...showSchema];
-    newShowSchema[currentIndex] = true;
-    setShowSchema(newShowSchema);
+  const newChecked = [...checked];
+  newChecked[currentIndex] = true;
+  setChecked(newChecked);
 
-    // For subjective questions, we'll consider it correct if they attempt
-    const newIsCorrect = [...isCorrect];
-    newIsCorrect[currentIndex] = true;
-    setIsCorrect(newIsCorrect);
+  const newShowSchema = [...showSchema];
+  newShowSchema[currentIndex] = true;
+  setShowSchema(newShowSchema);
 
-    // Record first attempt result
-    const newFirstTryResults = [...firstTryResults];
-    if (newFirstTryResults[currentIndex] === null) {
-      newFirstTryResults[currentIndex] = true;
-      setFirstTryResults(newFirstTryResults);
-    }
+  // For subjective questions, we'll consider it correct if they attempt
+  const newIsCorrect = [...isCorrect];
+  newIsCorrect[currentIndex] = true;
+  setIsCorrect(newIsCorrect);
 
-    // Play success sound
-    playSound('correct', 1.0);
+  // Record first attempt result
+  const newFirstTryResults = [...firstTryResults];
+  if (newFirstTryResults[currentIndex] === null) {
+    newFirstTryResults[currentIndex] = true;
+    setFirstTryResults(newFirstTryResults);
+  }
+
+  // Calculate time taken for this question
+  const timeTaken = questionStartTime ? Math.floor((Date.now() - questionStartTime) / 1000) : 0;
+
+  // Record the attempt for saving later
+  const attemptData = {
+    question_id: questions[currentIndex].id,
+    topic_id: topic_id,
+    choosen_answer_id: 0, // Always 0 for subjective
+    answer_status: 1, // Always 1 (considered correct for subjective)
+    question_type_id: 2, // Subjective
+    time_taken: timeTaken,
+    subjective_answer: answers[currentIndex], // Store the user's written answer
+    attempted_at: new Date().toISOString()
   };
 
-  const handleNext = () => {
-    if (currentIndex < questions.length - 1) {
-      setCurrentIndex(currentIndex + 1);
-      setError("");
-    } else {
-      handleSubmit();
-    }
-  };
+  // Add to questionAttempts array
+  setQuestionAttempts(prev => {
+    const filtered = prev.filter(attempt => attempt.question_id !== questions[currentIndex].id);
+    return [...filtered, attemptData];
+  });
+
+  // Reset question timer for next question
+  setQuestionStartTime(Date.now());
+
+  // Play success sound
+  playSound('correct', 1.0);
+};
+
+// Add questionStartTime state for tracking per-question time:
+const [questionStartTime, setQuestionStartTime] = useState(Date.now());
+
+// Update handleNext to reset question timer:
+const handleNext = () => {
+  if (currentIndex < questions.length - 1) {
+    setCurrentQuestionIndex(currentIndex + 1);
+    setError("");
+    setQuestionStartTime(Date.now()); // Reset timer for next question
+  } else {
+    handleSubmit();
+  }
+};
+
+// Update the savePracticeSession function to include question_attempts:
+const savePracticeSession = async () => {
+  const endTime = new Date().toISOString();
+  
+  try {
+    // Calculate answered and skipped questions
+    const answeredQuestions = answers.filter(answer => answer.trim() !== "").length;
+    const totalQuestions = questions.length;
+    const skippedQuestions = totalQuestions - answeredQuestions;
+    
+    const response = await router.post('/practice-session/subjective', {
+      subject_id: subject_id,
+      topic_id: topic_id,
+      start_at: practiceStartTime,
+      end_at: endTime,
+      total_time_seconds: timeElapsed,
+      total_correct: answeredQuestions, // Number of questions answered
+      total_skipped: skippedQuestions,  // Total - answered
+      score: null,
+      question_attempts: questionAttempts // Add this line
+    });
+    
+    console.log('✅ Subjective practice session saved:', {
+      answered: answeredQuestions,
+      skipped: skippedQuestions,
+      total: totalQuestions,
+      duration: timeElapsed + ' seconds',
+      attempts_sent: questionAttempts.length
+    });
+  } catch (error) {
+    console.error('❌ Failed to save subjective session:', error);
+  }
+};
+
+// Add questionAttempts state at the top with other state declarations:
+const [questionAttempts, setQuestionAttempts] = useState([]);
+
+
 
   const handlePrev = () => {
     if (currentIndex > 0) {
@@ -226,46 +328,26 @@ export default function SubjectiveQuestion({ title = "Subjective Quiz" }) {
     setShowSchema(newShowSchema);
   };
 
-  const handleSubmit = () => {
-    // Stop the timer
-    setTimerRunning(false);
 
-    // Calculate results
-    const answered = answers.filter(answer => answer.trim() !== "").length;
-    const skipped = questions.length - answered;
 
-    const results = {
-      totalQuestions: questions.length,
-      score: answered,
-      answered: answered,
-      skipped: skipped,
-      timeElapsed: timeElapsed,
-      questions: questions.map((q, index) => ({
-        question: q.question,
-        answered: answers[index].trim() !== "",
-        correct: true
-      }))
-    };
+const resetQuiz = () => {
+  setAnswers(Array(questions.length).fill(""));
+  setError("");
+  setShowScore(false);
+  setQuizResults(null);
+  setChecked(Array(questions.length).fill(false));
+  setShowSchema(Array(questions.length).fill(false));
+  setIsCorrect(Array(questions.length).fill(null));
+  setFirstTryResults(Array(questions.length).fill(null));
+  setCurrentIndex(0);
+  setQuestionAttempts([]); // Add this line
+  // Reset timer
+  setTimeElapsed(0);
+  setTimerRunning(true);
+  setQuestionStartTime(Date.now()); // Add this line
+};
 
-    // Set completed state and pass results
-    setShowScore(true);
-    setQuizResults(results);
-  };
 
-  const resetQuiz = () => {
-    setAnswers(Array(questions.length).fill(""));
-    setError("");
-    setShowScore(false);
-    setQuizResults(null);
-    setChecked(Array(questions.length).fill(false));
-    setShowSchema(Array(questions.length).fill(false));
-    setIsCorrect(Array(questions.length).fill(null));
-    setFirstTryResults(Array(questions.length).fill(null));
-    setCurrentIndex(0);
-    // Reset timer
-    setTimeElapsed(0);
-    setTimerRunning(true);
-  };
 
   // Responsive Progress Circles Component
   const ProgressCircles = () => (

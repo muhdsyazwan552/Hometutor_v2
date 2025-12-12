@@ -3,8 +3,7 @@ import React, { useState } from 'react';
 import { usePage, router } from '@inertiajs/react';
 import SubjectLayout from '@/Layouts/SubjectLayout';
 import DonutChart from '@/Components/ChartJsDonut';
-import MiniLineChart from '@/Components/MiniLineChart';
-import SubtopicDetailModal from '@/Components/SubtopicDetailModal'; // Import the new modal
+import SubtopicDetailModal from '@/Components/SubtopicDetailModal';
 
 export default function SubjectReportPage() {
   const { props } = usePage();
@@ -183,15 +182,14 @@ export default function SubjectReportPage() {
                               <>
                                 <div className="text-center border-b-2 border-gray-50">Score Statistic</div>
                                 <div className="text-center border-b-2 border-gray-50">Average Score</div>
+                                <div className="text-center border-b-2 border-gray-50">Last Session</div>
                               </>
                             )}
 
                             {activeTab === 'Subjective' && (
-                              <div className="text-center border-b-2 border-gray-50">Last Session</div>
-                            )}
-
-                            {activeTab === 'Objective' && (
-                              <div className="text-center border-b-2 border-gray-50">Last Session</div>
+                              <>
+                                <div className="text-center border-b-2 border-gray-50">Last Session</div>
+                              </>
                             )}
                           </div>
                         </div>
@@ -232,6 +230,7 @@ export default function SubjectReportPage() {
                                           percentage={subtopic.progress?.average_score || 0}
                                           size={40}
                                           strokeWidth={4}
+                                          label="Accuracy"
                                         />
                                       </div>
 
@@ -243,20 +242,24 @@ export default function SubjectReportPage() {
 
                                   {/* Subjective mode */}
                                   {activeTab === 'Subjective' && (
-                                    <div className="text-sm text-gray-600 text-center col-span-3">
-                                      {subtopic.progress?.last_session || '-'}
-                                    </div>
+                                    <>
+                                      
+
+                                      <div className="text-sm text-gray-600 text-center">
+                                        {subtopic.progress?.last_session || '-'}
+                                      </div>
+                                    </>
                                   )}
                                 </div>
                               ))}
                             </div>
                           ) : (
-                            // No subtopics
+                            // No subtopics - show topic directly
                             <div
                               className="grid grid-cols-5 gap-4 items-center py-3 px-4 bg-gray-200 cursor-pointer hover:bg-gray-300 transition-colors"
                               onClick={(e) => {
                                 e.stopPropagation();
-                                handleSubtopicClick(topic); // Use topic data if no subtopics
+                                handleSubtopicClick(topic);
                               }}
                             >
                               <div className="text-sm font-medium text-gray-900">
@@ -267,27 +270,38 @@ export default function SubjectReportPage() {
                                 {topic.total_sessions || '0'}
                               </div>
 
-                              {/* Score Statistic */}
-                              <div className="text-sm text-gray-600 text-center">
-                                {activeTab === 'Subjective'
-                                  ? '—'
-                                  : topic.score_statistic || '—'}
-                              </div>
+                              {/* Objective mode */}
+                              {activeTab === 'Objective' && (
+                                <>
+                                  <div className="text-sm text-gray-600 text-center">
+                                    {topic.score_statistic || '—'}
+                                  </div>
 
-                              {/* Donut only for Objective */}
-                              <div className="text-center">
-                                {activeTab === 'Objective' && (
-                                  <DonutChart
-                                    percentage={topic.average_score || 0}
-                                    size={40}
-                                    strokeWidth={4}
-                                  />
-                                )}
-                              </div>
+                                  <div className="text-center">
+                                    <DonutChart
+                                      percentage={topic.average_score || 0}
+                                      size={40}
+                                      strokeWidth={4}
+                                      label="Accuracy"
+                                    />
+                                  </div>
 
-                              <div className="text-sm text-gray-600 text-center">
-                                {topic.last_session || '-'}
-                              </div>
+                                  <div className="text-sm text-gray-600 text-center">
+                                    {topic.last_session || '-'}
+                                  </div>
+                                </>
+                              )}
+
+                              {/* Subjective mode */}
+                              {activeTab === 'Subjective' && (
+                                <>
+                                 
+
+                                  <div className="text-sm text-gray-600 text-center">
+                                    {topic.last_session || '-'}
+                                  </div>
+                                </>
+                              )}
                             </div>
                           )}
                         </div>

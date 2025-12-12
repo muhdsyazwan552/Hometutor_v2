@@ -3,8 +3,8 @@ import React, { useState, useRef, useEffect } from 'react';
 import { usePage } from '@inertiajs/react';
 import ApplicationLogo from '@/Components/ApplicationLogo';
 import ProfileDropdown from '@/Components/ProfileDropdown';
-import MobileProfileDropdown from '@/Components/MobileProfileDropdown';
 import SubjectMenuDropdown from '@/Components/SubjectMenuDropdown';
+import LanguageSwitcher from '@/Components/LanguageSwitcher';
 import { Link } from '@inertiajs/react';
 
 export default function SubjectNavbar({ title }) {
@@ -13,7 +13,7 @@ export default function SubjectNavbar({ title }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const menuRef = useRef(null);
 
-    // Debug: Check what title we're receiving
+  // Debug: Check what title we're receiving
   console.log('SubjectNavbar received title:', title);
   // console.log('Page props:', usePage().props);
 
@@ -32,7 +32,15 @@ export default function SubjectNavbar({ title }) {
   }, []);
 
   return (
-    <nav className="sticky top-0 z-50 border-b border-gray-100 bg-white shadow-sm px-4 sm:px-6">
+    <nav
+      className={
+        `sticky top-0 z-40 border-b border-gray-200  shadow-sm px-4 sm:px-6
+    ${isMenuOpen
+          ? 'bg-white text-black'                      // when dropdown open → hide gradient
+          : 'bg-[#8F3091] text-white' // when closed → show gradient
+        }`
+      }
+    >
       <div className="mx-auto px-0 sm:px-3 lg:px-3">
         <div className="flex h-16 sm:h-20 items-center justify-between relative">
 
@@ -48,12 +56,20 @@ export default function SubjectNavbar({ title }) {
           {/* Center - Logo */}
           <div className="absolute left-1/2 transform -translate-x-1/2 flex items-center">
             <Link href="/dashboard">
-              <ApplicationLogo className="block h-12 sm:h-16 w-auto fill-current text-gray-800" />
+              <ApplicationLogo className="block h-12 sm:h-16 w-auto fill-current " />
             </Link>
           </div>
 
           {/* Right Side - Profile Dropdown */}
-          <div className="hidden sm:flex sm:items-center">
+          <div className="hidden sm:flex sm:items-center items-center space-x-4">
+            <div className="hidden sm:block">
+              <LanguageSwitcher type="buttons" />
+            </div>
+
+            {/* Mobile Language Switcher (Simplified) */}
+            <div className="sm:hidden">
+              <LanguageSwitcher type="dropdown" className="text-sm" />
+            </div>
             <div className="relative ms-3">
               <ProfileDropdown user={user} />
             </div>

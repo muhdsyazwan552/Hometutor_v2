@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use App\Models\Question;
 use App\Models\Topic;
 use App\Models\Answer;
+use App\Models\QuizAttempt;
 use App\Models\PracticeSession;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
@@ -189,6 +190,7 @@ private function determineQuestionType($question)
         $hasHtmlContent = $answer->answer_text && preg_match('/<img|<div|<p>/i', $answer->answer_text);
         
         return [
+            'id' => $answer->id,
             'text' => $answer->answer_text,
             'file' => $answer->answer_option_file ? $this->getAnswerFileUrl($answer->answer_option_file) : null,
             'type' => $hasHtmlContent ? 'html' : (!empty($answer->answer_text) ? 'text' : (!empty($answer->answer_option_file) ? 'image' : 'text')),
@@ -380,14 +382,16 @@ public function completePractice(Request $request)
     // Check if this is a subtopic (parent_id != 0)
     if ($topic && $topic->parent_id != 0) {
         $isSubtopic = true;
-        $subtopicId = $topic->parent_id; // Current topic is the subtopic
+        $mainTopicId = $topic->parent_id;
+        $subtopicId = $topic->id;
     }
 
+    // Create the practice session
     $session = PracticeSession::create([
         'user_id' => Auth::id(),
         'subject_id' => $request->subject_id,
-        'topic_id' => $mainTopicId, // Always the main topic ID
-        'subtopic_id' => $subtopicId, // Only set if it's a subtopic
+        'topic_id' => $mainTopicId,
+        'subtopic_id' => $subtopicId,
         'question_type_id' => 1, // Objective
         'start_at' => $request->start_at,
         'end_at' => now(),
@@ -396,6 +400,12 @@ public function completePractice(Request $request)
         'score' => $request->score,
         'total_time_seconds' => $request->total_time_seconds,
     ]);
+
+    // Save quiz attempts if provided
+    $questionAttempts = $request->get('question_attempts', []);
+    if (!empty($questionAttempts)) {
+        $this->saveQuizAttempts($questionAttempts, $session->id, $mainTopicId, $subtopicId);
+    }
 
     return response()->json([
         'success' => true,
@@ -406,5 +416,71 @@ public function completePractice(Request $request)
             'subtopic_id' => $subtopicId,
         ]
     ]);
+}
+
+/**
+ * Save quiz attempts to quiz_attempts table
+ */
+// Add use statement at the top if not already there
+
+
+// Update the saveQuizAttempts method
+private function saveQuizAttempts($attempts, $sessionId, $mainTopicId, $subtopicId)
+{
+    $userId = Auth::id();
+    $quizAttempts = [];
+
+    foreach ($attempts as $attempt) {
+        // Get the question to determine parent_id if needed
+        $questionId = $attempt['question_id'] ?? 0;
+        $question = null;
+        
+        if ($questionId) {
+            $question = Question::find($questionId);
+        }
+        
+        // Get parent_id from question if it exists
+        $parentId = $question ? $question->parent_id : 0;
+        
+        // Validate choosen_answer_id - should not be 0 if an answer was chosen
+        $chosenAnswerId = $attempt['choosen_answer_id'] ?? 0;
+        
+        // If answer_status is 1 (correct) but chosen_answer_id is 0, this is suspicious
+        $answerStatus = $attempt['answer_status'] ?? 0;
+        
+        if ($answerStatus == 1 && $chosenAnswerId == 0) {
+            Log::warning('Inconsistent data: answer_status=1 but choosen_answer_id=0', [
+                'question_id' => $questionId,
+                'attempt' => $attempt
+            ]);
+        }
+        
+        $quizAttempts[] = [
+            'user_id' => $userId,
+            'parent_id' => $parentId, // Use actual parent_id from question
+            'question_id' => $questionId,
+            'topic_id' => $mainTopicId,
+            'subtopic_id' => $subtopicId,
+            'choosen_answer_id' => $chosenAnswerId, // Should be actual answer ID
+            'answer_status' => $answerStatus, // Should be 0 or 1 based on correctness
+            'subjective_answer' => null,
+            'session_id' => $sessionId,
+            'time_taken' => $attempt['time_taken'] ?? 0,
+            'question_type_id' => 1, // Objective
+            'created_at' => now(),
+            'updated_at' => now(),
+        ];
+    }
+
+    if (!empty($quizAttempts)) {
+        QuizAttempt::insert($quizAttempts);
+        
+        Log::info('Quiz attempts saved:', [
+            'session_id' => $sessionId,
+            'attempts_count' => count($quizAttempts),
+            'user_id' => $userId,
+            'attempts_data' => $quizAttempts // Log full data for debugging
+        ]);
+    }
 }
 }

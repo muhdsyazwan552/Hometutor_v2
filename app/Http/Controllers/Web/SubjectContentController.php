@@ -11,6 +11,8 @@ use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\App;
+use Illuminate\Support\Facades\Session;
 
 class SubjectContentController extends Controller
 {
@@ -22,6 +24,16 @@ class SubjectContentController extends Controller
 
         $userId = Auth::id();
 
+        // ⭐⭐⭐ ADD THIS: Get locale and translations
+        $locale = Session::get('locale', 'en');
+        App::setLocale($locale);
+        $translations = $this->loadPhpTranslations($locale);
+        
+        Log::info('SubjectContentController Language:', [
+            'locale' => $locale,
+            'translations_count' => count($translations),
+            'session_locale' => Session::get('locale')
+        ]);
 
         
         Log::info('SubjectPage Request:', [
@@ -141,7 +153,7 @@ class SubjectContentController extends Controller
 
         Log::info('Transformed content:', ['sections_count' => count($contentData['sections'])]);
 
-        // RETURN THE RESPONSE (This was missing)
+        // ⭐⭐⭐ ADD locale and translations to the response
         return Inertia::render('courses/SubjectPage', [
             'subject' => $subjectData->name,
             'subject_abbr' => $subjectData->abbr,
@@ -152,6 +164,9 @@ class SubjectContentController extends Controller
             'selectedStandard' => $form,
             'availableLevels' => $availableLevels,
             'availableSubjects' => $availableSubjects,
+            'locale' => $locale, // ⭐ ADD THIS
+            'translations' => $translations, // ⭐ ADD THIS
+            'availableLocales' => ['en', 'ms'], // ⭐ ADD THIS
             'debug_info' => [
                 'topics_count' => $topics->count(),
                 'sections_count' => count($contentData['sections']),
@@ -160,9 +175,34 @@ class SubjectContentController extends Controller
                 'subject_id' => $subjectId,
                 'level_id' => $levelId,
                 'available_levels' => $availableLevels,
-                'available_subjects' => $availableSubjects
+                'available_subjects' => $availableSubjects,
+                'locale' => $locale, // ⭐ ADD THIS for debugging
             ]
         ]);
+    }
+
+    // ⭐⭐⭐ ADD THIS METHOD (copied from DashboardController)
+    private function loadPhpTranslations($locale)
+    {
+        $fallbackLocale = 'en';
+        
+        try {
+            // Load the common.php file for the requested locale
+            $translations = trans('common', [], $locale);
+            
+            // If no translations found, try fallback
+            if (is_array($translations) && !empty($translations)) {
+                return $translations;
+            }
+            
+            // Fallback to English
+            return trans('common', [], $fallbackLocale);
+            
+        } catch (\Exception $e) {
+            // If translation file doesn't exist, return empty
+            Log::error('Failed to load translations: ' . $e->getMessage());
+            return [];
+        }
     }
 
     // Add this method to get subjects by level
@@ -291,7 +331,7 @@ private function getLastPracticeData($userId, $topicId, $questionType = null)
         'score' => $lastSession->score,
         'total_correct' => $lastSession->total_correct,
         'total_questions' => $totalQuestions,
-        'last_practice_at' => $lastSession->created_at->format('j M y, g:i A'),
+        'last_practice_at' => $lastSession->created_at->format('d/m/Y, g:i A'),
         'average_time_per_question' => $averageTime
     ];
 }

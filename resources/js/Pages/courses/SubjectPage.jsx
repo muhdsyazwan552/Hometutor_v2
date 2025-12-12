@@ -2,8 +2,10 @@ import React, { useEffect, useRef, useState } from 'react';
 import SubjectLayout from '@/Layouts/SubjectLayout';
 import { Link, usePage, router } from "@inertiajs/react";
 import { ArrowRightIcon, PlayIcon, DocumentTextIcon, ClockIcon } from '@heroicons/react/20/solid';
+import { useLanguage } from '@/Contexts/LanguageContext';
 
 export default function SubjectPage({ selectedStandard }) {
+  const { t, locale } = useLanguage();
   const { props } = usePage();
   const {
     subject,
@@ -148,6 +150,14 @@ export default function SubjectPage({ selectedStandard }) {
     }
   };
 
+   const translateFormLevel = (form) => {
+    const formMap = {
+      'Form 4': t('form_4', 'Form 4'),
+      'Form 5': t('form_5', 'Form 5'),
+    };
+    return formMap[form] || form;
+  };
+
   // Debug information (optional - remove in production)
   // const debugInfo = () => {
   //   if (process.env.NODE_ENV === 'development') {
@@ -187,9 +197,9 @@ export default function SubjectPage({ selectedStandard }) {
         {/* Contents Sidebar */}
         <div className="lg:sticky lg:grid-cols-5 lg:top-24 h-fit px-0 order-1 lg:order-1">
           <div className="bg-white shadow-lg sm:shadow-xl rounded-lg p-3 sm:p-4 border">
-            <h3 className="text-base sm:text-lg font-bold text-sky-700 mb-3 sm:mb-4 tracking-wide flex items-center">
+            <h3 className="text-base sm:text-lg font-bold text-gray-700 mb-3 sm:mb-4 tracking-wide flex items-center">
               <span className="mr-2">📚</span>
-              <span className="hidden sm:inline">Contents for {currentStandard}</span>
+              <span className="hidden sm:inline">{t('topic', 'Topic')} {translateFormLevel(selectedStandard)}</span>
               <span className="sm:hidden">Contents</span>
             </h3>
 
@@ -201,8 +211,8 @@ export default function SubjectPage({ selectedStandard }) {
                     <button
                       onClick={() => handleScrollTo(section.title)}
                       className={`block w-full text-left px-3 sm:px-4 py-2 sm:py-3 rounded-lg text-xs sm:text-sm font-medium transition-all duration-200 ${activeSection === section.title
-                        ? 'bg-gradient-to-r from-sky-600 to-indigo-600 text-white shadow-md'
-                        : 'text-gray-600 hover:bg-sky-100 hover:text-sky-700'
+                        ? 'bg-[#42275a] text-white shadow-md'
+                        : 'text-gray-600 hover:bg-[#E2A7C5] hover:text-white'
                         }`}
                     >
                       <span className="line-clamp-2 sm:line-clamp-3 font-bold leading-snug break-words">
@@ -239,9 +249,9 @@ export default function SubjectPage({ selectedStandard }) {
                 {/* Your existing section content remains exactly the same */}
                 <div className="bg-white rounded-xl sm:rounded-2xl shadow-lg border border-gray-200 overflow-hidden">
                   {/* Big Title Header */}
-                  <div className="bg-gradient-to-r from-sky-50 to-indigo-50 border-b border-gray-200 p-4 sm:p-6">
+                  <div className="bg-gray-200 border-b border-gray-200 p-4 sm:p-6">
                     <div className="flex items-center space-x-3 sm:space-x-4">
-                      <div className="w-10 h-10 sm:w-12 sm:h-12 lg:w-14 lg:h-14 bg-gradient-to-r from-sky-500 to-indigo-500 rounded-lg sm:rounded-xl flex items-center justify-center shadow-lg group animate-pulse hover:animate-none hover:scale-105 transition-transform duration-300">
+                      <div className="w-10 h-10 sm:w-12 sm:h-12 lg:w-14 lg:h-14 bg-[#30918F] border-2 border-green-800 rounded-lg sm:rounded-xl flex items-center justify-center shadow-lg group animate-pulse hover:animate-none hover:scale-105 transition-transform duration-300">
                         <div className="relative">
                           {/* Book Icon */}
                           <svg className="w-6 h-6 sm:w-7 sm:h-7 lg:w-8 lg:h-8 text-white transform group-hover:scale-110 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -271,11 +281,11 @@ export default function SubjectPage({ selectedStandard }) {
                       >
                         {/* Vertical Line (Stepper) */}
                         {subIndex !== section.subSections.length - 1 && (
-                          <div className="absolute left-[18px] sm:left-[22px] lg:left-[30px] top-6 bottom-[-40px] sm:bottom-[-50px] lg:bottom-[-55px] w-[2px] sm:w-[3px] bg-sky-300"></div>
+                          <div className="absolute left-[18px] sm:left-[22px] lg:left-[30px] top-6 bottom-[-40px] sm:bottom-[-50px] lg:bottom-[-55px] w-[2px] sm:w-[3px] bg-[#30918F]"></div>
                         )}
 
                         {/* Circle Icon */}
-                        <div className="absolute left-[10px] sm:left-[14px] lg:left-[17px] top-3 sm:top-4 w-5 h-5 sm:w-6 sm:h-6 lg:w-7 lg:h-7 rounded-full bg-gradient-to-br from-sky-500 to-indigo-500 border-2 border-sky-500 flex items-center justify-center text-xs sm:text-sm font-bold text-sky-700 shadow-[0_0_6px_rgba(56,189,248,0.4)]">
+                        <div className="absolute left-[10px] sm:left-[14px] lg:left-[17px] top-3 sm:top-4 w-5 h-5 sm:w-6 sm:h-6 lg:w-7 lg:h-7 rounded-full bg-[#30918F] border-2 border-green-900 flex items-center justify-center text-xs sm:text-sm font-bold text-sky-700 shadow-[0_0_6px_rgba(56,189,248,0.4)]">
                         </div>
 
                         {/* Header */}
@@ -308,7 +318,7 @@ export default function SubjectPage({ selectedStandard }) {
                                           <h4 className="font-semibold text-gray-900 text-sm sm:text-base line-clamp-1">
                                             {subSection.practiceTitle || 'Objective Practice'}
                                           </h4>
-                                          <p className="text-xs text-gray-500 uppercase tracking-wide">Objective</p>
+                                          <p className="text-xs text-gray-600 font-bold uppercase tracking-wide">Objective</p>
                                           <p className="text-xs text-gray-600 mt-1">
                                             {subSection.questionCounts.objective} questions available
                                           </p>
@@ -423,7 +433,7 @@ export default function SubjectPage({ selectedStandard }) {
                                       <h4 className="font-semibold text-gray-900 text-sm sm:text-base line-clamp-1">
                                         {subSection.practiceTitle || 'Subjective Practice'}
                                       </h4>
-                                      <p className="text-xs text-gray-500 uppercase tracking-wide">Subjective</p>
+                                      <p className="text-xs text-gray-600 uppercase font-bold tracking-wide">Subjective</p>
                                       <p className="text-xs text-gray-600 mt-1">
                                         {subSection.questionCounts.subjective} questions available
                                       </p>
@@ -454,19 +464,10 @@ export default function SubjectPage({ selectedStandard }) {
                                       {subSection.lastPractice?.subjective ? (
                                         <div className="space-y-1">
                                           <p className="text-xs text-gray-500">Last Practice</p>
-                                          <div className="flex items-center gap-2">
-                                            <div className={`w-2 h-2 rounded-full ${subSection.lastPractice.subjective.score >= 80 ? 'bg-green-500' :
-                                              subSection.lastPractice.subjective.score >= 60 ? 'bg-yellow-500' : 'bg-red-500'
-                                              }`}></div>
-                                            <p className="text-xs sm:text-sm font-medium text-gray-800">
-                                              {subSection.lastPractice.subjective.score}% • {subSection.lastPractice.subjective.time_ago}
-                                            </p>
-                                          </div>
-                                          <p className="text-xs text-gray-600">
-                                            {subSection.lastPractice.subjective.total_correct}/{subSection.lastPractice.subjective.total_questions} correct
-                                            {subSection.lastPractice.subjective.average_time_per_question && (
-                                              <span> • {Math.round(subSection.lastPractice.subjective.average_time_per_question)}s/q</span>
-                                            )}
+                                          
+                                          <p className="text-sm text-black font-medium">
+                                            {subSection.lastPractice.subjective.last_practice_at}
+                                            
                                           </p>
                                         </div>
                                       ) : (

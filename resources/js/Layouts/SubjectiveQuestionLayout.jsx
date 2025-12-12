@@ -100,21 +100,19 @@ const SubjectiveQuestionLayout = ({
       </div>
 
       {/* ✅ Blue compact header (appears when scrolling up after hiding) */}
-      <div
-        className={`bg-blue-800 text-white p-3 shadow-lg fixed py-4 top-0 left-0 right-0 z-40 transition-transform duration-300 ${
+      <div className={`bg-[#8F3091] text-white p-3 shadow-lg fixed py-4 top-0 left-0 right-0 z-40 transition-transform duration-300 ${
           showBlueHeader ? 'translate-y-0' : '-translate-y-full'
         }`}
       >
-        <div className="flex max-auto h-100 flex-col md:flex-row justify-between items-start md:items-center gap-3">
-          <div>
+        <div className="flex max-auto h-100 flex-col md:flex-row justify-between items-start md:items-center gap-3 mt-3">
+          <div >
             <h1 className="text-xl md:text-2xl lg:text-3xl font-bold text-gray-50 flex items-center gap-3">
               <button
                 onClick={() => window.history.back()}
-                className="w-8 h-8 md:w-10 md:h-10 bg-gray-700 hover:bg-gray-200 rounded-full flex items-center justify-center transition-colors"
-                title="Back"
-              >
+                className="w-8 h-8  md:w-10 md:h-10 bg-gray-100 hover:bg-gray-200 rounded-full flex items-center justify-center transition-colors"
+                title="Back">
                 <svg
-                  className="w-4 h-4 md:w-5 md:h-5 text-gray-50 hover:text-gray-800"
+                  className="w-4 h-4 md:w-5 md:h-5 text-gray-500 hover:text-[#8F3091]"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"

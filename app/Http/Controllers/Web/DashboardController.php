@@ -13,24 +13,58 @@ use App\Models\User;
 use App\Models\Friend;
 use App\Models\FriendRequest;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\App;
+use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Facades\Log;
 
 class DashboardController extends Controller
 {
-    public function index()
-    {
+public function index()
+{
+    // DEBUG: Log semua language sources
+    Log::info('=== DASHBOARD LANGUAGE DEBUG START ===');
+    Log::info('Session locale:', ['value' => Session::get('locale')]);
+    Log::info('User language:', ['value' => Auth::check() ? Auth::user()->language : 'guest']);
+    Log::info('Current App locale:', ['value' => App::getLocale()]);
+    Log::info('Request has locale?', ['value' => request()->has('locale')]);
+    
+    // ⭐⭐⭐ CRITICAL FIX: ALWAYS get locale from Session first
+    $locale = Session::get('locale', 'en');
+    
+    // ⭐⭐⭐ CRITICAL FIX: ALWAYS set app locale
+    App::setLocale($locale);
+    
+    // ⭐⭐⭐ CRITICAL FIX: ALWAYS load translations
+    $translations = $this->loadPhpTranslations($locale);
+    
+    Log::info('Final language settings:', [
+        'selected_locale' => $locale,
+        'translations_count' => count($translations),
+        'sample_translation' => $translations['dashboard']['school'] ?? 'NOT FOUND'
+    ]);
+    
+    // Check if user is authenticated
+    if (Auth::check()) {
         $user = Auth::user();
+        
+       if ($user->language) {
+            $userLang = $user->language;  // ✅ No conversion needed
+            
+            if ($userLang !== $locale) {
+                $user->update(['language' => $locale]);  // ✅ Store 'ms' directly
+                
+                Log::info('Language synced:', [
+                    'user_was' => $userLang,
+                    'user_now' => $locale,
+                    'session_is' => $locale
+                ]);
+            }
+        }
         
         // Get the student profile data
         $student = Student::with(['school', 'level'])
             ->where('user_id', $user->id)
             ->first();
-
-        // Get quiz sessions for leaderboard
-        $quizSessions = QuizSession::with('school')
-            ->orderBy('total_correct', 'desc')
-            ->orderBy('total_time_seconds', 'asc')
-            ->limit(5)
-            ->get();
 
         // Get friends data
         $friends = $this->getFriendsData($user);
@@ -46,57 +80,97 @@ class DashboardController extends Controller
             'grade' => $student && $student->level ? $student->level->name_my : 'Form 5',
             'display_name' => $student ? $student->display_name : $user->display_name
         ];
-
-        // Your existing courses and assignments data
-        $courses = [
-            [
-                'title' => "Bahasa Melayu",
-                'topic' => "Graphic Stimuli",
-                'progress' => 0,
-                'total' => 4
-            ],
-            [
-                'title' => "Matematik",
-                'topic' => "Asas Nombor",
-                'progress' => 0,
-                'total' => 10
-            ],
-            [
-                'title' => "Matematik Tambahan",
-                'topic' => "Fungsi Trigonometri",
-                'progress' => 0,
-                'total' => 10
-            ],
-            [
-                'title' => "Sains",
-                'topic' => "Mikroorganisma Dan Kesannya Terhadap..."
-            ]
+        
+        $authData = ['user' => $user];
+        
+    } else {
+        // For non-authenticated users
+        $profileData = [
+            'name' => 'Guest User',
+            'email' => 'guest@example.com',
+            'school' => 'Not specified',
+            'grade' => 'Form 5',
+            'display_name' => 'Guest'
         ];
-
-        $assignments = [
-            [
-                'title' => "New Assignment",
-                'dueDate' => "Due Jun 26th, 11:59 PM",
-                'topic' => "Nombor Dan Operasi",
-                'description' => "Objective - Same question set"
-            ]
-        ];
-
-        return Inertia::render('Dashboard', [
-            'title' => 'Dashboard',
-            'profileData' => $profileData,
-            'student' => $student, // Pass the full student object if needed
-            'courses' => $courses,
-            'assignments' => $assignments,
-            'quizSessions' => $quizSessions,
-            'friends' => $friends,
-            'pendingRequests' => $pendingRequests,
-            'auth' => [
-                'user' => $user
-            ]
-        ]);
+        
+        $friends = [];
+        $pendingRequests = [];
+        $student = null;
+        $authData = null;
     }
 
+    // Get quiz sessions for leaderboard
+    $quizSessions = QuizSession::with('school')
+        ->orderBy('total_correct', 'desc')
+        ->orderBy('total_time_seconds', 'asc')
+        ->limit(5)
+        ->get();
+
+    // Courses and assignments data
+    $courses = [
+        [
+            'title' => "Bahasa Melayu",
+            'topic' => "Graphic Stimuli",
+            'progress' => 0,
+            'total' => 4
+        ],
+        // ... other courses
+    ];
+
+    $assignments = [
+        [
+            'title' => "New Assignment",
+            'dueDate' => "Due Jun 26th, 11:59 PM",
+            'topic' => "Nombor Dan Operasi",
+            'description' => "Objective - Same question set"
+        ]
+    ];
+    
+    Log::info('=== DASHBOARD LANGUAGE DEBUG END ===');
+    Log::info('Returning to Inertia:', [
+        'locale' => $locale,
+        'has_translations' => !empty($translations),
+        'auth_user_id' => Auth::check() ? Auth::id() : null
+    ]);
+    
+    return Inertia::render('Dashboard', [
+        'title' => 'Dashboard',
+        'profileData' => $profileData,
+        'student' => $student,
+        'courses' => $courses,
+        'assignments' => $assignments,
+        'quizSessions' => $quizSessions,
+        'friends' => $friends,
+        'pendingRequests' => $pendingRequests,
+        'auth' => $authData,
+        'locale' => $locale, // ⭐⭐⭐ Always defined now
+        'translations' => $translations, // ⭐⭐⭐ Always defined now
+        'availableLocales' => ['en', 'ms'],
+    ]);
+}
+
+private function loadPhpTranslations($locale)
+{
+    $fallbackLocale = 'en';
+    
+    try {
+        // Load the dashboard.php file for the requested locale
+        $translations = trans('common', [], $locale);
+        
+        // If no translations found, try fallback
+        if (is_array($translations) && !empty($translations)) {
+            return $translations;
+        }
+        
+        // Fallback to English
+        return trans('common', [], $fallbackLocale);
+        
+    } catch (\Exception $e) {
+        // If translation file doesn't exist, return empty
+        Log::error('Failed to load translations: ' . $e->getMessage());
+        return [];
+    }
+}
     /**
      * Get friends data for the current user
      */
