@@ -59,7 +59,7 @@ export default function SubtopicDetailModal({ isOpen, onClose, subtopicData, que
                 questionType: questionType
             });
 
-            console.log('Fetching from:', url);
+            // console.log('Fetching from:', url);
 
             const response = await fetch(url, {
                 headers: {

@@ -56,7 +56,7 @@ export default function QuestionNavbar({ title, visible = true }) {
                     <li><Link href="#" className="hover:underline">General Learning</Link></li>
                   </ul>
                 </div>
-                <div>
+                {/* <div>
                   <h4 className="mb-2 border-b pb-1 text-sm font-semibold text-gray-700">
                     Games
                   </h4>
@@ -66,7 +66,7 @@ export default function QuestionNavbar({ title, visible = true }) {
                   <ul className="space-y-1 text-sm text-gray-600">
                     <li><Link href="/quiz-page" className="hover:underline">Quiz</Link></li>
                   </ul>
-                </div>
+                </div> */}
               </div>
             </div>
           </div>
@@ -117,7 +117,7 @@ export default function QuestionNavbar({ title, visible = true }) {
                 <Dropdown.Content>
                   <Dropdown.Link href={route('profile.edit')}>Profile</Dropdown.Link>
                   <Dropdown.Link href={route('logout')} method="post" as="button">
-                    Log Out
+                    Log 
                   </Dropdown.Link>
                 </Dropdown.Content>
               </Dropdown>

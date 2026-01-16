@@ -10,6 +10,14 @@ return [
     'not_specified' => 'Tidak dinyatakan',
     'form_4' => 'Tingkatan 4',
     'form_5' => 'Tingkatan 5',
+    'friend_requests' => 'Permintaan Rakan',
+    'new_assignment' => 'Tugasan Baru',
+    'my_courses' =>  'Kursus Saya',
+    'leaderboard' => 'Papan Kedudukan',
+    'rank' => 'Kedudukan',
+    'name' => 'Nama',
+    'schoool' => 'Sekolah',
+    'time' => 'Masa',
     
     // Friends
     'friends_ptrs' => 'Kawan PTRS',
@@ -33,10 +41,7 @@ return [
     'new' => 'baru',
     
     // Leaderboard
-    'leaderboard' => 'Papan Pendahulu',
-    'rank' => 'Kedudukan',
-    'name' => 'Nama',
-    'time' => 'Masa',
+   
     'no_quiz_data' => 'Tiada data kuiz lagi',
     'take_quiz' => 'Ambil kuiz untuk muncul di papan pendahulu!',
     'view_all_leaderboard' => 'Lihat Semua Papan Pendahulu',
@@ -53,6 +58,7 @@ return [
     'school subjects' => 'Subjek Sekolah',
     'school_subject' => 'Subjek Sekolah',
     'games' => 'Permainan',
+    'classroom' => 'Kelas',
 
     //
     'practice' => 'Latihan',

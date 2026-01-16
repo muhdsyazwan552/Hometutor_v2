@@ -1,5 +1,5 @@
 // resources/js/Layouts/SubjectLayout.jsx
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Link, usePage } from "@inertiajs/react";
 import SubjectNavbar from './SubjectNavbar';
 import StandardFooter from '@/Components/StandardFooter';
@@ -12,7 +12,6 @@ const formatTitle = (slug) => {
     .join(' ');
 };
 
-// Function to decode URL and normalize paths
 const normalizeUrl = (url) => {
   try {
     const decodedUrl = decodeURIComponent(url);
@@ -22,7 +21,6 @@ const normalizeUrl = (url) => {
   }
 };
 
-// Get clean path without query parameters
 const getCleanPath = (url) => {
   try {
     const normalized = normalizeUrl(url);
@@ -37,7 +35,8 @@ export default function SubjectLayout({
   subject,
   bgColor = "bg-white",
   onStandardChange,
-  selectedStandard: propSelectedStandard
+  selectedStandard: propSelectedStandard,
+  isLoading = false // Add this prop for loading state
 }) {
   const { url, props } = usePage();
   const { form, level_id, subject_id } = props;
@@ -45,8 +44,8 @@ export default function SubjectLayout({
   // Use the language hook
   const { t, locale } = useLanguage();
 
-  // Tab configuration - moved inside component to access t()
-  const TAB_CONFIG = [
+  // ✅ FIX: Wrap TAB_CONFIG in useMemo to prevent recreation every render
+  const TAB_CONFIG = useMemo(() => [
     {
       key: 'practice',
       label: t('practice', 'Practice'),
@@ -83,7 +82,7 @@ export default function SubjectLayout({
         }),
       isActive: () => route().current('subject-report-page')
     },
-  ];
+  ], [t, locale]); // ✅ Only recreate when locale changes
 
   const title = formatTitle(subject);
 
@@ -91,14 +90,14 @@ export default function SubjectLayout({
   const [internalSelectedStandard, setInternalSelectedStandard] = useState(propSelectedStandard || 'Form 4');
   const selectedStandard = propSelectedStandard !== undefined ? propSelectedStandard : internalSelectedStandard;
 
-  // Helper function to translate form levels
-  const translateFormLevel = (form) => {
+  // ✅ FIX: Wrap translateFormLevel in useCallback
+  const translateFormLevel = useMemo(() => {
     const formMap = {
       'Form 4': t('form_4', 'Form 4'),
       'Form 5': t('form_5', 'Form 5'),
     };
-    return formMap[form] || form;
-  };
+    return (form) => formMap[form] || form;
+  }, [t, locale]); // ✅ Only recreate when locale changes
 
   // Handle browser extension errors
   useEffect(() => {
@@ -132,7 +131,42 @@ export default function SubjectLayout({
   };
 
   return (
-    <div className={`min-h-screen ${bgColor}`}>
+    <div className={`min-h-screen ${bgColor} relative`}>
+      {/* Loading Overlay */}
+      {isLoading && (
+        <div className="fixed inset-0 bg-black bg-opacity-30 z-50 flex items-center justify-center">
+          <div className="bg-white rounded-lg p-8 shadow-2xl max-w-md w-full mx-4">
+            <div className="flex flex-col items-center justify-center">
+              {/* Spinner */}
+              <div className="relative">
+                <div className="w-20 h-20 border-4 border-gray-200 rounded-full"></div>
+                <div className="absolute top-0 left-0 w-20 h-20 border-4 border-[#8F3091] rounded-full border-t-transparent animate-spin"></div>
+              </div>
+              
+              {/* Loading Text */}
+              <div className="mt-6 text-center">
+                <h3 className="text-xl font-semibold text-gray-800 mb-2">
+                  {t('loading', 'Loading')}...
+                </h3>
+                <p className="text-gray-600">
+                  {t('loading_data', 'Loading report data, please wait')}
+                </p>
+              </div>
+              
+              {/* Progress Indicator (Optional) */}
+              <div className="mt-6 w-full bg-gray-200 rounded-full h-2">
+                <div className="bg-[#8F3091] h-2 rounded-full animate-pulse w-3/4"></div>
+              </div>
+              
+              {/* Loading Tips (Optional) */}
+              <div className="mt-4 text-sm text-gray-500 text-center">
+                <p>{t('loading_tip', 'This may take a few moments')}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       <SubjectNavbar title={subject} />
 
       {/* Header Section */}
@@ -145,11 +179,12 @@ export default function SubjectLayout({
             <div>
               <button
                 type="button"
-                className="inline-flex justify-center gap-x-1.5 bg-none py-2 text-sm font-semibold text-white shadow-none ring-none hover:bg-white/10 rounded-md px-2 transition-colors"
+                className="inline-flex justify-center gap-x-1.5 bg-none py-2 text-sm font-semibold text-white shadow-none ring-none hover:bg-white/10 rounded-md px-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 id="standard-filter-button"
                 aria-expanded={isDropdownOpen}
                 aria-haspopup="true"
                 onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                disabled={isLoading}
               >
                 {translateFormLevel(selectedStandard)}
                 <svg className="-mr-1 h-5 w-5 text-white/80" viewBox="0 0 20 20" fill="currentColor">
@@ -158,7 +193,7 @@ export default function SubjectLayout({
               </button>
             </div>
 
-            {isDropdownOpen && (
+            {isDropdownOpen && !isLoading && (
               <div
                 className="absolute left-0 z-10 mt-2 w-56 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black/5 focus:outline-none"
                 role="menu"
@@ -174,10 +209,11 @@ export default function SubjectLayout({
                     <button
                       key={standard.value}
                       type="button"
-                      className={`block w-full px-4 py-2 text-left text-sm ${selectedStandard === standard.value ? 'bg-sky-100 text-sky-700' : 'text-gray-700 hover:bg-gray-100'}`}
+                      className={`block w-full px-4 py-2 text-left text-sm ${selectedStandard === standard.value ? 'bg-sky-100 text-sky-700' : 'text-gray-700 hover:bg-gray-100'} disabled:opacity-50 disabled:cursor-not-allowed`}
                       role="menuitem"
                       tabIndex="-1"
                       onClick={() => handleStandardSelect(standard.value)}
+                      disabled={isLoading}
                     >
                       {standard.label}
                     </button>
@@ -202,7 +238,7 @@ export default function SubjectLayout({
                   className={`pb-4 relative text-sm font-medium whitespace-nowrap transition-all duration-200 ${isActive
                     ? "text-[#8F3091] font-semibold border-b-2 border-[#8F3091]"
                     : "text-gray-500 hover:text-gray-700 hover:border-b-2 hover:border-gray-300"
-                    }`}
+                    } ${isLoading ? 'opacity-50 pointer-events-none' : ''}`}
                   preserveScroll
                 >
                   {tab.label}
@@ -216,12 +252,12 @@ export default function SubjectLayout({
         </div>
       </div>
 
-      {/* Page Content */}
-      <div className="py-6 sm:py-8 lg:py-10 px-4 sm:px-6 lg:px-16 mt-0">
+      {/* Page Content with Loading Blur Effect */}
+      <div className={`py-6 sm:py-8 lg:py-10 px-4 sm:px-6 lg:px-16 mt-0 transition-all duration-300 ${isLoading ? 'opacity-50 blur-sm' : ''}`}>
         {children}
       </div>
 
-      <div className="mt-10">
+      <div className={`mt-10 transition-all duration-300 ${isLoading ? 'opacity-50 blur-sm' : ''}`}>
         <StandardFooter />
       </div>
     </div>

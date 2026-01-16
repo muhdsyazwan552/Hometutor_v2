@@ -99,7 +99,7 @@ const SubjectiveQuestionLayout = ({
         </div>
       </div>
 
-      {/* ✅ Blue compact header (appears when scrolling up after hiding) */}
+      {/* ✅ purple compact header (appears when scrolling up after hiding) */}
       <div className={`bg-[#8F3091] text-white p-3 shadow-lg fixed py-4 top-0 left-0 right-0 z-40 transition-transform duration-300 ${
           showBlueHeader ? 'translate-y-0' : '-translate-y-full'
         }`}

@@ -28,6 +28,8 @@ class Student extends Model
         'ic_number',
         'full_name',
         'level_id',
+        'class_name',
+        'profile_picture'
     ];
 
     /**

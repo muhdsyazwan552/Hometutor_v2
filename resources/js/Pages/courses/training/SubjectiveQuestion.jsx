@@ -1,7 +1,6 @@
 import React, { useState, useMemo, useEffect, useRef } from "react";
 import SubjectiveQuestionLayout from "@/Layouts/SubjectiveQuestionLayout";
 import ResultQuestion from "@/Pages/courses/training/ResultQuestion";
-import { getFeedbackMessage, getAnswerType } from "@/utils/answerFeedback";
 import { Head, usePage, router } from '@inertiajs/react'; // Added router import
 
 export default function SubjectiveQuestion({ title = "Subjective Quiz" }) {
@@ -16,15 +15,17 @@ export default function SubjectiveQuestion({ title = "Subjective Quiz" }) {
     sectionTitle,
     questions: initialQuestions,
     topic_id,
-    subject_id,  
+    subject_id,
     level_id,
     question_count,
     total_available
   } = pageProps;
 
+
+
   const [open, setOpen] = useState(false);
   const [zoomedImage, setZoomedImage] = useState("");
-  
+
   // Add missing state variables
   const [practiceStartTime, setPracticeStartTime] = useState(new Date().toISOString());
   const [quizCompleted, setQuizCompleted] = useState(false);
@@ -42,6 +43,26 @@ export default function SubjectiveQuestion({ title = "Subjective Quiz" }) {
       savePracticeSession();
     }
   }, [quizCompleted]);
+
+  // Add this useEffect near the top, after the other useEffects
+  useEffect(() => {
+    console.log('🔍 PAGE PROPS DEBUG:', {
+      subject,
+      standard,
+      topic,
+      topic_id,
+      subject_id,
+      level_id,
+      initialQuestionsCount: initialQuestions?.length || 0,
+      question_count,
+      total_available,
+      initialQuestionsPreview: initialQuestions?.map(q => ({
+        id: q.id,
+        schema: q.schema ? q.schema.substring(0, 50) + '...' : 'No schema',
+        question_text: q.question_text ? q.question_text.substring(0, 50) + '...' : 'No text'
+      }))
+    });
+  }, [subject, standard, topic, topic_id, subject_id, level_id, initialQuestions, question_count, total_available]);
 
   // Update handleSubmit to set quizCompleted
   const handleSubmit = () => {
@@ -206,112 +227,182 @@ export default function SubjectiveQuestion({ title = "Subjective Quiz" }) {
     setError("");
   };
 
-// In SubjectiveQuestion.jsx, update the handleCheckAnswer function:
+  // Process HTML content for better rendering - FIX FOR INLINE IMAGES
+const processHtmlContent = (html) => {
+  if (!html) return '';
+  
+  // First, handle the specific pattern from your database
+  // Example: <p>Diberi bahawa... <img> dengan lebar...</p>
+  
+  // Remove text-align: justify styles that might cause issues
+  let processedHtml = html.replace(/text-align:\s*justify;/g, '');
+  
+  // Replace paragraph tags with div for better control (paragraphs create block elements)
+  processedHtml = processedHtml.replace(/<p([^>]*)>/g, '<div$1 class="question-paragraph mb-4">');
+  processedHtml = processedHtml.replace(/<\/p>/g, '</div>');
+  
+  // Process images - make them inline with text
+  // Add inline display and vertical alignment
+  processedHtml = processedHtml.replace(
+    /<img([^>]*width="([^"]*)"[^>]*height="([^"]*)")/g,
+    '<img$1 class="inline-image align-middle mx-1 my-0 cursor-zoom-in" style="max-height: 28px; width: auto;"'
+  );
+  
+  // Fallback for images without width/height attributes
+  processedHtml = processedHtml.replace(
+    /<img([^>]*)>/g,
+    (match, attributes) => {
+      if (!match.includes('class=')) {
+        return `<img${attributes} class="inline-image align-middle mx-1 my-0 cursor-zoom-in" style="max-height: 28px; width: auto;">`;
+      }
+      return match.replace('class="', 'class="inline-image align-middle mx-1 my-0 cursor-zoom-in ');
+    }
+  );
+  
+  // Handle the non-breaking space entity
+  processedHtml = processedHtml.replace(/&nbsp;/g, ' ');
+  
+  // Handle the ndash entity
+  processedHtml = processedHtml.replace(/&ndash;/g, '–');
+  
+  return processedHtml;
+};
 
-const handleCheckAnswer = () => {
-  if (!answers[currentIndex].trim()) {
-    setError("⚠️ Please enter your answer first.");
-    return;
-  }
+  // In SubjectiveQuestion.jsx, update the handleCheckAnswer function:
 
-  const newChecked = [...checked];
-  newChecked[currentIndex] = true;
-  setChecked(newChecked);
+  const handleCheckAnswer = () => {
+    if (!answers[currentIndex].trim()) {
+      setError("⚠️ Please enter your answer first.");
+      return;
+    }
 
-  const newShowSchema = [...showSchema];
-  newShowSchema[currentIndex] = true;
-  setShowSchema(newShowSchema);
+    const newChecked = [...checked];
+    newChecked[currentIndex] = true;
+    setChecked(newChecked);
 
-  // For subjective questions, we'll consider it correct if they attempt
-  const newIsCorrect = [...isCorrect];
-  newIsCorrect[currentIndex] = true;
-  setIsCorrect(newIsCorrect);
+    const newShowSchema = [...showSchema];
+    newShowSchema[currentIndex] = true;
+    setShowSchema(newShowSchema);
 
-  // Record first attempt result
-  const newFirstTryResults = [...firstTryResults];
-  if (newFirstTryResults[currentIndex] === null) {
-    newFirstTryResults[currentIndex] = true;
-    setFirstTryResults(newFirstTryResults);
-  }
+    // For subjective questions, we'll consider it correct if they attempt
+    const newIsCorrect = [...isCorrect];
+    newIsCorrect[currentIndex] = true;
+    setIsCorrect(newIsCorrect);
 
-  // Calculate time taken for this question
-  const timeTaken = questionStartTime ? Math.floor((Date.now() - questionStartTime) / 1000) : 0;
+    // Record first attempt result
+    const newFirstTryResults = [...firstTryResults];
+    if (newFirstTryResults[currentIndex] === null) {
+      newFirstTryResults[currentIndex] = true;
+      setFirstTryResults(newFirstTryResults);
+    }
 
-  // Record the attempt for saving later
-  const attemptData = {
-    question_id: questions[currentIndex].id,
-    topic_id: topic_id,
-    choosen_answer_id: 0, // Always 0 for subjective
-    answer_status: 1, // Always 1 (considered correct for subjective)
-    question_type_id: 2, // Subjective
-    time_taken: timeTaken,
-    subjective_answer: answers[currentIndex], // Store the user's written answer
-    attempted_at: new Date().toISOString()
+    // Calculate time taken for this question
+    const timeTaken = questionStartTime ? Math.floor((Date.now() - questionStartTime) / 1000) : 0;
+
+    // Record the attempt for saving later
+    const attemptData = {
+      question_id: questions[currentIndex].id,
+      topic_id: topic_id,
+      choosen_answer_id: 0, // Always 0 for subjective
+      answer_status: 1, // Always 1 (considered correct for subjective)
+      question_type_id: 2, // Subjective
+      time_taken: timeTaken,
+      subjective_answer: answers[currentIndex], // Store the user's written answer
+      attempted_at: new Date().toISOString()
+    };
+
+    // Add to questionAttempts array
+    setQuestionAttempts(prev => {
+      const filtered = prev.filter(attempt => attempt.question_id !== questions[currentIndex].id);
+      return [...filtered, attemptData];
+    });
+
+    // Reset question timer for next question
+    setQuestionStartTime(Date.now());
+
+    // Play success sound
+    playSound('correct', 1.0);
   };
 
-  // Add to questionAttempts array
-  setQuestionAttempts(prev => {
-    const filtered = prev.filter(attempt => attempt.question_id !== questions[currentIndex].id);
-    return [...filtered, attemptData];
-  });
+  // Add questionStartTime state for tracking per-question time:
+  const [questionStartTime, setQuestionStartTime] = useState(Date.now());
 
-  // Reset question timer for next question
-  setQuestionStartTime(Date.now());
+  // Update handleNext to reset question timer:
+  const handleNext = () => {
+    if (currentIndex < questions.length - 1) {
+      setCurrentIndex(currentIndex + 1); // Changed from setCurrentQuestionIndex to setCurrentIndex
+      setError("");
+      setQuestionStartTime(Date.now()); // Reset timer for next question
+    } else {
+      handleSubmit();
+    }
+  };
 
-  // Play success sound
-  playSound('correct', 1.0);
-};
+  // Update the savePracticeSession function to include question_attempts:
+  const savePracticeSession = async () => {
+    const endTime = new Date().toISOString();
 
-// Add questionStartTime state for tracking per-question time:
-const [questionStartTime, setQuestionStartTime] = useState(Date.now());
+    try {
+      // Calculate answered and skipped questions
+      const answeredQuestions = answers.filter(answer => answer.trim() !== "").length;
+      const totalQuestions = questions.length;
+      const skippedQuestions = totalQuestions - answeredQuestions;
 
-// Update handleNext to reset question timer:
-const handleNext = () => {
-  if (currentIndex < questions.length - 1) {
-    setCurrentQuestionIndex(currentIndex + 1);
-    setError("");
-    setQuestionStartTime(Date.now()); // Reset timer for next question
-  } else {
-    handleSubmit();
-  }
-};
+      const response = await router.post('/practice-session/subjective', {
+        subject_id: subject_id,
+        topic_id: topic_id,
+        start_at: practiceStartTime,
+        end_at: endTime,
+        total_time_seconds: timeElapsed,
+        total_correct: answeredQuestions, // Number of questions answered
+        total_skipped: skippedQuestions,  // Total - answered
+        score: null,
+        question_attempts: questionAttempts // Add this line
+      });
 
-// Update the savePracticeSession function to include question_attempts:
-const savePracticeSession = async () => {
-  const endTime = new Date().toISOString();
+      console.log('✅ Subjective practice session saved:', {
+        answered: answeredQuestions,
+        skipped: skippedQuestions,
+        total: totalQuestions,
+        duration: timeElapsed + ' seconds',
+        attempts_sent: questionAttempts.length
+      });
+    } catch (error) {
+      console.error('❌ Failed to save subjective session:', error);
+    }
+  };
+
+  // Add questionAttempts state at the top with other state declarations:
+  const [questionAttempts, setQuestionAttempts] = useState([]);
+
+  const isImageUrl = (url) => {
+    if (!url || typeof url !== 'string') return false;
+
+    // If it contains HTML tags, it's not a plain image URL
+    if (/<[^>]+>/.test(url)) return false;
+
+    const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp', '.svg'];
+    const lowerUrl = url.toLowerCase();
+
+    return imageExtensions.some(ext => lowerUrl.endsWith(ext) || lowerUrl.includes(ext + '?'));
+  };
+
+  const isHtmlContent = (content) => {
+    if (!content || typeof content !== 'string') return false;
+
+    // Check for HTML tags
+    return /<[^>]+>/.test(content);
+  };
+
+  const containsImageTags = (html) => {
+    if (!html || typeof html !== 'string') return false;
+
+    // Check for <img> tags
+    return /<img[^>]*>/i.test(html);
+  };
+
   
-  try {
-    // Calculate answered and skipped questions
-    const answeredQuestions = answers.filter(answer => answer.trim() !== "").length;
-    const totalQuestions = questions.length;
-    const skippedQuestions = totalQuestions - answeredQuestions;
-    
-    const response = await router.post('/practice-session/subjective', {
-      subject_id: subject_id,
-      topic_id: topic_id,
-      start_at: practiceStartTime,
-      end_at: endTime,
-      total_time_seconds: timeElapsed,
-      total_correct: answeredQuestions, // Number of questions answered
-      total_skipped: skippedQuestions,  // Total - answered
-      score: null,
-      question_attempts: questionAttempts // Add this line
-    });
-    
-    console.log('✅ Subjective practice session saved:', {
-      answered: answeredQuestions,
-      skipped: skippedQuestions,
-      total: totalQuestions,
-      duration: timeElapsed + ' seconds',
-      attempts_sent: questionAttempts.length
-    });
-  } catch (error) {
-    console.error('❌ Failed to save subjective session:', error);
-  }
-};
 
-// Add questionAttempts state at the top with other state declarations:
-const [questionAttempts, setQuestionAttempts] = useState([]);
 
 
 
@@ -330,22 +421,22 @@ const [questionAttempts, setQuestionAttempts] = useState([]);
 
 
 
-const resetQuiz = () => {
-  setAnswers(Array(questions.length).fill(""));
-  setError("");
-  setShowScore(false);
-  setQuizResults(null);
-  setChecked(Array(questions.length).fill(false));
-  setShowSchema(Array(questions.length).fill(false));
-  setIsCorrect(Array(questions.length).fill(null));
-  setFirstTryResults(Array(questions.length).fill(null));
-  setCurrentIndex(0);
-  setQuestionAttempts([]); // Add this line
-  // Reset timer
-  setTimeElapsed(0);
-  setTimerRunning(true);
-  setQuestionStartTime(Date.now()); // Add this line
-};
+  const resetQuiz = () => {
+    setAnswers(Array(questions.length).fill(""));
+    setError("");
+    setShowScore(false);
+    setQuizResults(null);
+    setChecked(Array(questions.length).fill(false));
+    setShowSchema(Array(questions.length).fill(false));
+    setIsCorrect(Array(questions.length).fill(null));
+    setFirstTryResults(Array(questions.length).fill(null));
+    setCurrentIndex(0);
+    setQuestionAttempts([]); // Add this line
+    // Reset timer
+    setTimeElapsed(0);
+    setTimerRunning(true);
+    setQuestionStartTime(Date.now()); // Add this line
+  };
 
 
 
@@ -364,9 +455,8 @@ const resetQuiz = () => {
         return (
           <div
             key={index}
-            className={`w-8 h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center text-white font-semibold transition-all duration-300 ${circleColor} ${
-              index === currentIndex ? 'ring-2 md:ring-4 ring-blue-200 scale-110' : ''
-            } flex-shrink-0`}
+            className={`w-8 h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center text-white font-semibold transition-all duration-300 ${circleColor} ${index === currentIndex ? 'ring-2 md:ring-4 ring-blue-200 scale-110' : ''
+              } flex-shrink-0`}
           >
             {index + 1}
           </div>
@@ -395,11 +485,10 @@ const resetQuiz = () => {
           <button
             onClick={handleCheckAnswer}
             disabled={!answers[currentIndex].trim()}
-            className={`w-full sm:w-auto px-4 py-3 md:px-6 md:py-3 rounded-lg font-medium shadow-md transition-all duration-300 text-sm md:text-base hover:scale-105 ${
-              !answers[currentIndex].trim()
-                ? 'bg-gray-400 text-gray-200 cursor-not-allowed'
-                : 'bg-green-600 text-white hover:bg-green-700 animate-pulse'
-            }`}
+            className={`w-full sm:w-auto px-4 py-3 md:px-6 md:py-3 rounded-lg font-medium shadow-md  text-sm md:text-base hover:scale-105 ${!answers[currentIndex].trim()
+              ? 'bg-gray-400 text-gray-200 cursor-not-allowed'
+              : 'bg-green-600 text-white hover:bg-green-700 '
+              }`}
           >
             Check Answer
           </button>
@@ -409,13 +498,13 @@ const resetQuiz = () => {
         {checked[currentIndex] && (
           <button
             onClick={handleNext}
-            className="w-full sm:w-auto bg-blue-600 text-white px-6 py-3 md:px-8 md:py-4 rounded-lg hover:bg-blue-700 transition-all duration-300 font-medium shadow-md text-sm md:text-lg hover:scale-105"
+            className="w-full sm:w-auto bg-blue-600 text-white px-6 py-3 md:px-8 md:py-4 rounded-lg hover:bg-blue-700  font-medium shadow-md text-sm md:text-lg"
           >
             {currentIndex < questions.length - 1 ? (
               <>
                 <span className="hidden sm:inline">Next Question</span>
                 <span className="sm:hidden">Next</span>
-                <span className="hidden md:inline"> →</span>
+                
               </>
             ) : (
               'Finish Quiz 🎉'
@@ -460,77 +549,178 @@ const resetQuiz = () => {
           </div>
         )}
 
+        
         {/* Question Card */}
-        <div className="bg-white opacity-100 rounded-xl md:rounded-2xl shadow-lg md:shadow-xl p-4 md:p-6 mb-6 md:mb-10 transition-all duration-300 hover:shadow-xl md:hover:shadow-2xl">
-          {/* Mobile Question Counter */}
-          <div className="lg:hidden mb-4 pb-3 border-b border-gray-200">
-            <h2 className="text-lg font-semibold text-gray-800 text-center">
-              Question {currentIndex + 1} of {questions.length}
-            </h2>
-          </div>
+<div className="bg-white opacity-100 rounded-xl md:rounded-2xl shadow-lg md:shadow-xl p-4 md:p-6 mb-6 md:mb-10 transition-all duration-300 hover:shadow-xl md:hover:shadow-2xl">
+  {/* Mobile Question Counter */}
+  <div className="lg:hidden mb-4 pb-3 border-b border-gray-200">
+    <h2 className="text-lg font-semibold text-gray-800 text-center">
+      Question {currentIndex + 1} of {questions.length}
+    </h2>
+  </div>
 
-          {/* Question content with HTML rendering */}
-          <div className="text-gray-700 mb-4 md:mb-6 text-base md:text-lg question-content">
-            {questions[currentIndex]?.question ? (
-              <div
-                className="prose max-w-none prose-sm md:prose-base"
-                dangerouslySetInnerHTML={{ __html: questions[currentIndex].question }}
-              />
-            ) : (
-              <p className="text-red-500">No question content available</p>
-            )}
-          </div>
+  {/* Question content with HTML rendering */}
+  <div className="text-gray-700 mb-4 md:mb-6 text-base md:text-lg question-content">
+    {questions[currentIndex]?.question ? (
+    <div className="smart-question-renderer">
+      <div 
+        dangerouslySetInnerHTML={{
+          __html: processHtmlContent(questions[currentIndex].question)
+        }}
+      />
+      <style jsx>{`
+        .question-paragraph {
+          line-height: 1.6;
+        }
+        .inline-image {
+          display: inline-block;
+          vertical-align: middle;
+          margin: 0 4px;
+          transition: transform 0.2s ease;
+        }
+        .inline-image:hover {
+          transform: scale(1.05);
+        }
+      `}</style>
+    </div>
+  ) : (
+    <p className="text-red-500">No question content available</p>
+  )}
+  </div>
 
-          <span className="text-gray-600 text-sm md:text-md mb-3 md:mb-4 block">Type your answer below:</span>
+  <span className="text-gray-600 text-sm md:text-md mb-3 md:mb-4 block">Type your answer below:</span>
 
-          {/* Answer input */}
-          <textarea
-            value={answers[currentIndex]}
-            onChange={(e) => handleAnswerChange(e.target.value)}
-            rows={4}
-            className="w-full resize-none border-2 border-gray-300 rounded-lg md:rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-base md:text-lg font-medium mb-4 md:mb-6 p-3 md:p-4 bg-white transition-all duration-200"
-            placeholder="Type your detailed answer with explanations and working here..."
-            disabled={checked[currentIndex]}
-          />
+  {/* Answer input */}
+  <textarea
+    value={answers[currentIndex]}
+    onChange={(e) => handleAnswerChange(e.target.value)}
+    rows={4}
+    className="w-full resize-none border-2 border-gray-300 rounded-lg md:rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-base md:text-lg font-medium mb-4 md:mb-6 p-3 md:p-4 bg-white transition-all duration-200"
+    placeholder="Type your detailed answer with explanations and working here..."
+    disabled={checked[currentIndex]}
+  />
 
-          {/* Error */}
-          {error && (
-            <div className="bg-red-50 border border-red-200 rounded-lg md:rounded-xl p-3 md:p-4 mb-3 md:mb-4 animate-shake">
-              <p className="text-red-600 font-medium text-sm md:text-base">{error}</p>
-            </div>
-          )}
+  {/* Error */}
+  {error && (
+    <div className="bg-red-50 border border-red-200 rounded-lg md:rounded-xl p-3 md:p-4 mb-3 md:mb-4 animate-shake">
+      <p className="text-red-600 font-medium text-sm md:text-base">{error}</p>
+    </div>
+  )}
 
-          {/* Schema answer (only after check) */}
-          {checked[currentIndex] && (
-            <div className="mb-4">
-              <button
-                onClick={toggleSchema}
-                className="w-full sm:w-auto mb-2 px-4 py-2 md:px-6 md:py-3 rounded-lg md:rounded-xl shadow bg-yellow-500 hover:bg-yellow-600 text-white font-medium transition-all duration-300 hover:scale-105 text-sm md:text-base"
-              >
-                {showSchema[currentIndex] ? "Hide Schema Answer" : "Show Schema Answer"}
-              </button>
+  {/* Buttons Section */}
+  <div className="flex flex-col gap-3">
+   
+    
 
-              {showSchema[currentIndex] && (
-                <div className="p-3 md:p-4 bg-green-50 border-2 border-green-200 rounded-lg md:rounded-xl shadow-sm animate-fade-in">
-                  <h3 className="text-green-800 font-semibold mb-2 flex items-center text-sm md:text-base">
-                    <svg className="w-4 h-4 md:w-5 md:h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    Schema Answer:
-                  </h3>
-                  {questions[currentIndex]?.schema ? (
-                    <div
-                      className="text-green-700 text-base md:text-lg prose max-w-none prose-sm md:prose-base"
-                      dangerouslySetInnerHTML={{ __html: questions[currentIndex].schema }}
-                    />
-                  ) : (
-                    <p className="text-green-700">No schema answer available</p>
-                  )}
-                </div>
-              )}
-            </div>
-          )}
+    {/* Schema Toggle Button - shown AFTER checking */}
+    {checked[currentIndex] && (
+      <button
+        onClick={toggleSchema}
+        className="max-w-xs sm:w-auto px-2 py-2 md:px-2 md:py-3 rounded-lg md:rounded-xl shadow bg-yellow-500 hover:bg-yellow-600 text-white font-medium transition-all duration-300 hover:scale-105 text-xs md:text-sm"
+      >
+        {showSchema[currentIndex] ? "Hide Schema Answer" : "Show Schema Answer"}
+      </button>
+    )}
+
+   
+  </div>
+
+  {/* Schema Content - shown when toggled ON */}
+  {checked[currentIndex] && showSchema[currentIndex] && (
+    <div className="mt-4 p-3 md:p-4 bg-green-50 border-2 border-green-200 rounded-lg md:rounded-xl shadow-sm animate-fade-in">
+      <h3 className="text-green-800 font-semibold mb-2 flex items-center text-sm md:text-base">
+        <svg className="w-4 h-4 md:w-5 md:h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+        Schema Answer:
+      </h3>
+      
+      {questions[currentIndex]?.schema ? (
+        (() => {
+          const schema = questions[currentIndex].schema;
+
+          // Case 1: HTML content with images
+          if (isHtmlContent(schema) && containsImageTags(schema)) {
+            return (
+              <div className="text-green-700">
+                <div 
+                  className="prose max-w-none prose-sm md:prose-base"
+                  dangerouslySetInnerHTML={{ __html: schema }}
+                />
+              </div>
+            );
+          }
+          
+          // Case 2: HTML content without images
+          else if (isHtmlContent(schema)) {
+            return (
+              <div className="text-green-700 text-base md:text-lg prose max-w-none prose-sm md:prose-base">
+                <div dangerouslySetInnerHTML={{ __html: schema }} />
+              </div>
+            );
+          }
+          
+          // Case 3: Plain image URL
+          else if (isImageUrl(schema)) {
+            return (
+              <div className="flex flex-col items-center">
+                <img
+                  src={schema}
+                  alt="Schema Answer"
+                  className="max-w-full h-auto rounded-lg shadow-md max-h-96 object-contain border border-gray-200"
+                  onError={(e) => {
+                    console.error('❌ Failed to load schema image:', schema);
+                    e.target.style.display = 'none';
+                    if (!e.target.parentNode.querySelector('.image-fallback')) {
+                      const fallback = document.createElement('div');
+                      fallback.className = 'image-fallback text-red-500 text-center p-4 bg-red-50 rounded-lg mt-2';
+                      fallback.textContent = `Failed to load schema image`;
+                      e.target.parentNode.appendChild(fallback);
+                    }
+                  }}
+                  onLoad={() => {
+                    console.log('✅ Schema image loaded successfully');
+                  }}
+                />
+              </div>
+            );
+          }
+          
+          // Case 4: Regular URL (not an image)
+          else if (schema.startsWith('http://') || schema.startsWith('https://')) {
+            return (
+              <div className="text-green-700">
+                <p className="mb-2">Schema answer is available at:</p>
+                <a
+                  href={schema}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-600 hover:text-blue-800 underline break-all bg-blue-50 p-2 rounded block"
+                >
+                  {schema}
+                </a>
+              </div>
+            );
+          }
+          
+          // Case 5: Plain text
+          else {
+            return (
+              <div className="text-green-700 text-base md:text-lg whitespace-pre-wrap">
+                {schema}
+              </div>
+            );
+          }
+        })()
+      ) : (
+        <div className="text-red-500 bg-red-50 p-3 rounded-lg">
+          <p>No schema answer available for this question.</p>
         </div>
+      )}
+    </div>
+  )}
+</div>
+
       </div>
 
       {/* Zoom Modal */}
@@ -595,7 +785,7 @@ const resetQuiz = () => {
 
       {/* Custom CSS for animations and responsive design */}
       <style>{`
-        @keyframes shake {
+@keyframes shake {
           0%, 100% { transform: translateX(0); }
           25% { transform: translateX(-5px); }
           75% { transform: translateX(5px); }
@@ -607,48 +797,31 @@ const resetQuiz = () => {
         .animate-shake { animation: shake 0.5s ease-in-out; }
         .animate-fade-in { animation: fade-in 0.5s ease-out; }
         
-        /* Style for HTML content */
-        .prose ol {
-          list-style-type: lower-roman;
-          margin-left: 1.5rem;
-          margin-bottom: 1rem;
-        }
-        .prose li {
-          margin-bottom: 0.5rem;
-          line-height: 1.6;
-        }
-        .prose img {
-          border-radius: 0.5rem;
-          border: 1px solid #e5e7eb;
-          box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
-          margin: 1rem auto;
+        /* Improve table responsiveness */
+        .prose table {
           display: block;
-          cursor: zoom-in;
-          max-width: 100%;
-          height: auto;
+          width: 100%;
+          overflow-x: auto;
+          -webkit-overflow-scrolling: touch;
         }
-        .prose p {
-          margin-bottom: 1rem;
-          line-height: 1.6;
+        
+        /* Better image rendering */
+        .smart-question-renderer img {
+          transition: transform 0.3s ease;
         }
+        .smart-question-renderer img:hover {
+          transform: scale(1.02);
+        }
+        
+        /* Improve code block styling */
+        .prose code {
+          background-color: #f3f4f6;
+          padding: 0.2rem 0.4rem;
+          border-radius: 0.25rem;
+          font-family: 'Courier New', monospace;
+        }
+`}</style>
 
-        /* Mobile-specific styles */
-        @media (max-width: 640px) {
-          .prose ol {
-            margin-left: 1rem;
-          }
-          .prose img {
-            margin: 0.5rem auto;
-          }
-        }
-
-        /* Tablet-specific styles */
-        @media (min-width: 641px) and (max-width: 1024px) {
-          .prose ol {
-            margin-left: 1.25rem;
-          }
-        }
-      `}</style>
     </>
   );
 }

@@ -8,6 +8,7 @@ import { useLanguage } from '@/Contexts/LanguageContext';
 export default function Dashboard() {
   const { t, locale, translations } = useLanguage();
   const pageProps = usePage().props;
+  const { student } = usePage().props;
 
     useEffect(() => {
     console.log('Current locale:', locale);
@@ -26,6 +27,8 @@ export default function Dashboard() {
 
   const friendsData = friends || [];
   const friendRequestsData = pendingRequests || [];
+
+  
 
   // Format time to MM:SS
   const formatTime = (seconds) => {
@@ -57,33 +60,6 @@ export default function Dashboard() {
     .join("")
     .toUpperCase();
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setShowEmoji((prev) => !prev);
-    }, 2000); // change every 2 seconds
-
-    return () => clearInterval(interval);
-  }, []);
-
-  const handlePostSubmit = () => {
-    if (newPostContent.trim()) {
-      const newPost = {
-        id: posts.length + 1,
-        author: user.name,
-        period: "Your period",
-        teacher: "Your teacher",
-        date: new Date().toLocaleDateString('en-US', {
-          year: 'numeric',
-          month: 'long',
-          day: 'numeric'
-        }),
-        content: newPostContent
-      };
-      setPosts([newPost, ...posts]);
-      setNewPostContent("");
-      setShowNewPostForm(false);
-    }
-  };
 
   // Handle accept friend request
   const handleAcceptRequest = (requestId) => {
@@ -300,100 +276,107 @@ export default function Dashboard() {
             <div className="grid md:grid-cols-2 md:gap-4">
               {/* Profile Card */}
               <motion.div
-                className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden mb-2 lg:col-span-2 xl:col-span-2 h-96"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3 }}
-              >
-                {/* Header */}
-                <div className="px-4 sm:px-5 pt-4 sm:pt-5 pb-3">
-                  <h2 className="text-lg font-semibold text-gray-800 flex items-center">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="h-5 w-5 mr-2 text-indigo-500"
-                      viewBox="0 0 20 20"
-                      fill="currentColor"
-                    >
-                      <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
-                    </svg>
-                    {t( 'profile', 'Profile')}
-                  </h2>
-                </div>
+    className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden mb-2 lg:col-span-2 xl:col-span-2 h-96"
+    initial={{ opacity: 0, y: 20 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ duration: 0.3 }}
+  >
+    {/* Header */}
+    <div className="px-4 sm:px-5 pt-4 sm:pt-5 pb-3">
+      <h2 className="text-lg font-semibold text-gray-800 flex items-center">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          className="h-5 w-5 mr-2 text-indigo-500"
+          viewBox="0 0 20 20"
+          fill="currentColor"
+        >
+          <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
+        </svg>
+        {t( 'profile', 'Profile')}
+      </h2>
+    </div>
 
-                {/* Profile Section */}
-                <div className="px-4 sm:px-5 pb-4 sm:pb-5 md:col-span-1">
-                  <div className="flex flex-col items-center text-center mb-4 sm:mb-5">
-                    {/* Avatar */}
-                    <div className="relative mb-3 sm:mb-4">
-                      <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-gradient-to-r from-blue-400 to-indigo-500 flex items-center justify-center text-white font-semibold text-lg sm:text-xl border-4 border-white shadow-lg">
-                        <AnimatePresence mode="wait">
-                          <motion.span
-                            key={showEmoji ? 'emoji' : 'initials'}
-                            initial={{ opacity: 0, scale: 0.8 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            exit={{ opacity: 0, scale: 0.8 }}
-                            transition={{ duration: 0.2 }}
-                          >
-                            {showEmoji ? '😎' : initials}
-                          </motion.span>
-                        </AnimatePresence>
-                      </div>
-                      {/* Online Status Indicator */}
-                      <div className="absolute bottom-0 right-0 w-3 h-3 sm:w-4 sm:h-4 bg-green-400 rounded-full border-2 border-white"></div>
-                    </div>
+    {/* Profile Section */}
+    <div className="px-4 sm:px-5 pb-4 sm:pb-5 md:col-span-1">
+      <div className="flex flex-col items-center text-center mb-4 sm:mb-5">
+        {/* Avatar */}
+        <div className="relative mb-2 sm:mb-2">
+          {/* Profile Picture Container */}
+          <div className="relative w-20 h-20 sm:w-22 sm:h-22 rounded-full overflow-hidden border-4 border-white shadow-lg">
+            {/* Profile Picture */}
+            {student?.profile_picture ? (
+              <img
+                src={`/storage/${student.profile_picture}`}
+                alt="Profile"
+                className="w-full h-full object-cover"
+              />
+            ) : null}
+            
+            {/* Fallback with initials and gradient */}
+            <div 
+              className={`${student?.profile_picture ? 'hidden' : 'flex'} w-full h-full items-center justify-center bg-gradient-to-r from-blue-400 to-indigo-500 text-white font-semibold text-lg sm:text-xl`}
+            >
+              {user?.name?.charAt(0)?.toUpperCase() ?? 'U'}
+            </div>
+          </div>
+          
+          {/* Online Status Indicator */}
+          <div className="absolute bottom-0 right-0 w-3 h-3 sm:w-4 sm:h-4 bg-green-400 rounded-full border-2 border-white"></div>
+        </div>
 
-                    {/* Name & Email */}
-                    <div>
-                      <h3 className="font-semibold text-gray-800 text-base sm:text-lg">
-                        {profileData?.name || user.name}
-                      </h3>
-                    </div>
-                  </div>
+        {/* Name & Email */}
+        <div>
+          <h3 className="font-semibold text-gray-800 text-base sm:text-lg">
+            {profileData?.name || user.name}
+          </h3>
+        </div>
+      </div>
 
-                  {/* Profile Details */}
-                  <div className="space-y-3 sm:space-y-4">
-                    <div className="flex items-center justify-between py-2 border-b border-gray-100">
-                      <div className="flex items-center">
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          className="h-4 w-4 mr-2 text-gray-400"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
-                        >
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                        </svg>
-                        <span className="text-xs sm:text-sm text-gray-600">
-                          {t( 'school','School')}
-                        </span>
-                      </div>
-                      <span className="text-xs sm:text-sm font-medium text-gray-800 truncate ml-2 max-w-[120px] sm:max-w-none">
-                        {profileData?.school || 'Not specified'}
-                      </span>
-                    </div>
+      {/* Profile Details */}
+      <div className="space-y-3 sm:space-y-4">
+        <div className="flex items-center justify-start py-2 border-b border-gray-100">
+          <div className="flex items-center">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-4 w-4 mr-2 text-gray-400"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+            </svg>
+            <span className="text-xs sm:text-sm text-gray-600">
+              {t( 'school','School')}
+            </span>
+          </div>
+          <span className="text-xs sm:text-sm font-medium text-gray-800 truncate ml-2 max-w-[120px] sm:max-w-none">
+            {profileData?.school || 'Not specified'}
+          </span>
+        </div>
 
-                    <div className="flex items-center justify-between py-2 border-b border-gray-100">
-                      <div className="flex items-center">
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          className="h-4 w-4 mr-2 text-gray-400"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
-                        >
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7" />
-                        </svg>
-                        <span className="text-xs sm:text-sm text-gray-600">
-                          {t('grade','Grade')}
-                        </span>
-                      </div>
-                      <span className="text-xs sm:text-sm font-medium text-gray-800">
-                        {profileData?.grade || 'Form 5'}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </motion.div>
+        <div className="flex items-center justify-start gap-6 py-2 border-b border-gray-100">
+          <div className="flex items-center">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-4 w-4 mr-2 text-gray-400"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7" />
+            </svg>
+            <span className="text-xs sm:text-sm text-gray-600">
+              {t('classroom','Classroom')}
+            </span>
+          </div>
+          <span className="text-xs sm:text-sm font-medium text-gray-800">
+            {profileData?.grade || 'Form 5'}
+          </span>
+        </div>
+      </div>
+    </div>
+  </motion.div>
+
 
               {/* Friends Card */}
               <div className="lg:col-span-2 xl:col-span-2">
@@ -472,7 +455,7 @@ export default function Dashboard() {
                   <div className="p-3">
                     <div className="flex items-center justify-between mb-2">
                       <h3 className="text-sm font-semibold">
-                        Friend Requests
+                        {t('friend_requests','Friend Requests')}
                       </h3>
                       {friendRequestsData.length > 0 && (
                         <span className="text-xs text-blue-600 font-medium">
@@ -557,7 +540,7 @@ export default function Dashboard() {
               transition={{ duration: 0.3, delay: 0.2 }}
               className="bg-white rounded-lg shadow-sm border border-gray-100 mb-2"
             >
-              <h2 className="text-sm font-bold mb-4 px-3 sm:px-4 pt-3 pb-2 border-b border-grey">My Courses</h2>
+              <h2 className="text-sm font-bold mb-4 px-3 sm:px-4 pt-3 pb-2 border-b border-grey">{t('my_courses','My Courses')}</h2>
 
               <div className="grid grid-cols-1 gap-3 p-3 max-h-[350px] sm:max-h-[150px] overflow-y-auto">
                 {courses && courses.map((course, index) => (
@@ -690,7 +673,7 @@ export default function Dashboard() {
                       />
                     </div>
                     <h2 className="text-2xl sm:text-3xl md:text-4xl font-semibold text-gray-800 bg-gray-100 rounded-t-xl border-b-2 py-2 sm:py-3 flex items-center justify-center">
-                      Leaderboard
+                      {t('leaderboard','Leaderboard')}
                     </h2>
                   </div>
 
@@ -700,10 +683,10 @@ export default function Dashboard() {
                       <div className="space-y-1 sm:space-y-2">
                         {/* Table Header */}
                         <div className="grid grid-cols-12 gap-1 sm:gap-2 px-2 sm:px-3 py-2 sm:py-3 bg-gray-100 rounded-b-xl text-xs font-semibold text-gray-600 uppercase tracking-wider border-b border-gray-200">
-                          <div className="col-span-1 text-center text-xs">Rank</div>
-                          <div className="col-span-4 text-xs lg:ms-2">Name</div>
-                          <div className="col-span-5 text-xs">School</div>
-                          <div className="col-span-2 text-right text-xs">Time</div>
+                          <div className="col-span-1 text-center text-xs">{t('rank','Rank')}</div>
+                          <div className="col-span-4 text-xs lg:ms-2"></div>
+                          <div className="col-span-5 text-xs">{t('school','School')}</div>
+                          <div className="col-span-2 text-right text-xs">{t('time','Time')}</div>
                         </div>
 
                         {/* Table Rows */}
@@ -771,7 +754,9 @@ export default function Dashboard() {
 
                   {/* Footer */}
                   <div className="p-3 border-t-4 border-gray-100 bg-transparent opacity-90 rounded-b-md">
-                    <button className="w-full text-center py-1.5 text-gray-50 hover:text-purple-700 text-sm font-medium transition duration-200">
+                    <button 
+                    onClick={() => router.visit(route('quiz-page'))}
+                    className="w-full text-center py-1.5 text-gray-50 hover:text-purple-700 text-sm font-medium transition duration-200">
                       View All Leaderboard
                     </button>
                   </div>
@@ -848,7 +833,9 @@ export default function Dashboard() {
 
                 {/* Footer */}
                 <div className="p-3 border-t border-gray-100 bg-gray-50">
-                  <button className="w-full text-center py-1.5 text-blue-600 hover:text-blue-700 text-xs font-medium transition duration-200">
+                  <button 
+                  onClick={() => router.visit(route('quiz-page'))}
+                  className="w-full text-center py-1.5 text-blue-600 hover:text-blue-700 text-xs font-medium transition duration-200">
                     View All Teachers →
                   </button>
                 </div>

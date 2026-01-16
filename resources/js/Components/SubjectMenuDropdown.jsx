@@ -111,7 +111,7 @@ export default function SubjectMenuDropdown({ isOpen, setIsOpen, title }) {
             </div>
 
             {/* VideoTube */}
-            <div>
+            {/* <div>
               <h4 className="mb-2 border-b pb-1 text-sm font-semibold text-gray-700">
                 {t('videotube', 'VideoTube')}
               </h4>
@@ -126,10 +126,10 @@ export default function SubjectMenuDropdown({ isOpen, setIsOpen, title }) {
                   </Link>
                 </li>
               </ul>
-            </div>
+            </div> */}
 
             {/* Games */}
-            <div>
+            {/* <div>
               <h4 className="mb-2 border-b pb-1 text-sm font-semibold text-gray-700">
                 {t('games', 'Games')}
               </h4>
@@ -153,7 +153,7 @@ export default function SubjectMenuDropdown({ isOpen, setIsOpen, title }) {
                   </Link>
                 </li>
               </ul>
-            </div>
+            </div> */}
           </div>
         </div>
       </div>

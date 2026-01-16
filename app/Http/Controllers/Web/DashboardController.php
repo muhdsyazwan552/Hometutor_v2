@@ -46,12 +46,13 @@ public function index()
     // Check if user is authenticated
     if (Auth::check()) {
         $user = Auth::user();
+        $user->load('student');
         
        if ($user->language) {
-            $userLang = $user->language;  // ✅ No conversion needed
+            $userLang = $user->language;  
             
             if ($userLang !== $locale) {
-                $user->update(['language' => $locale]);  // ✅ Store 'ms' directly
+                $user->update(['language' => $locale]);  
                 
                 Log::info('Language synced:', [
                     'user_was' => $userLang,
@@ -77,8 +78,9 @@ public function index()
             'name' => $student ? $student->name : $user->name,
             'email' => $student ? $student->email : $user->email,
             'school' => $student && $student->school ? $student->school->name : 'Add your school',
-            'grade' => $student && $student->level ? $student->level->name_my : 'Form 5',
-            'display_name' => $student ? $student->display_name : $user->display_name
+            'grade' => $student->class_name ?? 'Form 5',
+            'display_name' => $student ? $student->display_name : $user->display_name,
+            'profile_picture' => $user->profile_picture ?? null,
         ];
         
         $authData = ['user' => $user];
@@ -143,8 +145,8 @@ public function index()
         'friends' => $friends,
         'pendingRequests' => $pendingRequests,
         'auth' => $authData,
-        'locale' => $locale, // ⭐⭐⭐ Always defined now
-        'translations' => $translations, // ⭐⭐⭐ Always defined now
+        'locale' => $locale, 
+        'translations' => $translations, 
         'availableLocales' => ['en', 'ms'],
     ]);
 }

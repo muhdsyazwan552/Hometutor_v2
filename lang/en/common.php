@@ -10,6 +10,14 @@ return [
     'not_specified' => 'Not specified',
     'form_4' => 'Form 4',
     'form_5' => 'Form 5',
+    'friend_requests' => 'Friend Requests',
+    'new_assignment' => 'New Assignment',
+    'my_courses' =>  'My Courses',
+    'leaderboard' => 'Leaderboard',
+    'rank' => 'Rank',
+    'name' => 'Name',
+    'schoool' => 'School',
+    'time' => 'Time',
     
     // Friends
     'friends_ptrs' => 'PTRS Friends',
@@ -33,10 +41,7 @@ return [
     'new' => 'new',
     
     // Leaderboard
-    'leaderboard' => 'Leaderboard',
-    'rank' => 'Rank',
-    'name' => 'Name',
-    'time' => 'Time',
+    
     'no_quiz_data' => 'No quiz data available yet',
     'take_quiz' => 'Take a quiz to appear on the leaderboard!',
     'view_all_leaderboard' => 'View All Leaderboard',

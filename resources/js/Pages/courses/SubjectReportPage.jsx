@@ -1,5 +1,4 @@
-// resources/js/Pages/courses/SubjectReportPage.jsx
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { usePage, router } from '@inertiajs/react';
 import SubjectLayout from '@/Layouts/SubjectLayout';
 import DonutChart from '@/Components/ChartJsDonut';
@@ -15,7 +14,8 @@ export default function SubjectReportPage() {
     subject_id,
     level_id,
     question_type = 'Objective',
-    topics = []
+    objective_topics = [],  
+    subjective_topics = [], 
   } = props;
 
   const [currentStandard, setCurrentStandard] = useState(form || 'Form 4');
@@ -24,27 +24,49 @@ export default function SubjectReportPage() {
   const [timeRange, setTimeRange] = useState('Last 7 Days');
   const [selectedSubtopic, setSelectedSubtopic] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+
+  // Get topics based on active tab
+  const topics = activeTab === 'Objective' ? objective_topics : subjective_topics;
 
   const handleStandardChange = (standard) => {
     setCurrentStandard(standard);
+    setIsLoading(true);
+    
     router.get(route('subject-report-page', {
       subject: subject_abbr || subject,
       form: standard,
       level_id: level_id,
       subject_id: subject_id,
-      question_type: activeTab
-    }));
+      question_type: activeTab,
+      preload_both: 'true'
+    }), {
+      preserveState: true,
+      preserveScroll: true,
+       onStart: () => setIsLoading(true),
+      onFinish: () => setIsLoading(false),
+      onError: () => setIsLoading(false),
+    });
   };
 
   const handleTabChange = (tab) => {
+    if (tab === activeTab) return;
+    
+    // Set loading state
+    setIsLoading(true);
     setActiveTab(tab);
+    
     router.get(route('subject-report-page', {
       subject: subject_abbr || subject,
       form: currentStandard,
       level_id: level_id,
       subject_id: subject_id,
       question_type: tab
-    }));
+    }), {
+      preserveState: true,
+      preserveScroll: true,
+      onFinish: () => setIsLoading(false),
+    });
   };
 
   const handleTimeRangeChange = (range) => {
@@ -68,6 +90,38 @@ export default function SubjectReportPage() {
     setSelectedSubtopic(null);
   };
 
+  // Loading skeleton component
+  const LoadingSkeleton = () => (
+    <div className="space-y-4">
+      {[1, 2, 3].map((i) => (
+        <div key={i} className="border border-gray-200 rounded-lg overflow-hidden bg-white">
+          {/* Topic header skeleton */}
+          <div className="px-6 py-4 border-b border-gray-200 animate-pulse">
+            <div className="flex items-center space-x-3">
+              <div className="w-5 h-5 bg-gray-300 rounded"></div>
+              <div className="h-4 bg-gray-300 rounded w-1/3"></div>
+            </div>
+          </div>
+          
+          {/* Table skeleton */}
+          <div className="bg-gray-200 p-6">
+            <div className="space-y-4">
+              {[1, 2, 3].map((j) => (
+                <div key={j} className="grid grid-cols-5 gap-4 items-center py-3 px-4">
+                  <div className="h-4 bg-gray-300 rounded w-2/3"></div>
+                  <div className="h-4 bg-gray-300 rounded w-1/4 mx-auto"></div>
+                  <div className="h-4 bg-gray-300 rounded w-1/4 mx-auto"></div>
+                  <div className="h-10 w-10 bg-gray-300 rounded-full mx-auto"></div>
+                  <div className="h-4 bg-gray-300 rounded w-1/3 mx-auto"></div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+
   return (
     <SubjectLayout
       subject={subject}
@@ -79,41 +133,68 @@ export default function SubjectReportPage() {
         <div className="px-6 py-0 min-w-full mx-auto">
 
           {/* Header */}
-          <h2 className="text-2xl font-bold text-gray-800 mb-2">
-            {activeTab} Analysis
-          </h2>
-
           <div className="flex justify-between items-center mb-2">
-            <p className="text-gray-600">
-              This report analyses the {activeTab.toLowerCase()} practice that you have done earlier and helps to evaluate your progress.
-            </p>
+            <div>
+              <h2 className="text-2xl font-bold text-gray-800 mb-2">
+                {activeTab} Analysis
+              </h2>
+              <p className="text-gray-600">
+                This report analyses the {activeTab.toLowerCase()} practice that you have done earlier and helps to evaluate your progress.
+              </p>
+            </div>
 
-            {/* Tabs */}
-            <div className="flex space-x-1 bg-gray-100 rounded-lg p-1 w-fit">
+            {/* Tabs with loading indicator */}
+            <div className="flex space-x-1 bg-gray-100 rounded-lg p-1 w-fit relative">
               <button
-                className={`px-6 py-2 text-sm font-medium rounded-md transition-colors ${activeTab === 'Objective'
+                className={`px-6 py-2 text-sm font-medium rounded-md transition-all duration-200 flex items-center justify-center min-w-[80px] ${activeTab === 'Objective'
                     ? 'bg-white text-gray-800 shadow-sm'
                     : 'text-gray-600 hover:text-gray-800'
-                  }`}
+                  } ${isLoading && activeTab === 'Objective' ? 'opacity-75' : ''}`}
                 onClick={() => handleTabChange('Objective')}
+                disabled={isLoading}
               >
-                Objective
+                {isLoading && activeTab === 'Objective' ? (
+                  <div className="flex items-center gap-2">
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+                    Loading...
+                  </div>
+                ) : (
+                  'Objective'
+                )}
               </button>
 
               <button
-                className={`px-6 py-2 text-sm font-medium rounded-md transition-colors ${activeTab === 'Subjective'
+                className={`px-6 py-2 text-sm font-medium rounded-md transition-all duration-200 flex items-center justify-center min-w-[80px] ${activeTab === 'Subjective'
                     ? 'bg-white text-gray-800 shadow-sm'
                     : 'text-gray-600 hover:text-gray-800'
-                  }`}
+                  } ${isLoading && activeTab === 'Subjective' ? 'opacity-75' : ''}`}
                 onClick={() => handleTabChange('Subjective')}
+                disabled={isLoading}
               >
-                Subjective
+                {isLoading && activeTab === 'Subjective' ? (
+                  <div className="flex items-center gap-2">
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+                    Loading...
+                  </div>
+                ) : (
+                  'Subjective'
+                )}
               </button>
             </div>
           </div>
 
+          {/* Global loading overlay */}
+          {isLoading && (
+            <div className="fixed inset-0 bg-black bg-opacity-10 flex items-center justify-center z-50">
+              <div className="bg-white p-6 rounded-lg shadow-lg flex flex-col items-center">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mb-4"></div>
+                <p className="text-gray-700">Loading {activeTab.toLowerCase()} data...</p>
+              </div>
+            </div>
+          )}
+
           {/* Progress Details */}
-          <div className="mb-8 border border-gray-300 rounded-lg bg-gray-50 shadow-sm">
+          <div className="mb-8 border border-gray-300 rounded-lg bg-gray-50 shadow-sm transition-opacity duration-300">
             <div className="flex items-center justify-between mb-2 bg-slate-100 p-6">
               <h3 className="text-lg font-semibold text-gray-800">Progress Details</h3>
 
@@ -124,6 +205,7 @@ export default function SubjectReportPage() {
                   value={timeRange}
                   onChange={(e) => handleTimeRangeChange(e.target.value)}
                   className="border border-gray-300 rounded-md px-3 py-0 text-sm bg-white"
+                  disabled={isLoading}
                 >
                   <option>Last 7 Days</option>
                   <option>Last 30 Days</option>
@@ -133,9 +215,11 @@ export default function SubjectReportPage() {
               </div>
             </div>
 
-            {/* Topic listing */}
+            {/* Topic listing with loading state */}
             <div className="space-y-1 p-2">
-              {topics.length === 0 ? (
+              {isLoading ? (
+                <LoadingSkeleton />
+              ) : topics.length === 0 ? (
                 <div className="text-center py-12 bg-gray-50 rounded-lg border border-gray-200">
                   <svg className="w-16 h-16 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -144,8 +228,10 @@ export default function SubjectReportPage() {
                 </div>
               ) : (
                 topics.map((topic) => (
-                  <div key={topic.id} className="border border-gray-200 rounded-lg overflow-hidden bg-white">
-
+                  <div 
+                    key={topic.id} 
+                    className="border border-gray-200 rounded-lg overflow-hidden bg-white transition-all duration-300 hover:shadow-md"
+                  >
                     {/* Topic header */}
                     <div
                       className="px-6 py-4 cursor-pointer hover:bg-gray-50 transition-colors border-b border-gray-200"
@@ -203,11 +289,10 @@ export default function SubjectReportPage() {
                                   key={subtopic.id}
                                   className="grid grid-cols-5 gap-4 items-center py-3 px-4 bg-gray-200 cursor-pointer hover:bg-gray-300 transition-colors"
                                   onClick={(e) => {
-                                    e.stopPropagation(); // Prevent event bubbling
+                                    e.stopPropagation();
                                     handleSubtopicClick(subtopic);
                                   }}
                                 >
-
                                   {/* Subtopic name */}
                                   <div className="text-sm font-medium text-gray-900">
                                     {subtopic.name}
@@ -243,8 +328,6 @@ export default function SubjectReportPage() {
                                   {/* Subjective mode */}
                                   {activeTab === 'Subjective' && (
                                     <>
-                                      
-
                                       <div className="text-sm text-gray-600 text-center">
                                         {subtopic.progress?.last_session || '-'}
                                       </div>
@@ -295,8 +378,6 @@ export default function SubjectReportPage() {
                               {/* Subjective mode */}
                               {activeTab === 'Subjective' && (
                                 <>
-                                 
-
                                   <div className="text-sm text-gray-600 text-center">
                                     {topic.last_session || '-'}
                                   </div>
@@ -305,7 +386,6 @@ export default function SubjectReportPage() {
                             </div>
                           )}
                         </div>
-
                       </div>
                     )}
                   </div>
@@ -313,7 +393,6 @@ export default function SubjectReportPage() {
               )}
             </div>
           </div>
-
         </div>
       </div>
 

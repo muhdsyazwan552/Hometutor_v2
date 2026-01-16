@@ -88,7 +88,8 @@ const ReviewQuestionDisplay = ({ question }) => {
   );
 };
 
-// Simplified ReviewOptionDisplay - Remove all duplicate letters
+
+// Simplified ReviewOptionDisplay - Handles text, HTML, and image answers
 const ReviewOptionDisplay = ({ option, index, isChosen, isCorrect, wasCorrect, wasWrong }) => {
   const getOptionStyles = () => {
     if (wasCorrect) return 'bg-green-50 border-green-500';
@@ -110,8 +111,42 @@ const ReviewOptionDisplay = ({ option, index, isChosen, isCorrect, wasCorrect, w
 
   const renderContent = () => {
     const cleanedText = removeLetterPrefix(option.text, index);
+    const hasHtml = option.has_html || option.type === 'html';
+    const hasImage = option.file && (option.type === 'image' || !option.text);
 
-    if (option.has_html || option.type === 'html') {
+    // IMAGE ANSWER
+    if (hasImage) {
+      return (
+        <div className="flex flex-col items-start space-y-2">
+          {/* Image */}
+          <img
+            src={option.file}
+            alt={`Option ${String.fromCharCode(65 + index)}`}
+            className="max-w-full h-auto rounded-lg shadow-sm max-h-48 object-contain"
+            onError={(e) => {
+              console.error('Failed to load option image:', option.file);
+              e.target.style.display = 'none';
+              if (!e.target.parentNode.querySelector('.image-fallback')) {
+                const fallback = document.createElement('div');
+                fallback.className = 'image-fallback text-red-500 text-center p-2 bg-red-50 rounded-lg text-sm';
+                fallback.textContent = 'Image failed to load';
+                e.target.parentNode.appendChild(fallback);
+              }
+            }}
+          />
+
+          {/* Optional text below image */}
+          {cleanedText && (
+            <div className="text-center text-gray-600 text-sm mt-2">
+              {cleanedText}
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    // HTML ANSWER
+    if (hasHtml) {
       return (
         <div
           className="text-base prose prose-sm max-w-none"
@@ -120,6 +155,7 @@ const ReviewOptionDisplay = ({ option, index, isChosen, isCorrect, wasCorrect, w
       );
     }
 
+    // TEXT ANSWER
     return <span className="text-base">{cleanedText}</span>;
   };
 
@@ -135,10 +171,10 @@ const ReviewOptionDisplay = ({ option, index, isChosen, isCorrect, wasCorrect, w
       <div className="flex items-start">
         {/* Single letter indicator */}
         <div className={`w-8 h-8 flex-shrink-0 rounded-full flex items-center justify-center mr-3 ${wasCorrect ? 'bg-green-500 text-white' :
-            wasWrong ? 'bg-red-500 text-white' :
-              isCorrect ? 'bg-blue-500 text-white' :
-                isChosen ? 'bg-yellow-500 text-white' :
-                  'bg-gray-200 text-gray-700'
+          wasWrong ? 'bg-red-500 text-white' :
+            isCorrect ? 'bg-blue-500 text-white' :
+              isChosen ? 'bg-yellow-500 text-white' :
+                'bg-gray-200 text-gray-700'
           }`}>
           <span className="font-bold">
             {String.fromCharCode(65 + index)}
@@ -152,8 +188,8 @@ const ReviewOptionDisplay = ({ option, index, isChosen, isCorrect, wasCorrect, w
           {/* Status badge */}
           {getStatusText() && (
             <div className={`mt-2 px-3 py-1 rounded-full text-xs font-medium inline-block ${wasCorrect ? 'bg-green-100 text-green-800' :
-                wasWrong ? 'bg-red-100 text-red-800' :
-                  'bg-blue-100 text-blue-800'
+              wasWrong ? 'bg-red-100 text-red-800' :
+                'bg-blue-100 text-blue-800'
               }`}>
               {getStatusText()}
             </div>
@@ -318,7 +354,7 @@ export default function QuestionReviewModal({ isOpen, onClose, sessionId }) {
 
     try {
       const url = route('session.review', { sessionId });
-      console.log('Fetching question attempts from:', url);
+      // console.log('Fetching question attempts from:', url);
 
       const response = await fetch(url, {
         headers: {
@@ -455,18 +491,20 @@ export default function QuestionReviewModal({ isOpen, onClose, sessionId }) {
                       <button
                         key={attempt.id}
                         onClick={() => setCurrentQuestionIndex(index)}
-                        className={`
-            flex items-center justify-center
-            h-10 w-full rounded-xl text-sm font-semibold transition-all
-            border
-            ${isActive
-                            ? 'bg-blue-600 text-white shadow-lg  border-blue-600'
-                            : attempt.is_correct
-                              ? 'bg-green-100 text-green-700 border-green-200 hover:bg-green-100'
-                              : 'bg-red-100 text-red-700 border-red-200 hover:bg-red-100'
+                        className={`flex items-center justify-center h-10 w-full rounded-xl text-sm font-semibold transition-allborder
+                          ${isActive
+                            ? 'bg-blue-600 text-white shadow-lg border-blue-600'
+                            : attempt.chosen_answer_id === 0 && attempt.answer_status === 0
+                              ? 'bg-gray-200 text-gray-700 border-gray-300 hover:bg-gray-200'
+                              : attempt.is_correct
+                                ? 'bg-green-100 text-green-700 border-green-200 hover:bg-green-200'
+                                : 'bg-red-100 text-red-700 border-red-200 hover:bg-red-200'
                           }
-          `}
-                        title={`Question ${index + 1}: ${attempt.is_correct ? 'Correct' : 'Incorrect'}`}
+  `}
+                        title={`Question ${index + 1}: ${attempt.chosen_answer_id === 0 && attempt.answer_status === 0
+                          ? 'Unanswered'
+                          : attempt.is_correct ? 'Correct' : 'Incorrect'
+                          }`}
                       >
                         {index + 1}
                       </button>
@@ -486,8 +524,8 @@ export default function QuestionReviewModal({ isOpen, onClose, sessionId }) {
                     </div>
                     <div>
                       <span className={`px-3 py-1 rounded-full text-sm font-medium ${currentAttempt.question_type === 'objective'
-                          ? (currentAttempt.is_correct ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800')
-                          : 'bg-blue-100 text-blue-800'
+                        ? (currentAttempt.is_correct ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800')
+                        : 'bg-blue-100 text-blue-800'
                         }`}>
                         {currentAttempt.question_type === 'objective'
                           ? (currentAttempt.is_correct ? '✓ Correct' : '✗ Incorrect')
@@ -539,9 +577,11 @@ export default function QuestionReviewModal({ isOpen, onClose, sessionId }) {
                 )}
 
                 {/* Explanation Display (for both types) */}
-                {currentAttempt.question_type === 'objective' && (
-                  <ExplanationDisplay explanation={currentAttempt.explanation} />
-                )}
+                {/* Explanation Display (for both types) */}
+                {currentAttempt.question_type === 'objective' &&
+                  !(currentAttempt.chosen_answer_id === 0 && currentAttempt.answer_status === 0) && (
+                    <ExplanationDisplay explanation={currentAttempt.explanation} />
+                  )}
               </div>
 
               {/* Question Navigation */}

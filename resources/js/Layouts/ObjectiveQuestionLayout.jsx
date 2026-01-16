@@ -12,24 +12,16 @@ const ObjectiveQuestionLayout = ({
   getTimeColor,
   sectionTitle,
   formatTime,
-  footerContent
+  footerContent,
+  answeredQuestions,
+  selectedAnswer,
+  handleExitQuiz,
+  handleBackNavigation,
+  onExitWithResults
 }) => {
-  const [isNavbarVisible, setIsNavbarVisible] = useState(true);
+  const [showNavbar, setShowNavbar] = useState(true);
+  const [showColoredHeader, setShowColoredHeader] = useState(false);
   const [lastScrollY, setLastScrollY] = useState(0);
-
-    // Debug: Log all props
-  console.log('🔍 ObjectiveQuestionLayout Props:', {
-    subject,
-    standard,
-    currentTopic,
-    progressCircles: progressCircles ? '✅ Provided' : '❌ Missing',
-   
-    getTimeColor: getTimeColor ? '✅ Function provided' : '❌ Missing',
-    sectionTitle,
-   
-    footerContent: footerContent ? '✅ Provided' : '❌ Missing',
-    children: children ? '✅ Provided' : '❌ Missing'
-  });
 
   const formatSubjectName = (subject) => {
     if (!subject) return "Subject";
@@ -38,109 +30,144 @@ const ObjectiveQuestionLayout = ({
     ).join(' ');
   };
 
+   // Handle back/exit logic
+  const handleBackButtonClick = () => {
+    if (answeredQuestions && answeredQuestions.size > 0) {
+      if (onExitWithResults) {
+        // Use custom exit handler that shows results
+        onExitWithResults();
+      } else if (window.confirm('Exit quiz? Answered questions will be saved. Unanswered questions will be marked as skipped.')) {
+        handleExitQuiz && handleExitQuiz();
+      }
+    } else {
+      handleBackNavigation ? handleBackNavigation() : window.history.back();
+    }
+  };
+
   useEffect(() => {
     const handleScroll = () => {
-      const currentScrollY = window.scrollY;
+      const currentY = window.scrollY;
 
-      if (currentScrollY === 0) {
-        // At the very top - SHOW NAVBAR
-        setIsNavbarVisible(true);
-      } else if (currentScrollY > lastScrollY && currentScrollY > 0) {
-        // Scrolling down and past 100px - HIDE NAVBAR ONLY
-        setIsNavbarVisible(false);
-      } else if (currentScrollY < lastScrollY) {
-        // Scrolling up - SHOW NAVBAR
-        setIsNavbarVisible(true);
+      if (currentY === 0) {
+        // At the very top - show navbar and white header
+        setShowNavbar(true);
+        setShowColoredHeader(false);
+      } else if (currentY > lastScrollY && currentY > 70) {
+        // Scrolling down past 70px - hide everything
+        setShowNavbar(false);
+        setShowColoredHeader(true);
+      } else if (currentY < lastScrollY && currentY > 100) {
+        // Scrolling up past 100px - show only colored header
+        setShowNavbar(false);
+        setShowColoredHeader(true);
       }
 
-      setLastScrollY(currentScrollY);
+      setLastScrollY(currentY);
     };
 
     window.addEventListener('scroll', handleScroll, { passive: true });
-
-    return () => {
-      window.removeEventListener('scroll', handleScroll);
-    };
+    return () => window.removeEventListener('scroll', handleScroll);
   }, [lastScrollY]);
 
   return (
-    <div className="flex flex-col min-h-screen"> {/* Changed from h-screen to min-h-screen */}
-      {/* NAVBAR ONLY - Hide on scroll down */}
-      <div className={`fixed top-0 left-0 right-0 z-50  ${isNavbarVisible ? 'translate-y-0' : '-translate-y-full'
-        }`}>
+    <div className="flex flex-col min-h-screen">
+      {/* ✅ Navbar - hides on scroll down */}
+      <div
+        className={`fixed top-0 left-0 right-0 z-50 transition-transform duration-300 ${
+          showNavbar ? 'translate-y-0' : '-translate-y-full'
+        }`}
+      >
         <SubjectNavbar title={formatSubjectName(subject)} />
       </div>
 
-      {/* HEADER - ALWAYS VISIBLE, never hides */}
-      <div className="bg-white shadow-xl p-4 md:p-6 sticky top-0 z-40 mt-16"> {/* mt-16 for navbar space */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 md:gap-4">
-          <div className="flex-1 w-full md:w-auto">
-            <h1 className="text-xl md:text-2xl lg:text-3xl font-bold text-gray-800 mb-1 md:mb-2 break-words flex items-center gap-3">
-  {/* Arrow Quit Icon */}
-  <button 
-    onClick={() => window.history.back()}
-    className="flex-shrink-0 w-8 h-8 md:w-10 md:h-10 bg-gray-100 hover:bg-gray-200 rounded-full flex items-center justify-center transition-colors duration-200"
-    title="Back"
-  >
-    <svg 
-      className="w-4 h-4 md:w-5 md:h-5 text-gray-600" 
-      fill="none" 
-      stroke="currentColor" 
-      viewBox="0 0 24 24"
-    >
-    <path 
-  strokeLinecap="round" 
-  strokeLinejoin="round" 
-  strokeWidth={2} 
-  d="M11 15l-3-3m0 0l3-3m-3 3h8M3 12a9 9 0 1118 0 9 9 0 01-18 0z" 
-/>
-    </svg>
-  </button>
-  
-  {/* Title */}
-  <span className="line-clamp-1">{sectionTitle}</span>
-</h1>
+      {/* ✅ White Header Section - hides on scroll down */}
+      <div
+        className={`bg-white shadow-xl p-4 md:p-6 sticky top-0 z-40 mt-20 transition-transform duration-300 ${
+          showNavbar ? 'translate-y-0' : '-translate-y-full'
+        }`}
+      >
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
+          <div>
+            <h1 className="text-xl md:text-2xl lg:text-3xl font-bold text-gray-800 flex items-center gap-3">
+              <button
+                onClick={handleBackButtonClick}
+                className="w-8 h-8 md:w-10 md:h-10 bg-gray-100 hover:bg-gray-200 rounded-full flex items-center justify-center transition-colors group relative"
+                title="Back / Exit Quiz"
+              >
+                <svg
+                  className="w-4 h-4 md:w-5 md:h-5 text-gray-600 group-hover:text-red-600"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M11 15l-3-3m0 0l3-3m-3 3h8M3 12a9 9 0 1118 0 9 9 0 01-18 0z"
+                  />
+                </svg>
+                {/* Tooltip for desktop */}
+                <span className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                  {answeredQuestions && answeredQuestions.size > 0 ? 'Exit & Save' : 'Back'}
+                </span>
+              </button>
+              <span className="line-clamp-1">{sectionTitle}</span>
+            </h1>
             <p className="text-gray-600 text-sm px-12 md:text-base">
               Topic: {currentTopic}
             </p>
           </div>
-
-          {/* Progress Circles */}
           <div className="relative w-full md:w-auto">
             {progressCircles}
-
-            {/* Floating Timer - Mobile */}
-            {/* <div className="absolute top-10 right-10 z-10 block lg:hidden">
-              <div className="bg-gradient-to-r from-blue-50 to-indigo-50 text-gray-800 rounded-lg shadow-md px-3 py-2 min-w-[130px] flex flex-col items-center border border-blue-100">
-                <div className="flex items-center mb-1">
-                  <svg
-                    className="w-4 h-4 text-blue-600 mr-1"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                    />
-                  </svg>
-                  <span className={`text-md font-semibold ${getTimeColor()}`}>
-                    {formatTime(timeElapsed)}
-                  </span>
-                </div>
-                <div className="text-[9px] flex gap-1 text-blue-600 font-medium tracking-wide">
-                  <span>TIME ELAPSED</span>
-                </div>
-              </div>
-            </div> */}
           </div>
         </div>
       </div>
 
-      {/* Main Content - Adjusted to reduce gap with footer */}
-      <div className="relative pb-0"> {/* Removed bottom padding */}
+      {/* ✅ Colored compact header (appears when scrolling up after hiding) */}
+      <div 
+        className={`bg-[#8F3091] text-white p-3 shadow-lg fixed py-4 top-0 left-0 right-0 z-40 transition-transform duration-300 ${
+          showColoredHeader ? 'translate-y-0' : '-translate-y-full'
+        }`}
+      >
+        <div className="flex max-auto h-100 flex-col md:flex-row justify-between items-start md:items-center gap-3 mt-3">
+          <div>
+            <h1 className="text-xl md:text-2xl lg:text-3xl font-bold text-gray-50 flex items-center gap-3">
+             <button
+                onClick={handleBackButtonClick}
+                className="w-8 h-8 md:w-10 md:h-10 bg-gray-100 hover:bg-gray-200 rounded-full flex items-center justify-center transition-colors group relative"
+                title="Back / Exit Quiz"
+              >
+                <svg
+                  className="w-4 h-4 md:w-5 md:h-5 text-gray-600 group-hover:text-red-600"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M11 15l-3-3m0 0l3-3m-3 3h8M3 12a9 9 0 1118 0 9 9 0 01-18 0z"
+                  />
+                </svg>
+                {/* Tooltip for desktop */}
+                <span className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                  {answeredQuestions && answeredQuestions.size > 0 ? 'Exit & Save' : 'Back'}
+                </span>
+              </button>
+              <span className="line-clamp-1">{sectionTitle}</span>
+            </h1>
+            <p className="text-gray-50 text-sm px-12 md:text-base">
+              Topic: {currentTopic}
+            </p>
+          </div>
+          <div>{progressCircles}</div>
+        </div>
+      </div>
+
+      {/* ✅ Main content - add top padding to account for fixed headers */}
+      <div className="relative pb-0 pt-0">
         {children}
 
         {/* Floating Timer - Desktop */}
@@ -171,10 +198,9 @@ const ObjectiveQuestionLayout = ({
         </div>
       </div>
 
-      {/* Footer - Adjusted to be closer to content */}
-      <footer className=" bg-white border-t border-gray-200 shadow-lg p-2 mt-0 z-30"> {/* Added mt-0 */}
+      {/* ✅ Footer */}
+      <footer className="bg-white border-t border-gray-200 shadow-lg p-2 z-30">
         {footerContent}
-        {/* <StandardFooter /> */}
       </footer>
     </div>
   );

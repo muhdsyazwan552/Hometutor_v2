@@ -15,8 +15,9 @@ class MenuController extends Controller
     {
         // Make sure to select level_id
         $schoolSubjects = Subject::where('is_active', true)
-            ->where('level_id', 10) // Only Form 4 subjects
-            ->select('id', 'name', 'level_id', 'abbr', 'seq') // Include level_id
+            ->where('level_id', 10)
+            ->where('is_active', 1)
+            ->select('id', 'name', 'level_id', 'abbr', 'seq')
             ->orderBy('seq')
             ->get()
             ->toArray();

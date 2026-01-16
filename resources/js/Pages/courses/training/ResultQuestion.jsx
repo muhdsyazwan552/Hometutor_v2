@@ -16,7 +16,8 @@ export default function ResultQuestion({
   topic_id,
   form,
   level_id,
-  subject_id
+  subject_id,
+   isEarlyExit = false
 }) {
   const results = quizType === "objective" ? objectiveResults : subjectiveResults;
 
@@ -32,15 +33,15 @@ export default function ResultQuestion({
   };
 
   // 🖨️ Print the received props to verify
-  console.log('=== RESULT PAGE PROPS ===');
-  console.log('Subject:', subject);
-  console.log('Standard:', standard);
-  console.log('Topic:', topic);
-  console.log('Topic ID:', topic_id);
-  console.log('Section ID:', sectionId);
-  console.log('Content ID:', contentId);
-  console.log('Section Title:', sectionTitle);
-  console.log('=== END RESULT PROPS ===');
+  // console.log('=== RESULT PAGE PROPS ===');
+  // console.log('Subject:', subject);
+  // console.log('Standard:', standard);
+  // console.log('Topic:', topic);
+  // console.log('Topic ID:', topic_id);
+  // console.log('Section ID:', sectionId);
+  // console.log('Content ID:', contentId);
+  // console.log('Section Title:', sectionTitle);
+  // console.log('=== END RESULT PROPS ===');
 
   if (!results) {
     return (
@@ -73,6 +74,10 @@ export default function ResultQuestion({
   const accuracyRate = quizType === "objective"
     ? Math.round((correctAnswers / results.totalQuestions) * 100)
     : Math.round((results.answered / results.totalQuestions) * 100);
+
+  const isComplete = results.isComplete || 
+                     (results.completionType === 'all_questions') || 
+                     (results.skippedAnswers === 0 && !isEarlyExit);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
