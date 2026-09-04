@@ -4,6 +4,7 @@
 @tailwind components;
 @tailwind utilities;
 
+<<<<<<< HEAD
 html {
   background: #f6f7fb;
 }
@@ -16,6 +17,25 @@ body {
 }
 
 /* global.css */
+=======
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+
+.lenis.lenis-stopped {
+  overflow: clip;
+}
+
+.lenis.lenis-smooth [data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+
+>>>>>>> 917d4bb (Initial project commit)
 ::-webkit-scrollbar {
   width: 8px;
 }
@@ -23,6 +43,10 @@ body {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
+<<<<<<< HEAD
   background-color: #cbd5e1;
+=======
+  background-color: #3a3a3a;
+>>>>>>> 917d4bb (Initial project commit)
   border-radius: 10px;
 }

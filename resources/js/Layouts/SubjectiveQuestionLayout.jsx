@@ -1,6 +1,10 @@
 import React, { useState, useEffect } from 'react';
+<<<<<<< HEAD
 import SubjectNavbar from '@/Layouts/SubjectNavbar';
 import StandardFooter from '@/Components/StandardFooter';
+=======
+import StandardFooter from '@/components/StandardFooter';
+>>>>>>> 917d4bb (Initial project commit)
 
 const SubjectiveQuestionLayout = ({
   children,
@@ -58,12 +62,11 @@ const SubjectiveQuestionLayout = ({
           showNavbar ? 'translate-y-0' : '-translate-y-full'
         }`}
       >
-        <SubjectNavbar title={formatSubjectName(subject)} />
       </div>
 
       {/* ✅ White Header Section - hides on scroll down */}
       <div
-        className={`bg-white shadow-xl p-4 md:p-6 sticky top-0 z-40 mt-20 transition-transform duration-300 ${
+        className={`bg-white shadow-xl p-4 md:p-6 sticky top-0 z-40 mt-0 transition-transform duration-300 ${
           showNavbar ? 'translate-y-0' : '-translate-y-full'
         }`}
       >
@@ -95,12 +98,18 @@ const SubjectiveQuestionLayout = ({
               Topic: {currentTopic}
             </p>
           </div>
-          <div>{progressCircles}</div>
+          <div className="relative w-full md:w-auto">
+            {progressCircles}
+          </div>
         </div>
       </div>
 
       {/* ✅ purple compact header (appears when scrolling up after hiding) */}
+<<<<<<< HEAD
       <div className={`bg-[#8F3091] text-white p-3 shadow-lg fixed py-4 top-0 left-0 right-0 z-40 transition-transform duration-300 ${
+=======
+      <div className={`bg-slate-950 text-white p-3 shadow-lg fixed py-4 top-0 left-0 right-0 z-40 transition-transform duration-300 ${
+>>>>>>> 917d4bb (Initial project commit)
           showBlueHeader ? 'translate-y-0' : '-translate-y-full'
         }`}
       >
@@ -112,7 +121,7 @@ const SubjectiveQuestionLayout = ({
                 className="w-8 h-8  md:w-10 md:h-10 bg-gray-100 hover:bg-gray-200 rounded-full flex items-center justify-center transition-colors"
                 title="Back">
                 <svg
-                  className="w-4 h-4 md:w-5 md:h-5 text-gray-500 hover:text-[#8F3091]"
+                  className="w-4 h-4 md:w-5 md:h-5 text-gray-500 hover:text-[#0096D1]"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -131,7 +140,9 @@ const SubjectiveQuestionLayout = ({
               Topic: {currentTopic}
             </p>
           </div>
-          <div>{progressCircles}</div>
+          <div className="relative w-full md:w-auto">
+            {progressCircles}
+          </div>
         </div>
       </div>
 
@@ -172,6 +183,8 @@ const SubjectiveQuestionLayout = ({
       <footer className=" bg-white border-t border-gray-200 shadow-lg p-2 z-30">
         {footerContent}
       </footer>
+
+      <StandardFooter />
     </div>
   );
 };

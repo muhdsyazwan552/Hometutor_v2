@@ -8,6 +8,7 @@ import { Link, useForm, usePage } from '@inertiajs/react';
 export default function UpdateProfileInformation({
     mustVerifyEmail,
     status,
+    student,
     className = '',
 }) {
     const user = usePage().props.auth.user;
@@ -16,6 +17,7 @@ export default function UpdateProfileInformation({
         useForm({
             name: user.name,
             email: user.email,
+            class_name: student?.class_name || '',
         });
 
     const submit = (e) => {
@@ -68,6 +70,20 @@ export default function UpdateProfileInformation({
 
                     <InputError className="mt-2" message={errors.email} />
                 </div>
+
+                {student && (
+                    <div>
+                        <InputLabel htmlFor="class_name" value="Class" />
+                        <TextInput
+                            id="class_name"
+                            className="mt-1 block w-full"
+                            value={data.class_name}
+                            onChange={(e) => setData('class_name', e.target.value)}
+                            maxLength={50}
+                        />
+                        <InputError className="mt-2" message={errors.class_name} />
+                    </div>
+                )}
 
                 {mustVerifyEmail && user.email_verified_at === null && (
                     <div>

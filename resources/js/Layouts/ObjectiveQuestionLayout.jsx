@@ -1,6 +1,11 @@
 import React, { useState, useEffect } from 'react';
+<<<<<<< HEAD
 import SubjectNavbar from '@/Layouts/SubjectNavbar';
 import StandardFooter from '@/Components/StandardFooter';
+=======
+
+import StandardFooter from '@/components/StandardFooter';
+>>>>>>> 917d4bb (Initial project commit)
 
 const ObjectiveQuestionLayout = ({
   children,
@@ -73,16 +78,28 @@ const ObjectiveQuestionLayout = ({
     <div className="flex flex-col min-h-screen">
       {/* ✅ Navbar - hides on scroll down */}
       <div
+<<<<<<< HEAD
         className={`fixed top-0 left-0 right-0 z-50 transition-transform duration-300 ${
           showNavbar ? 'translate-y-0' : '-translate-y-full'
         }`}
       >
         <SubjectNavbar title={formatSubjectName(subject)} />
+=======
+        className={`fixed top-0 left-0 right-0 z-50  ${
+          showNavbar ? 'translate-y-0' : '-translate-y-full'
+        }`}
+      >
+        
+>>>>>>> 917d4bb (Initial project commit)
       </div>
 
       {/* ✅ White Header Section - hides on scroll down */}
       <div
+<<<<<<< HEAD
         className={`bg-white shadow-xl p-4 md:p-6 sticky top-0 z-40 mt-20 transition-transform duration-300 ${
+=======
+        className={`bg-white shadow-xl p-6 md:p-6 sticky top-0 z-40 mt-0 transition-transform duration-300 ${
+>>>>>>> 917d4bb (Initial project commit)
           showNavbar ? 'translate-y-0' : '-translate-y-full'
         }`}
       >
@@ -126,7 +143,11 @@ const ObjectiveQuestionLayout = ({
 
       {/* ✅ Colored compact header (appears when scrolling up after hiding) */}
       <div 
+<<<<<<< HEAD
         className={`bg-[#8F3091] text-white p-3 shadow-lg fixed py-4 top-0 left-0 right-0 z-40 transition-transform duration-300 ${
+=======
+        className={`bg-slate-950 text-white p-3 shadow-lg fixed py-4 top-0 left-0 right-0 z-40 transition-transform duration-300 ${
+>>>>>>> 917d4bb (Initial project commit)
           showColoredHeader ? 'translate-y-0' : '-translate-y-full'
         }`}
       >
@@ -162,7 +183,13 @@ const ObjectiveQuestionLayout = ({
               Topic: {currentTopic}
             </p>
           </div>
+<<<<<<< HEAD
           <div>{progressCircles}</div>
+=======
+          <div className="relative w-full md:w-auto">
+            {progressCircles}
+          </div>
+>>>>>>> 917d4bb (Initial project commit)
         </div>
       </div>
 
@@ -199,9 +226,15 @@ const ObjectiveQuestionLayout = ({
       </div>
 
       {/* ✅ Footer */}
+<<<<<<< HEAD
       <footer className="bg-white border-t border-gray-200 shadow-lg p-2 z-30">
+=======
+      <footer className="bg-white border-t border-gray-200 shadow-lg p-3 z-30">
+>>>>>>> 917d4bb (Initial project commit)
         {footerContent}
       </footer>
+
+      <StandardFooter />
     </div>
   );
 };

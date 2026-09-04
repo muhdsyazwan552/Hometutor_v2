@@ -1,6 +1,11 @@
 import React, { useState, useEffect } from "react";
 import ResultChallenge from '@/Components/ResultChallenge';
+<<<<<<< HEAD
 import QuestionReportButton from '@/Components/QuestionReportButton';
+=======
+import ReportQuestionButton from '@/Components/ReportQuestionButton';
+import ImagePathLabel, { addImagePathLabels } from '@/Components/ImagePathLabel';
+>>>>>>> 917d4bb (Initial project commit)
 
 export default function PracticeChallenge({ isOpen, onClose, subjectId, levelId, subjectKey, topicId, topicName }) {
     const [sessionId, setSessionId] = useState(null);
@@ -44,7 +49,11 @@ export default function PracticeChallenge({ isOpen, onClose, subjectId, levelId,
     const loadSessionProgress = async (sid) => {
         try {
             console.log('Loading session progress for session:', sid);
+<<<<<<< HEAD
             const response = await fetch(`/api/challenge/progress?session_id=${sid}`);
+=======
+            const response = await fetch(route('mission.challenge.progress', { session_id: sid }));
+>>>>>>> 917d4bb (Initial project commit)
             const data = await response.json();
 
             console.log('Session progress data:', data);
@@ -144,7 +153,11 @@ export default function PracticeChallenge({ isOpen, onClose, subjectId, levelId,
                 topic_id: topicId
             });
 
+<<<<<<< HEAD
             const response = await fetch('/api/practice/start', {
+=======
+            const response = await fetch(route('mission.practice.start'), {
+>>>>>>> 917d4bb (Initial project commit)
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -220,7 +233,11 @@ export default function PracticeChallenge({ isOpen, onClose, subjectId, levelId,
         }
         
         console.log('Loading next question for session:', sid);
+<<<<<<< HEAD
         const response = await fetch(`/api/challenge/question?session_id=${sid || sessionId}`);
+=======
+        const response = await fetch(route('mission.challenge.question', { session_id: sid || sessionId }));
+>>>>>>> 917d4bb (Initial project commit)
         
         if (!response.ok) {
             console.error('Failed to load question:', response.status);
@@ -278,7 +295,11 @@ export default function PracticeChallenge({ isOpen, onClose, subjectId, levelId,
     try {
         await refreshCsrfToken();
         
+<<<<<<< HEAD
         const response = await fetch('/api/practice/answer', {
+=======
+        const response = await fetch(route('mission.practice.answer'), {
+>>>>>>> 917d4bb (Initial project commit)
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -343,7 +364,11 @@ export default function PracticeChallenge({ isOpen, onClose, subjectId, levelId,
     const loadSummary = async (sid) => {
         try {
             console.log('Loading summary for session:', sid);
+<<<<<<< HEAD
             const response = await fetch(`/api/practice/summary?session_id=${sid}`);
+=======
+            const response = await fetch(route('mission.practice.summary', { session_id: sid }));
+>>>>>>> 917d4bb (Initial project commit)
             const data = await response.json();
             console.log('Practice summary loaded:', data);
 
@@ -435,7 +460,11 @@ export default function PracticeChallenge({ isOpen, onClose, subjectId, levelId,
     // Render HTML content safely
     const renderContent = (content) => {
         if (!content) return null;
+<<<<<<< HEAD
         return <div dangerouslySetInnerHTML={{ __html: content }} />;
+=======
+        return <div dangerouslySetInnerHTML={{ __html: addImagePathLabels(content) }} />;
+>>>>>>> 917d4bb (Initial project commit)
     };
 
     // Get correct answer and its explanation
@@ -598,6 +627,12 @@ export default function PracticeChallenge({ isOpen, onClose, subjectId, levelId,
 
                         {/* Question Content */}
                         <div className="p-8">
+<<<<<<< HEAD
+=======
+                            <div className="mb-3 flex justify-end">
+                                <ReportQuestionButton questionId={currentQuestion.id} context="mission_practice" />
+                            </div>
+>>>>>>> 917d4bb (Initial project commit)
                             <div className="mb-6">
                                 {/* Question Text or Image */}
                                 {currentQuestion.question_text ? (
@@ -605,12 +640,22 @@ export default function PracticeChallenge({ isOpen, onClose, subjectId, levelId,
                                         {renderContent(currentQuestion.question_text)}
                                     </div>
                                 ) : currentQuestion.question_file ? (
+<<<<<<< HEAD
                                     <div className="flex justify-center">
                                         <img
                                             src={currentQuestion.question_file}
                                             alt="Question"
                                             className="max-w-full h-auto rounded-lg shadow"
                                         />
+=======
+                                    <div className="flex flex-col items-center">
+                                        <img 
+                                            src={currentQuestion.question_file} 
+                                            alt="Question"
+                                            className="max-w-full h-auto rounded-lg shadow"
+                                        />
+                                        <ImagePathLabel path={currentQuestion.question_file} />
+>>>>>>> 917d4bb (Initial project commit)
                                     </div>
                                 ) : (
                                     <p className="text-lg text-gray-800 leading-relaxed">
@@ -619,6 +664,7 @@ export default function PracticeChallenge({ isOpen, onClose, subjectId, levelId,
                                 )}
                             </div>
 
+<<<<<<< HEAD
                             <div className="-mt-3 mb-5 flex justify-end">
                                 <QuestionReportButton
                                     questionId={currentQuestion.id}
@@ -631,6 +677,8 @@ export default function PracticeChallenge({ isOpen, onClose, subjectId, levelId,
                                 />
                             </div>
 
+=======
+>>>>>>> 917d4bb (Initial project commit)
                             {/* Answer Options */}
                             <div className="space-y-3">
                                 {currentQuestion.answers && currentQuestion.answers.length > 0 ? (
@@ -660,11 +708,22 @@ export default function PracticeChallenge({ isOpen, onClose, subjectId, levelId,
                                                                 {renderContent(answer.answer_text)}
                                                             </div>
                                                         ) : answer.answer_option_file ? (
+<<<<<<< HEAD
                                                             <img
                                                                 src={answer.answer_option_file}
                                                                 alt="Answer option"
                                                                 className="max-w-xs h-auto rounded"
                                                             />
+=======
+                                                            <div className="inline-block max-w-full">
+                                                                <img 
+                                                                    src={answer.answer_option_file} 
+                                                                    alt="Answer option"
+                                                                    className="max-w-xs h-auto rounded"
+                                                                />
+                                                                <ImagePathLabel path={answer.answer_option_file} />
+                                                            </div>
+>>>>>>> 917d4bb (Initial project commit)
                                                         ) : (
                                                             <span className="text-gray-800">{answer.answer_option}</span>
                                                         )}
@@ -774,6 +833,10 @@ export default function PracticeChallenge({ isOpen, onClose, subjectId, levelId,
                                                                                 alt="Answer explanation"
                                                                                 className="max-w-full h-auto rounded shadow"
                                                                             />
+<<<<<<< HEAD
+=======
+                                                                            <ImagePathLabel path={correctAnswer.reason_file} />
+>>>>>>> 917d4bb (Initial project commit)
                                                                         </div>
                                                                     )}
                                                                 </div>

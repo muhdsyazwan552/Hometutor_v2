@@ -4,6 +4,10 @@ namespace App\Services;
 
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+<<<<<<< HEAD
+=======
+use Illuminate\Support\Facades\Schema;
+>>>>>>> 917d4bb (Initial project commit)
 
 class MasteryService
 {
@@ -13,12 +17,35 @@ class MasteryService
     public function calculateMasteryLevel($correctAttempts, $totalAttempts)
     {
         if ($totalAttempts == 0) {
+<<<<<<< HEAD
             return 6; // not_started
+=======
+            return $this->getLevelId('not_started', 6);
+>>>>>>> 917d4bb (Initial project commit)
         }
 
         $scorePercentage = ($correctAttempts / $totalAttempts) * 100;
 
+<<<<<<< HEAD
         // Get mastery level based on score
+=======
+        if (Schema::hasTable('mastery_rank_settings')) {
+            $rank = DB::table('mastery_rank_settings')
+                ->where('is_active', true)
+                ->where('min_questions', '<=', $totalAttempts)
+                ->where('min_accuracy', '<=', $scorePercentage)
+                ->orderByDesc('rank')
+                ->first();
+
+            if ($rank) {
+                return $rank->mastery_level_id;
+            }
+
+            return DB::table('mastery_rank_settings')->where('rank', 1)->value('mastery_level_id')
+                ?? $this->getLevelId('need_practice', 5);
+        }
+
+>>>>>>> 917d4bb (Initial project commit)
         $masteryLevel = DB::table('mastery_levels')
             ->where('min_score', '<=', $scorePercentage)
             ->orderBy('min_score', 'desc')
@@ -27,11 +54,52 @@ class MasteryService
         return $masteryLevel ? $masteryLevel->id : 6;
     }
 
+<<<<<<< HEAD
+=======
+    public function getQuestionsPerSession(): int
+    {
+        if (!Schema::hasTable('mastery_configurations')) {
+            return 10;
+        }
+
+        return (int) (DB::table('mastery_configurations')->value('questions_per_session') ?? 10);
+    }
+
+    public function resolveTopicScope(int $topicId): array
+    {
+        $topic = DB::table('topics')->select('id', 'parent_id')->find($topicId);
+        $isSubtopic = $topic && (int) $topic->parent_id > 0;
+
+        return [
+            'topic_id' => $isSubtopic ? (int) $topic->parent_id : $topicId,
+            'subtopic_id' => $isSubtopic ? $topicId : null,
+        ];
+    }
+
+    private function getLevelId(string $name, int $fallback): int
+    {
+        return (int) (DB::table('mastery_levels')->where('name', $name)->value('id') ?? $fallback);
+    }
+
+    private function getMasteredLevelId(): int
+    {
+        if (Schema::hasTable('mastery_rank_settings')) {
+            return (int) (DB::table('mastery_rank_settings')->where('rank', 5)->value('mastery_level_id') ?? 1);
+        }
+
+        return $this->getLevelId('mastered', 1);
+    }
+
+>>>>>>> 917d4bb (Initial project commit)
     /**
      * Update user's topic mastery
      */
     public function updateTopicMastery($userId, $topicId, $subjectId, $levelId, $isCorrect, $timeTaken)
     {
+<<<<<<< HEAD
+=======
+        $masteredLevelId = $this->getMasteredLevelId();
+>>>>>>> 917d4bb (Initial project commit)
         $mastery = DB::table('user_topic_mastery')
             ->where('user_id', $userId)
             ->where('topic_id', $topicId)
@@ -55,7 +123,11 @@ class MasteryService
                     'current_score' => $currentScore,
                     'mastery_level_id' => $newMasteryLevel,
                     'last_practiced_at' => now(),
+<<<<<<< HEAD
                     'mastered_at' => $newMasteryLevel == 1 ? now() : $mastery->mastered_at,
+=======
+                    'mastered_at' => $newMasteryLevel == $masteredLevelId ? ($mastery->mastered_at ?? now()) : null,
+>>>>>>> 917d4bb (Initial project commit)
                     'updated_at' => now()
                 ]);
 
@@ -79,7 +151,11 @@ class MasteryService
                 'total_time_seconds' => $timeTaken,
                 'current_score' => $currentScore,
                 'last_practiced_at' => now(),
+<<<<<<< HEAD
                 'mastered_at' => $newMasteryLevel == 1 ? now() : null,
+=======
+                'mastered_at' => $newMasteryLevel == $masteredLevelId ? now() : null,
+>>>>>>> 917d4bb (Initial project commit)
                 'created_at' => now(),
                 'updated_at' => now()
             ]);
@@ -96,6 +172,7 @@ class MasteryService
      */
     public function updateProgressCache($userId, $subjectId, $levelId)
     {
+<<<<<<< HEAD
         // Get all topics for this subject and level
         $allTopics = DB::table('topics')
             ->where('subject_id', $subjectId)
@@ -135,6 +212,21 @@ class MasteryService
                 ($needPractice * 20)
             ) / $totalTopics;
         }
+=======
+        $topics = $this->getTopicsWithMastery($userId, $subjectId, $levelId);
+        $totalTopics = $topics->count();
+        $rankCounts = $topics->countBy('rank');
+
+        $mastered = $rankCounts->get(5, 0);
+        $proficient = $rankCounts->get(4, 0);
+        $familiar = $rankCounts->get(3, 0);
+        $practiced = $rankCounts->get(2, 0);
+        $needPractice = $rankCounts->get(1, 0);
+        $notStarted = $topics->where('total_attempts', 0)->count();
+        $overallPercentage = $totalTopics > 0
+            ? $topics->avg(fn ($topic) => ($topic['rank'] - 1) * 25)
+            : 0;
+>>>>>>> 917d4bb (Initial project commit)
 
         // Upsert progress cache
         DB::table('user_mastery_progress')->updateOrInsert(
@@ -161,6 +253,7 @@ class MasteryService
     /**
      * Get topics that need practice (for Mission page display)
      */
+<<<<<<< HEAD
     public function getTopicsNeedingPractice($userId, $subjectId, $levelId, $limit = 8)
     {
         // Get topics that are not mastered or proficient
@@ -195,6 +288,32 @@ class MasteryService
             ->orderBy('t.seq')
             ->limit($limit)
             ->get();
+=======
+    public function getMissionSubtopics($userId, $subjectId, $levelId)
+    {
+        return $this->getTopicsWithMastery($userId, $subjectId, $levelId)
+            ->flatMap(function ($topic) {
+                if (!empty($topic['subtopics'])) {
+                    return collect($topic['subtopics'])->map(function ($subtopic) use ($topic) {
+                        return array_merge($subtopic, [
+                            'parent_name' => $topic['name'],
+                            'parent_seq' => $topic['seq'],
+                            'is_subtopic' => true,
+                        ]);
+                    });
+                }
+
+                // Keep subjects without a hierarchy usable as a single learning scope.
+                return [[
+                    ...$topic,
+                    'parent_name' => null,
+                    'parent_seq' => $topic['seq'],
+                    'is_subtopic' => false,
+                ]];
+            })
+            ->sortBy(fn ($scope) => [$scope['parent_seq'], $scope['seq']])
+            ->values();
+>>>>>>> 917d4bb (Initial project commit)
     }
 
     /**
@@ -252,6 +371,10 @@ public function generateChallengeQuestions($userId, $subjectId, $levelId, $quest
         $weight = $weights[$topic->mastery_level] ?? 1;
         $availableQuestions = DB::table('questions')
             ->where('topic_id', $topic->id)
+<<<<<<< HEAD
+=======
+            ->where('question_type_id', 1)
+>>>>>>> 917d4bb (Initial project commit)
             ->where('is_active', 1)
             ->where('is_published', 1)
             ->count();
@@ -289,10 +412,23 @@ public function generateChallengeQuestions($userId, $subjectId, $levelId, $quest
 
     // Phase 1: Get target questions from each topic
     foreach ($topicData as $topicId => $data) {
+<<<<<<< HEAD
         $needed = min($data['target'], $data['available']);
         
         $questions = DB::table('questions')
             ->where('topic_id', $topicId)
+=======
+        $remainingSlots = $questionCount - count($selectedQuestions);
+        if ($remainingSlots <= 0) {
+            break;
+        }
+
+        $needed = min($data['target'], $data['available'], $remainingSlots);
+        
+        $questions = DB::table('questions')
+            ->where('topic_id', $topicId)
+            ->where('question_type_id', 1)
+>>>>>>> 917d4bb (Initial project commit)
             ->where('is_active', 1)
             ->where('is_published', 1)
             ->inRandomOrder()
@@ -314,6 +450,10 @@ public function generateChallengeQuestions($userId, $subjectId, $levelId, $quest
 
             $question = DB::table('questions')
                 ->where('topic_id', $topicId)
+<<<<<<< HEAD
+=======
+                ->where('question_type_id', 1)
+>>>>>>> 917d4bb (Initial project commit)
                 ->where('is_active', 1)
                 ->where('is_published', 1)
                 ->whereNotIn('id', $selectedQuestions)
@@ -532,6 +672,7 @@ public function generateChallengeQuestions($userId, $subjectId, $levelId, $quest
      */
     public function getTopicsWithMastery($userId, $subjectId, $levelId)
     {
+<<<<<<< HEAD
         return DB::table('topics as t')
             ->leftJoin('user_topic_mastery as utm', function($join) use ($userId, $levelId) {
                 $join->on('t.id', '=', 'utm.topic_id')
@@ -556,3 +697,120 @@ public function generateChallengeQuestions($userId, $subjectId, $levelId, $quest
             ->get();
     }
 }
+=======
+        $topics = DB::table('topics')
+            ->where('subject_id', $subjectId)
+            ->where('level_id', $levelId)
+            ->where('is_active', 1)
+            ->orderBy('seq')
+            ->get();
+
+        if ($topics->isEmpty()) {
+            return collect();
+        }
+
+        $topicIds = $topics->pluck('id');
+        $mastery = DB::table('user_topic_mastery as utm')
+            ->leftJoin('mastery_levels as ml', 'utm.mastery_level_id', '=', 'ml.id')
+            ->where('utm.user_id', $userId)
+            ->where('utm.level_id', $levelId)
+            ->whereIn('utm.topic_id', $topicIds)
+            ->select('utm.*', 'ml.name as mastery_level', 'ml.color as mastery_color')
+            ->get()
+            ->keyBy('topic_id');
+
+        $questionCounts = DB::table('questions')
+            ->whereIn('topic_id', $topicIds)
+            ->where('question_type_id', 1)
+            ->where('is_active', 1)
+            ->where('is_published', 1)
+            ->select('topic_id', DB::raw('COUNT(*) as question_count'))
+            ->groupBy('topic_id')
+            ->pluck('question_count', 'topic_id');
+
+        $rankLevels = DB::table('mastery_rank_settings as mrs')
+            ->join('mastery_levels as ml', 'mrs.mastery_level_id', '=', 'ml.id')
+            ->where('mrs.is_active', true)
+            ->select('mrs.rank', 'ml.name', 'ml.color')
+            ->get()
+            ->keyBy('rank');
+        $rankByLevel = $rankLevels->pluck('rank', 'name');
+        $topicIndex = $topics->keyBy('id');
+        $childrenByParent = $topics->where('parent_id', '>', 0)->groupBy('parent_id');
+
+        $formatScope = function ($topic) use ($mastery, $questionCounts, $rankByLevel) {
+            $record = $mastery->get($topic->id);
+            $level = $record->mastery_level ?? 'not_started';
+
+            return [
+                'id' => $topic->id,
+                'name' => $topic->name,
+                'parent_id' => (int) $topic->parent_id,
+                'seq' => $topic->seq,
+                'mastery_level' => $level,
+                'mastery_color' => $record->mastery_color ?? '#fb7185',
+                'rank' => (int) ($rankByLevel->get($level, 1)),
+                'current_score' => round((float) ($record->current_score ?? 0), 2),
+                'total_attempts' => (int) ($record->total_attempts ?? 0),
+                'correct_attempts' => (int) ($record->correct_attempts ?? 0),
+                'question_count' => (int) $questionCounts->get($topic->id, 0),
+            ];
+        };
+
+        $collectDescendants = function ($parentId, $depth = 1) use (&$collectDescendants, $childrenByParent, $formatScope) {
+            $descendants = collect();
+
+            foreach ($childrenByParent->get($parentId, collect()) as $child) {
+                $scope = $formatScope($child);
+                $scope['depth'] = $depth;
+
+                if ($scope['question_count'] > 0) {
+                    $descendants->push($scope);
+                }
+
+                $descendants = $descendants->concat($collectDescendants($child->id, $depth + 1));
+            }
+
+            return $descendants;
+        };
+
+        return $topics
+            ->filter(fn ($topic) => (int) $topic->parent_id === 0 || !$topicIndex->has($topic->parent_id))
+            ->map(function ($topic) use ($collectDescendants, $formatScope, $rankLevels) {
+                $ownScope = $formatScope($topic);
+                $subtopics = $collectDescendants($topic->id)->values();
+
+                $learningScopes = collect();
+                if ($ownScope['question_count'] > 0) {
+                    $learningScopes->push($ownScope);
+                }
+                $learningScopes = $learningScopes->concat($subtopics);
+
+                if ($learningScopes->isEmpty()) {
+                    return null;
+                }
+
+                $rank = (int) $learningScopes->min('rank');
+                $rankLevel = $rankLevels->get($rank);
+                $attempts = (int) $learningScopes->sum('total_attempts');
+                $correct = (int) $learningScopes->sum('correct_attempts');
+
+                return [
+                    'id' => $topic->id,
+                    'name' => $topic->name,
+                    'seq' => $topic->seq,
+                    'mastery_level' => $rankLevel->name ?? 'not_started',
+                    'mastery_color' => $rankLevel->color ?? '#fb7185',
+                    'rank' => $rank,
+                    'current_score' => $attempts > 0 ? round(($correct / $attempts) * 100, 2) : 0,
+                    'total_attempts' => $attempts,
+                    'question_count' => (int) $learningScopes->sum('question_count'),
+                    'direct_question_count' => $ownScope['question_count'],
+                    'subtopics' => $subtopics->all(),
+                ];
+            })
+            ->filter()
+            ->values();
+    }
+}
+>>>>>>> 917d4bb (Initial project commit)

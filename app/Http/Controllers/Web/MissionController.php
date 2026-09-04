@@ -16,6 +16,10 @@ use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Auth;
 use App\Traits\InertiaLocaleTrait;
+<<<<<<< HEAD
+=======
+use App\Helpers\LevelHelper;
+>>>>>>> 917d4bb (Initial project commit)
 
 class MissionController extends Controller
 {
@@ -28,10 +32,26 @@ class MissionController extends Controller
     {
         $subjectId = $request->get('subject_id');
         $levelId = $request->get('level_id');
+<<<<<<< HEAD
         $form = $request->get('form', 'Form 4');
 
         $userId = Auth::id();
         Auth::user()->load('student');
+=======
+        $form = $request->get('form');
+
+        $userId = Auth::id();
+        $user = Auth::user();
+        $user?->load('student');
+        $studentLevelId = $user?->student?->level_id;
+        $availableForms = $studentLevelId
+            ? LevelHelper::getAvailableForms($studentLevelId)
+            : ['Form 1', 'Form 2', 'Form 3'];
+
+        if (! in_array($form, $availableForms, true)) {
+            $form = $availableForms[0];
+        }
+>>>>>>> 917d4bb (Initial project commit)
 
         $locale = Session::get('locale', 'en');
         App::setLocale($locale);
@@ -48,6 +68,7 @@ class MissionController extends Controller
 
         // Get available levels
         $availableLevels = Level::where('is_active', true)
+            ->whereIn('name', $availableForms)
             ->get(['id', 'name', 'abbr'])
             ->mapWithKeys(function ($level) {
                 return [$level->name => $level->id];
@@ -113,6 +134,7 @@ class MissionController extends Controller
             'form' => $form,
             
             'selectedStandard' => $form,
+            'availableForms' => $availableForms,
             'availableLevels' => $availableLevels,
             'availableSubjects' => $availableSubjects,
 
@@ -144,4 +166,8 @@ class MissionController extends Controller
         return [];
     }
 }
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> 917d4bb (Initial project commit)

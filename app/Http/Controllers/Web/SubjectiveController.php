@@ -9,8 +9,13 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
+<<<<<<< HEAD
 use Carbon\Carbon;
 
+=======
+use App\Services\StreakService;
+use App\Support\QuestionContentNormalizer;
+>>>>>>> 917d4bb (Initial project commit)
 
 class SubjectiveController extends Controller
 {
@@ -68,6 +73,7 @@ class SubjectiveController extends Controller
     {
         Log::info("🚨 DEBUG MODE - Fetching subjective questions for topic: {$topicId}");
 
+<<<<<<< HEAD
         // Get questions using query builder
         $questions = DB::table('questions')
             ->select('questions.*')
@@ -76,6 +82,16 @@ class SubjectiveController extends Controller
             ->where('questions.is_active', 1)
             // ->where('questions.is_published', 1)
             // ->where('questions.approval_status', 'approved')
+=======
+        // Temporary: bypass all filters to test
+        $questions = Question::with('answers')
+            ->where('topic_id', $topicId)
+            ->where('question_type_id', 2) // 2 for subjective questions
+            // ->active()
+            ->where('questions.is_active', 1)
+            // ->where('questions.is_published', 1) // COMMENT OUT for now
+            // ->where('questions.approval_status', 'approved') // COMMENT OUT for now
+>>>>>>> 917d4bb (Initial project commit)
             ->orderByRaw('RAND()')
             ->limit(5)
             ->get();
@@ -241,9 +257,14 @@ class SubjectiveController extends Controller
 
             $formattedQuestions[] = [
                 'id' => $question->id,
+<<<<<<< HEAD
                 'question_code' => $question->question_code,
                 'question_text' => $question->question_text,
                 'question_file' => $question->question_file ? $this->getQuestionFileUrl($question->question_file) : null,
+=======
+                'question_text' => QuestionContentNormalizer::questionHtml($question->question_text, $question->question_file),
+                'question_file' => QuestionContentNormalizer::questionFileUrl($question->question_file),
+>>>>>>> 917d4bb (Initial project commit)
                 'question_type' => $this->determineQuestionType($question),
                 'schema' => $schema,
                 'explanation' => $this->getExplanation($question),
@@ -732,8 +753,14 @@ class SubjectiveController extends Controller
 
     public function completePractice(Request $request)
 {
+<<<<<<< HEAD
     $topic = DB::table('topics')->where('id', $request->topic_id)->first();
 
+=======
+    $questionAttempts = $request->get('question_attempts', []);
+    $topic = Topic::find($request->topic_id);
+    
+>>>>>>> 917d4bb (Initial project commit)
     $isSubtopic = false;
     $mainTopicId = $request->topic_id;
     $subtopicId = null;
@@ -767,8 +794,19 @@ class SubjectiveController extends Controller
         'subject_id' => $request->subject_id,
         'topic_id' => $mainTopicId,
         'subtopic_id' => $subtopicId,
+<<<<<<< HEAD
         'question_type_id' => 2,
         'start_at' => $startAt, // Use the converted datetime
+=======
+        'question_type_id' => 2, // Subjective
+        'session_type' => 'practice',
+        'total_questions' => collect($questionAttempts)
+            ->pluck('question_id')
+            ->filter()
+            ->unique()
+            ->count() ?: 5,
+        'start_at' => $request->start_at,
+>>>>>>> 917d4bb (Initial project commit)
         'end_at' => now(),
         'total_time_seconds' => $request->total_time_seconds,
         'total_correct' => $request->total_correct,
@@ -779,8 +817,8 @@ class SubjectiveController extends Controller
     ]);
 
     // Save quiz attempts if provided
-    $questionAttempts = $request->get('question_attempts', []);
     if (!empty($questionAttempts)) {
+<<<<<<< HEAD
         $this->saveSubjectiveQuizAttempts($questionAttempts, $sessionId, $mainTopicId, $subtopicId);
     }
 
@@ -789,6 +827,13 @@ class SubjectiveController extends Controller
         'session_id' => $sessionId,
         'message' => 'Subjective practice session saved'
     ]);
+=======
+        $this->saveSubjectiveQuizAttempts($questionAttempts, $session->id, $mainTopicId, $subtopicId);
+        app(StreakService::class)->recordAnswer(Auth::id());
+    }
+
+    // 
+>>>>>>> 917d4bb (Initial project commit)
 }
 
     private function saveSubjectiveQuizAttempts($attempts, $sessionId, $mainTopicId, $subtopicId)

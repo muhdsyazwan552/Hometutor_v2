@@ -12,6 +12,9 @@ use App\Models\QuizSession;
 use App\Models\User;
 use App\Models\Friend;
 use App\Models\FriendRequest;
+use App\Models\ZoomMeeting;
+use App\Models\Subject;
+use App\Services\StreakService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Session;
@@ -67,11 +70,7 @@ public function index()
             ->where('user_id', $user->id)
             ->first();
 
-        // Get friends data
-        $friends = $this->getFriendsData($user);
-        
-        // Get pending friend requests
-        $pendingRequests = $this->getPendingRequests($user);
+        $streaks = app(StreakService::class)->summary($user->id);
 
         // Prepare profile data from student information
         $profileData = [
@@ -95,29 +94,50 @@ public function index()
             'display_name' => 'Guest'
         ];
         
-        $friends = [];
-        $pendingRequests = [];
+        $streaks = [
+            'login' => 0,
+            'questions' => 0,
+            'answersToday' => 0,
+            'longestLogin' => 0,
+            'longestQuestions' => 0,
+            'lastLoginDate' => null,
+            'lastAnswerDate' => null,
+        ];
         $student = null;
         $authData = null;
     }
 
+<<<<<<< HEAD
     // Get quiz sessions for leaderboard
     $quizSessions = QuizSession::with('school')
         ->orderBy('total_correct', 'desc')
         ->orderBy('total_time_seconds', 'asc')
         ->limit(7)
         ->get();
+=======
+    $subjectLevelId = $student?->level_id ?? 7;
+    $courses = Subject::query()
+        ->where('level_id', $subjectLevelId)
+        ->where('is_active', true)
+        ->orderBy('seq')
+        ->limit(4)
+        ->get(['id', 'name', 'abbr'])
+        ->map(fn (Subject $subject) => [
+            'id' => $subject->id,
+            'title' => $subject->name,
+            'abbr' => $subject->abbr,
+            'topic' => 'Ready for today’s practice',
+        ])
+        ->values();
+>>>>>>> 917d4bb (Initial project commit)
 
-    // Courses and assignments data
-    $courses = [
-        [
-            'title' => "Bahasa Melayu",
-            'topic' => "Graphic Stimuli",
-            'progress' => 0,
-            'total' => 4
-        ],
-        // ... other courses
-    ];
+    $teachers = [[
+        'name' => 'Cikgu Aina',
+        'image' => '/images/cikgu-aina.png',
+        'subjects' => $courses->pluck('title')->take(2)->values()->all() ?: ['Mathematics', 'Science'],
+        'message' => 'Let’s learn one small step at a time!',
+        'available' => 'Ready to guide you',
+    ]];
 
     $assignments = [
         [
@@ -127,6 +147,21 @@ public function index()
             'description' => "Objective - Same question set"
         ]
     ];
+
+    $zoomMeetings = ZoomMeeting::query()
+        ->where('is_active', true)
+        ->where('ends_at', '>=', now()->subMinutes(config('zoom.join_window.minutes_after', 30)))
+        ->where('starts_at', '<=', now()->addDays(7))
+        ->orderBy('starts_at')
+        ->get()
+        ->map(fn (ZoomMeeting $meeting) => [
+            'id' => $meeting->id,
+            'title' => $meeting->title,
+            'startsAt' => $meeting->starts_at->toIso8601String(),
+            'endsAt' => $meeting->ends_at->toIso8601String(),
+            'canJoin' => $meeting->isJoinableAt(now()),
+            'joinUrl' => route('zoom.meetings.join', $meeting),
+        ]);
     
     Log::info('=== DASHBOARD LANGUAGE DEBUG END ===');
     Log::info('Returning to Inertia:', [
@@ -141,9 +176,9 @@ public function index()
         'student' => $student,
         'courses' => $courses,
         'assignments' => $assignments,
-        'quizSessions' => $quizSessions,
-        'friends' => $friends,
-        'pendingRequests' => $pendingRequests,
+        'zoomMeetings' => $zoomMeetings,
+        'streaks' => $streaks,
+        'teachers' => $teachers,
         'auth' => $authData,
         'locale' => $locale, 
         'translations' => $translations, 

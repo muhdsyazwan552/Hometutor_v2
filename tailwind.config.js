@@ -13,7 +13,11 @@ export default {
     theme: {
         extend: {
             fontFamily: {
+<<<<<<< HEAD
                 sans: ['DM Sans', ...defaultTheme.fontFamily.sans],
+=======
+                sans: ['Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+>>>>>>> 917d4bb (Initial project commit)
             },
             colors: {
                 primary: '#3b82f6', // Blue

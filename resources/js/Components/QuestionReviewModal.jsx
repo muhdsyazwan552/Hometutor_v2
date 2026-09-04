@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { usePage, Head } from '@inertiajs/react';
+import ReportQuestionButton from '@/Components/ReportQuestionButton';
+import ImagePathLabel, { addImagePathLabels } from '@/Components/ImagePathLabel';
 
 
 const ReviewQuestionDisplay = ({ question }) => {
@@ -31,7 +33,7 @@ const ReviewQuestionDisplay = ({ question }) => {
       '<ol$1 class="list-decimal pl-5 space-y-1 my-3">'
     );
 
-    return processed;
+    return addImagePathLabels(processed);
   };
 
   const renderQuestionContent = () => {
@@ -56,15 +58,14 @@ const ReviewQuestionDisplay = ({ question }) => {
       if (imageUrl && (imageUrl.startsWith('http') || imageUrl.startsWith('/') || imageUrl.startsWith('data:'))) {
         return (
           <div className="flex justify-center">
-            <img
-              src={imageUrl}
-              alt="Question"
-              className="max-w-full h-auto rounded-lg shadow-md max-h-96 object-contain"
-              onError={(e) => {
-                e.target.onerror = null;
-                e.target.src = '/images/placeholder-question.png';
-              }}
-            />
+            <div className="max-w-full">
+              <img
+                src={imageUrl}
+                alt="Question"
+                className="max-w-full h-auto rounded-lg shadow-md max-h-96 object-contain"
+              />
+              <ImagePathLabel path={imageUrl} />
+            </div>
           </div>
         );
       }
@@ -94,7 +95,7 @@ const ReviewOptionDisplay = ({ option, index, isChosen, isCorrect, wasCorrect, w
   const getOptionStyles = () => {
     if (wasCorrect) return 'bg-green-50 border-green-500';
     if (wasWrong) return 'bg-red-50 border-red-500';
-    if (isCorrect) return 'bg-blue-50 border-blue-300';
+    if (isCorrect) return 'bg-green-50 border-green-500';
     if (isChosen) return 'bg-yellow-50 border-yellow-300';
     return 'bg-gray-50 border-gray-300';
   };
@@ -123,6 +124,7 @@ const ReviewOptionDisplay = ({ option, index, isChosen, isCorrect, wasCorrect, w
             src={option.file}
             alt={`Option ${String.fromCharCode(65 + index)}`}
             className="max-w-full h-auto rounded-lg shadow-sm max-h-48 object-contain"
+<<<<<<< HEAD
             onError={(e) => {
               console.error('Failed to load option image:', option.file);
               e.target.style.display = 'none';
@@ -134,6 +136,10 @@ const ReviewOptionDisplay = ({ option, index, isChosen, isCorrect, wasCorrect, w
               }
             }}
           />
+=======
+          />
+          <ImagePathLabel path={option.file} />
+>>>>>>> 917d4bb (Initial project commit)
 
           {/* Optional text below image */}
           {cleanedText && (
@@ -150,7 +156,7 @@ const ReviewOptionDisplay = ({ option, index, isChosen, isCorrect, wasCorrect, w
       return (
         <div
           className="text-base prose prose-sm max-w-none"
-          dangerouslySetInnerHTML={{ __html: cleanedText }}
+          dangerouslySetInnerHTML={{ __html: addImagePathLabels(cleanedText) }}
         />
       );
     }
@@ -172,7 +178,11 @@ const ReviewOptionDisplay = ({ option, index, isChosen, isCorrect, wasCorrect, w
         {/* Single letter indicator */}
         <div className={`w-8 h-8 flex-shrink-0 rounded-full flex items-center justify-center mr-3 ${wasCorrect ? 'bg-green-500 text-white' :
           wasWrong ? 'bg-red-500 text-white' :
+<<<<<<< HEAD
             isCorrect ? 'bg-blue-500 text-white' :
+=======
+            isCorrect ? 'bg-green-500 text-white' :
+>>>>>>> 917d4bb (Initial project commit)
               isChosen ? 'bg-yellow-500 text-white' :
                 'bg-gray-200 text-gray-700'
           }`}>
@@ -189,7 +199,11 @@ const ReviewOptionDisplay = ({ option, index, isChosen, isCorrect, wasCorrect, w
           {getStatusText() && (
             <div className={`mt-2 px-3 py-1 rounded-full text-xs font-medium inline-block ${wasCorrect ? 'bg-green-100 text-green-800' :
               wasWrong ? 'bg-red-100 text-red-800' :
+<<<<<<< HEAD
                 'bg-blue-100 text-blue-800'
+=======
+                'bg-green-100 text-green-800'
+>>>>>>> 917d4bb (Initial project commit)
               }`}>
               {getStatusText()}
             </div>
@@ -226,7 +240,7 @@ const ExplanationDisplay = ({ explanation }) => {
       '<ul$1 class="list-disc pl-5 space-y-2 my-3">'
     );
 
-    return processed;
+    return addImagePathLabels(processed);
   };
 
   return (
@@ -308,7 +322,7 @@ const SubjectiveAnswerDisplay = ({ attempt, questionType }) => {
               {typeof attempt.schema_answer === 'string' && attempt.schema_answer.includes('<') ? (
                 <div
                   className="prose prose-green max-w-none"
-                  dangerouslySetInnerHTML={{ __html: attempt.schema_answer }}
+                  dangerouslySetInnerHTML={{ __html: addImagePathLabels(attempt.schema_answer) }}
                 />
               ) : (
                 <pre className="whitespace-pre-wrap font-sans text-green-900 text-base leading-relaxed">
@@ -333,7 +347,7 @@ const SubjectiveAnswerDisplay = ({ attempt, questionType }) => {
 };
 
 // Main component
-export default function QuestionReviewModal({ isOpen, onClose, sessionId }) {
+export default function QuestionReviewModal({ isOpen, onClose, sessionId, reviewUrl = null, readOnly = false }) {
   const [session, setSession] = useState(null);
   const [attempts, setAttempts] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -353,7 +367,11 @@ export default function QuestionReviewModal({ isOpen, onClose, sessionId }) {
     setError(null);
 
     try {
+<<<<<<< HEAD
       const url = route('session.review', { sessionId });
+=======
+      const url = reviewUrl || route('session.review', { sessionId });
+>>>>>>> 917d4bb (Initial project commit)
       // console.log('Fetching question attempts from:', url);
 
       const response = await fetch(url, {
@@ -392,6 +410,9 @@ export default function QuestionReviewModal({ isOpen, onClose, sessionId }) {
 
   const currentAttempt = attempts[currentQuestionIndex] || {};
   const totalQuestions = attempts.length;
+  const isWrongMission = session?.session_type === 'mission'
+    && currentAttempt.question_type === 'objective'
+    && !currentAttempt.is_correct;
 
   const handlePreviousQuestion = () => {
     if (currentQuestionIndex > 0) {
@@ -548,6 +569,7 @@ export default function QuestionReviewModal({ isOpen, onClose, sessionId }) {
 
                 {/* Question Display */}
                 <div className="mb-8">
+                  {!readOnly && <div className="mb-3 flex justify-end"><ReportQuestionButton questionId={currentAttempt.question_id} context="question_review" /></div>}
                   <ReviewQuestionDisplay question={currentAttempt} />
                 </div>
 
@@ -556,6 +578,15 @@ export default function QuestionReviewModal({ isOpen, onClose, sessionId }) {
                   // Objective Question - Show Options
                   <div className="space-y-3 mb-8">
                     <h4 className="font-medium text-gray-700 mb-4">Answer Options:</h4>
+                    {isWrongMission && (
+                      <div className="mb-4 flex items-center gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-amber-800">
+                        <span className="flex h-8 w-8 items-center justify-center rounded-full bg-amber-500 font-bold text-white">!</span>
+                        <div>
+                          <p className="text-xs font-bold uppercase tracking-wide text-amber-700">Mission review</p>
+                          <p className="font-semibold">Correct answers are not revealed for incorrect Mission questions.</p>
+                        </div>
+                      </div>
+                    )}
                     {currentAttempt.answers && currentAttempt.answers.map((answer, index) => (
                       <ReviewOptionDisplay
                         key={answer.id || index}
@@ -579,6 +610,10 @@ export default function QuestionReviewModal({ isOpen, onClose, sessionId }) {
                 {/* Explanation Display (for both types) */}
                 {/* Explanation Display (for both types) */}
                 {currentAttempt.question_type === 'objective' &&
+<<<<<<< HEAD
+=======
+                  !isWrongMission &&
+>>>>>>> 917d4bb (Initial project commit)
                   !(currentAttempt.chosen_answer_id === 0 && currentAttempt.answer_status === 0) && (
                     <ExplanationDisplay explanation={currentAttempt.explanation} />
                   )}

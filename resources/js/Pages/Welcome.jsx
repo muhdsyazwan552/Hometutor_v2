@@ -1,361 +1,242 @@
 import { Head, Link } from '@inertiajs/react';
+import { motion, AnimatePresence, useScroll, useTransform } from 'framer-motion';
+import { ArrowRightIcon, Bars3Icon, CheckIcon, ChevronDownIcon, PlayIcon, StarIcon, XMarkIcon } from '@heroicons/react/24/outline';
+import { gsap } from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import * as THREE from 'three';
+import { useLayoutEffect, useRef, useState } from 'react';
+import SmoothScroll from '@/Components/SmoothScroll';
 
-export default function Welcome({ auth, laravelVersion, phpVersion }) {
-    const handleImageError = () => {
-        document
-            .getElementById('screenshot-container')
-            ?.classList.add('!hidden');
-        document.getElementById('docs-card')?.classList.add('!row-span-1');
-        document
-            .getElementById('docs-card-content')
-            ?.classList.add('!flex-row');
-        document.getElementById('background')?.classList.add('!hidden');
-    };
+gsap.registerPlugin(ScrollTrigger);
 
-    return (
-        <>
-            <Head title="Welcome" />
-            <div className="bg-gray-50 text-black/50 dark:bg-black dark:text-white/50">
-                <img
-                    id="background"
-                    className="absolute -left-20 top-0 max-w-[877px]"
-                    src="https://laravel.com/assets/img/welcome/background.svg"
-                />
-                <div className="relative flex min-h-screen flex-col items-center justify-center selection:bg-[#FF2D20] selection:text-white">
-                    <div className="relative w-full max-w-2xl px-6 lg:max-w-7xl">
-                        <header className="grid grid-cols-2 items-center gap-2 py-10 lg:grid-cols-3">
-                            <div className="flex lg:col-start-2 lg:justify-center">
-                                <svg
-                                    className="h-12 w-auto text-white lg:h-16 lg:text-[#FF2D20]"
-                                    viewBox="0 0 62 65"
-                                    fill="none"
-                                    xmlns="http://www.w3.org/2000/svg"
-                                >
-                                    <path
-                                        d="M61.8548 14.6253C61.8778 14.7102 61.8895 14.7978 61.8897 14.8858V28.5615C61.8898 28.737 61.8434 28.9095 61.7554 29.0614C61.6675 29.2132 61.5409 29.3392 61.3887 29.4265L49.9104 36.0351V49.1337C49.9104 49.4902 49.7209 49.8192 49.4118 49.9987L25.4519 63.7916C25.3971 63.8227 25.3372 63.8427 25.2774 63.8639C25.255 63.8714 25.2338 63.8851 25.2101 63.8913C25.0426 63.9354 24.8666 63.9354 24.6991 63.8913C24.6716 63.8838 24.6467 63.8689 24.6205 63.8589C24.5657 63.8389 24.5084 63.8215 24.456 63.7916L0.501061 49.9987C0.348882 49.9113 0.222437 49.7853 0.134469 49.6334C0.0465019 49.4816 0.000120578 49.3092 0 49.1337L0 8.10652C0 8.01678 0.0124642 7.92953 0.0348998 7.84477C0.0423783 7.8161 0.0598282 7.78993 0.0697995 7.76126C0.0884958 7.70891 0.105946 7.65531 0.133367 7.6067C0.152063 7.5743 0.179485 7.54812 0.20192 7.51821C0.230588 7.47832 0.256763 7.43719 0.290416 7.40229C0.319084 7.37362 0.356476 7.35243 0.388883 7.32751C0.425029 7.29759 0.457436 7.26518 0.498568 7.2415L12.4779 0.345059C12.6296 0.257786 12.8015 0.211853 12.9765 0.211853C13.1515 0.211853 13.3234 0.257786 13.475 0.345059L25.4531 7.2415H25.4556C25.4955 7.26643 25.5292 7.29759 25.5653 7.32626C25.5977 7.35119 25.6339 7.37362 25.6625 7.40104C25.6974 7.43719 25.7224 7.47832 25.7523 7.51821C25.7735 7.54812 25.8021 7.5743 25.8196 7.6067C25.8483 7.65656 25.8645 7.70891 25.8844 7.76126C25.8944 7.78993 25.9118 7.8161 25.9193 7.84602C25.9423 7.93096 25.954 8.01853 25.9542 8.10652V33.7317L35.9355 27.9844V14.8846C35.9355 14.7973 35.948 14.7088 35.9704 14.6253C35.9792 14.5954 35.9954 14.5692 36.0053 14.5405C36.0253 14.4882 36.0427 14.4346 36.0702 14.386C36.0888 14.3536 36.1163 14.3274 36.1375 14.2975C36.1674 14.2576 36.1923 14.2165 36.2272 14.1816C36.2559 14.1529 36.292 14.1317 36.3244 14.1068C36.3618 14.0769 36.3942 14.0445 36.4341 14.0208L48.4147 7.12434C48.5663 7.03694 48.7383 6.99094 48.9133 6.99094C49.0883 6.99094 49.2602 7.03694 49.4118 7.12434L61.3899 14.0208C61.4323 14.0457 61.4647 14.0769 61.5021 14.1055C61.5333 14.1305 61.5694 14.1529 61.5981 14.1803C61.633 14.2165 61.6579 14.2576 61.6878 14.2975C61.7103 14.3274 61.7377 14.3536 61.7551 14.386C61.7838 14.4346 61.8 14.4882 61.8199 14.5405C61.8312 14.5692 61.8474 14.5954 61.8548 14.6253ZM59.893 27.9844V16.6121L55.7013 19.0252L49.9104 22.3593V33.7317L59.8942 27.9844H59.893ZM47.9149 48.5566V37.1768L42.2187 40.4299L25.953 49.7133V61.2003L47.9149 48.5566ZM1.99677 9.83281V48.5566L23.9562 61.199V49.7145L12.4841 43.2219L12.4804 43.2194L12.4754 43.2169C12.4368 43.1945 12.4044 43.1621 12.3682 43.1347C12.3371 43.1097 12.3009 43.0898 12.2735 43.0624L12.271 43.0586C12.2386 43.0275 12.2162 42.9888 12.1887 42.9539C12.1638 42.9203 12.1339 42.8916 12.114 42.8567L12.1127 42.853C12.0903 42.8156 12.0766 42.7707 12.0604 42.7283C12.0442 42.6909 12.023 42.656 12.013 42.6161C12.0005 42.5688 11.998 42.5177 11.9931 42.4691C11.9881 42.4317 11.9781 42.3943 11.9781 42.3569V15.5801L6.18848 12.2446L1.99677 9.83281ZM12.9777 2.36177L2.99764 8.10652L12.9752 13.8513L22.9541 8.10527L12.9752 2.36177H12.9777ZM18.1678 38.2138L23.9574 34.8809V9.83281L19.7657 12.2459L13.9749 15.5801V40.6281L18.1678 38.2138ZM48.9133 9.14105L38.9344 14.8858L48.9133 20.6305L58.8909 14.8846L48.9133 9.14105ZM47.9149 22.3593L42.124 19.0252L37.9323 16.6121V27.9844L43.7219 31.3174L47.9149 33.7317V22.3593ZM24.9533 47.987L39.59 39.631L46.9065 35.4555L36.9352 29.7145L25.4544 36.3242L14.9907 42.3482L24.9533 47.987Z"
-                                        fill="currentColor"
-                                    />
-                                </svg>
-                            </div>
-                            <nav className="-mx-3 flex flex-1 justify-end">
-                                {auth.user ? (
-                                    <Link
-                                        href={route('dashboard')}
-                                        className="rounded-md px-3 py-2 text-black ring-1 ring-transparent transition hover:text-black/70 focus:outline-none focus-visible:ring-[#FF2D20] dark:text-white dark:hover:text-white/80 dark:focus-visible:ring-white"
-                                    >
-                                        Dashboard
-                                    </Link>
-                                ) : (
-                                    <>
-                                        <Link
-                                            href={route('login')}
-                                            className="rounded-md px-3 py-2 text-black ring-1 ring-transparent transition hover:text-black/70 focus:outline-none focus-visible:ring-[#FF2D20] dark:text-white dark:hover:text-white/80 dark:focus-visible:ring-white"
-                                        >
-                                            Log in
-                                        </Link>
-                                        <Link
-                                            href={route('register')}
-                                            className="rounded-md px-3 py-2 text-black ring-1 ring-transparent transition hover:text-black/70 focus:outline-none focus-visible:ring-[#FF2D20] dark:text-white dark:hover:text-white/80 dark:focus-visible:ring-white"
-                                        >
-                                            Register
-                                        </Link>
-                                    </>
-                                )}
-                            </nav>
-                        </header>
+const practiceItems = [
+    ['Mock papers', 'SPM Mathematics · Paper 2'],
+    ['Instant feedback', '8 / 10 questions mastered'],
+    ['Weekly momentum', '+18% stronger this month'],
+];
 
-                        <main className="mt-6">
-                            <div className="grid gap-6 lg:grid-cols-2 lg:gap-8">
-                                <a
-                                    href="https://laravel.com/docs"
-                                    id="docs-card"
-                                    className="flex flex-col items-start gap-6 overflow-hidden rounded-lg bg-white p-6 shadow-[0px_14px_34px_0px_rgba(0,0,0,0.08)] ring-1 ring-white/[0.05] transition duration-300 hover:text-black/70 hover:ring-black/20 focus:outline-none focus-visible:ring-[#FF2D20] md:row-span-3 lg:p-10 lg:pb-10 dark:bg-zinc-900 dark:ring-zinc-800 dark:hover:text-white/70 dark:hover:ring-zinc-700 dark:focus-visible:ring-[#FF2D20]"
-                                >
-                                    <div
-                                        id="screenshot-container"
-                                        className="relative flex w-full flex-1 items-stretch"
-                                    >
-                                        <img
-                                            src="https://laravel.com/assets/img/welcome/docs-light.svg"
-                                            alt="Laravel documentation screenshot"
-                                            className="aspect-video h-full w-full flex-1 rounded-[10px] object-cover object-top drop-shadow-[0px_4px_34px_rgba(0,0,0,0.06)] dark:hidden"
-                                            onError={handleImageError}
-                                        />
-                                        <img
-                                            src="https://laravel.com/assets/img/welcome/docs-dark.svg"
-                                            alt="Laravel documentation screenshot"
-                                            className="hidden aspect-video h-full w-full flex-1 rounded-[10px] object-cover object-top drop-shadow-[0px_4px_34px_rgba(0,0,0,0.25)] dark:block"
-                                        />
-                                        <div className="absolute -bottom-16 -left-16 h-40 w-[calc(100%+8rem)] bg-gradient-to-b from-transparent via-white to-white dark:via-zinc-900 dark:to-zinc-900"></div>
-                                    </div>
+const journey = [
+    ['01', 'Find your tutor', 'Tell us the subject, level and way your child learns best.', '/images/cikgu-aina.png', 'A tutor who gets them'],
+    ['02', 'Join live class', 'Connect face-to-face online, with every question welcomed.', '/images/background_classroom.jpg', 'Live class / Mathematics'],
+    ['03', 'Complete practice', 'Build understanding with focused worksheets and instant feedback.', '/images/background_quiz.jpg', 'Practice studio / 08'],
+    ['04', 'Achieve top grades', 'Track steady growth and celebrate the results together.', '/images/child_celeb.png', 'Progress worth celebrating']
+];
 
-                                    <div className="relative flex items-center gap-6 lg:items-end">
-                                        <div
-                                            id="docs-card-content"
-                                            className="flex items-start gap-6 lg:flex-col"
-                                        >
-                                            <div className="flex size-12 shrink-0 items-center justify-center rounded-full bg-[#FF2D20]/10 sm:size-16">
-                                                <svg
-                                                    className="size-5 sm:size-6"
-                                                    xmlns="http://www.w3.org/2000/svg"
-                                                    fill="none"
-                                                    viewBox="0 0 24 24"
-                                                >
-                                                    <path
-                                                        fill="#FF2D20"
-                                                        d="M23 4a1 1 0 0 0-1.447-.894L12.224 7.77a.5.5 0 0 1-.448 0L2.447 3.106A1 1 0 0 0 1 4v13.382a1.99 1.99 0 0 0 1.105 1.79l9.448 4.728c.14.065.293.1.447.1.154-.005.306-.04.447-.105l9.453-4.724a1.99 1.99 0 0 0 1.1-1.789V4ZM3 6.023a.25.25 0 0 1 .362-.223l7.5 3.75a.251.251 0 0 1 .138.223v11.2a.25.25 0 0 1-.362.224l-7.5-3.75a.25.25 0 0 1-.138-.22V6.023Zm18 11.2a.25.25 0 0 1-.138.224l-7.5 3.75a.249.249 0 0 1-.329-.099.249.249 0 0 1-.033-.12V9.772a.251.251 0 0 1 .138-.224l7.5-3.75a.25.25 0 0 1 .362.224v11.2Z"
-                                                    />
-                                                    <path
-                                                        fill="#FF2D20"
-                                                        d="m3.55 1.893 8 4.048a1.008 1.008 0 0 0 .9 0l8-4.048a1 1 0 0 0-.9-1.785l-7.322 3.706a.506.506 0 0 1-.452 0L4.454.108a1 1 0 0 0-.9 1.785H3.55Z"
-                                                    />
-                                                </svg>
-                                            </div>
+const testimonials = [
+    { name: 'Nur Afiqah', role: 'Parent of SPM student', image: '/avatars/avatar_1.png', quote: 'The progress reports make it so easy to see where our son is improving. His confidence is completely different now.', score: '5.0' },
+    { name: 'Sarah Lim', role: 'IGCSE student', image: '/avatars/avatar_2.png', quote: 'The live lessons feel personal, even online. I can ask questions without feeling shy and revisit every recording.', score: '4.9' },
+    { name: 'Amirul H.', role: 'Parent of Year 6 student', image: '/avatars/avatar_3.png', quote: 'The match was spot on. Our tutor turns difficult Maths topics into something that finally makes sense.', score: '5.0' },
+];
 
-                                            <div className="pt-3 sm:pt-5 lg:pt-0">
-                                                <h2 className="text-xl font-semibold text-black dark:text-white">
-                                                    Documentation
-                                                </h2>
+function Reveal({ children, className = '', delay = 0 }) {
+    return <motion.div initial={{ opacity: 0, y: 26 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0.16 }} transition={{ duration: 0.65, delay, ease: [0.22, 1, 0.36, 1] }} className={className}>{children}</motion.div>;
+}
 
-                                                <p className="mt-4 text-sm/relaxed">
-                                                    Laravel has wonderful
-                                                    documentation covering every
-                                                    aspect of the framework.
-                                                    Whether you are a newcomer
-                                                    or have prior experience
-                                                    with Laravel, we recommend
-                                                    reading our documentation
-                                                    from beginning to end.
-                                                </p>
-                                            </div>
-                                        </div>
+function Counter({ value, suffix = '' }) {
+    const valueRef = useRef(null);
+    useLayoutEffect(() => {
+        const node = valueRef.current;
+        const state = { value: 0 };
+        const context = gsap.context(() => {
+            gsap.to(state, { value, duration: 1.75, ease: 'power2.out', scrollTrigger: { trigger: node, start: 'top 85%', once: true }, onUpdate: () => { node.textContent = `${Math.round(state.value)}${suffix}`; } });
+        }, node);
+        return () => context.revert();
+    }, [value, suffix]);
+    return <span ref={valueRef}>0{suffix}</span>;
+}
 
-                                        <svg
-                                            className="size-6 shrink-0 stroke-[#FF2D20]"
-                                            xmlns="http://www.w3.org/2000/svg"
-                                            fill="none"
-                                            viewBox="0 0 24 24"
-                                            strokeWidth="1.5"
-                                        >
-                                            <path
-                                                strokeLinecap="round"
-                                                strokeLinejoin="round"
-                                                d="M4.5 12h15m0 0l-6.75-6.75M19.5 12l-6.75 6.75"
-                                            />
-                                        </svg>
-                                    </div>
-                                </a>
+function LearningJourney() {
+    const sectionRef = useRef(null);
+    const canvasRef = useRef(null);
+    const [activeIndex, setActiveIndex] = useState(0);
 
-                                <a
-                                    href="https://laracasts.com"
-                                    className="flex items-start gap-4 rounded-lg bg-white p-6 shadow-[0px_14px_34px_0px_rgba(0,0,0,0.08)] ring-1 ring-white/[0.05] transition duration-300 hover:text-black/70 hover:ring-black/20 focus:outline-none focus-visible:ring-[#FF2D20] lg:pb-10 dark:bg-zinc-900 dark:ring-zinc-800 dark:hover:text-white/70 dark:hover:ring-zinc-700 dark:focus-visible:ring-[#FF2D20]"
-                                >
-                                    <div className="flex size-12 shrink-0 items-center justify-center rounded-full bg-[#FF2D20]/10 sm:size-16">
-                                        <svg
-                                            className="size-5 sm:size-6"
-                                            xmlns="http://www.w3.org/2000/svg"
-                                            fill="none"
-                                            viewBox="0 0 24 24"
-                                        >
-                                            <g fill="#FF2D20">
-                                                <path d="M24 8.25a.5.5 0 0 0-.5-.5H.5a.5.5 0 0 0-.5.5v12a2.5 2.5 0 0 0 2.5 2.5h19a2.5 2.5 0 0 0 2.5-2.5v-12Zm-7.765 5.868a1.221 1.221 0 0 1 0 2.264l-6.626 2.776A1.153 1.153 0 0 1 8 18.123v-5.746a1.151 1.151 0 0 1 1.609-1.035l6.626 2.776ZM19.564 1.677a.25.25 0 0 0-.177-.427H15.6a.106.106 0 0 0-.072.03l-4.54 4.543a.25.25 0 0 0 .177.427h3.783c.027 0 .054-.01.073-.03l4.543-4.543ZM22.071 1.318a.047.047 0 0 0-.045.013l-4.492 4.492a.249.249 0 0 0 .038.385.25.25 0 0 0 .14.042h5.784a.5.5 0 0 0 .5-.5v-2a2.5 2.5 0 0 0-1.925-2.432ZM13.014 1.677a.25.25 0 0 0-.178-.427H9.101a.106.106 0 0 0-.073.03l-4.54 4.543a.25.25 0 0 0 .177.427H8.4a.106.106 0 0 0 .073-.03l4.54-4.543ZM6.513 1.677a.25.25 0 0 0-.177-.427H2.5A2.5 2.5 0 0 0 0 3.75v2a.5.5 0 0 0 .5.5h1.4a.106.106 0 0 0 .073-.03l4.54-4.543Z" />
-                                            </g>
-                                        </svg>
-                                    </div>
+    useLayoutEffect(() => {
+        const section = sectionRef.current;
+        const canvas = canvasRef.current;
+        if (!section || !canvas) return undefined;
 
-                                    <div className="pt-3 sm:pt-5">
-                                        <h2 className="text-xl font-semibold text-black dark:text-white">
-                                            Laracasts
-                                        </h2>
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(50, 1, 0.1, 100);
+        camera.position.z = 2.3;
+        const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true, powerPreference: 'high-performance' });
+        renderer.setClearColor(0x000000, 0);
+        renderer.outputColorSpace = THREE.SRGBColorSpace;
 
-                                        <p className="mt-4 text-sm/relaxed">
-                                            Laracasts offers thousands of video
-                                            tutorials on Laravel, PHP, and
-                                            JavaScript development. Check them
-                                            out, see for yourself, and massively
-                                            level up your development skills in
-                                            the process.
-                                        </p>
-                                    </div>
+        const geometry = new THREE.PlaneGeometry(1, 0.74, 32, 20);
+        const textureLoader = new THREE.TextureLoader();
+        const scrollState = { progress: 0, velocity: 0 };
+        const layout = { width: 1.35, spacing: 1.55 };
+        const meshes = journey.map(([, , , image], index) => {
+            const texture = textureLoader.load(image, (loadedTexture) => {
+                const source = loadedTexture.image;
+                material.uniforms.uTextureSize.value.set(source.naturalWidth || source.width, source.naturalHeight || source.height);
+            });
+            texture.colorSpace = THREE.SRGBColorSpace;
+            texture.minFilter = THREE.LinearFilter;
+            const material = new THREE.ShaderMaterial({
+                transparent: true,
+                uniforms: {
+                    uTexture: { value: texture },
+                    uVelocity: { value: 0 },
+                    uAlpha: { value: index === 0 ? 1 : 0.42 },
+                    uTextureSize: { value: new THREE.Vector2(1, 1) },
+                    uPlaneSize: { value: new THREE.Vector2(1, 0.74) },
+                },
+                vertexShader: `
+                    uniform float uVelocity;
+                    varying vec2 vUv;
+                    void main() {
+                        vUv = uv;
+                        vec3 p = position;
+                        float bend = sin(uv.y * 3.14159265) * uVelocity;
+                        p.x -= bend;
+                        p.z += abs(bend) * 0.18;
+                        gl_Position = projectionMatrix * modelViewMatrix * vec4(p, 1.0);
+                    }
+                `,
+                fragmentShader: `
+                    uniform sampler2D uTexture;
+                    uniform float uVelocity;
+                    uniform float uAlpha;
+                    uniform vec2 uTextureSize;
+                    uniform vec2 uPlaneSize;
+                    varying vec2 vUv;
 
-                                    <svg
-                                        className="size-6 shrink-0 self-center stroke-[#FF2D20]"
-                                        xmlns="http://www.w3.org/2000/svg"
-                                        fill="none"
-                                        viewBox="0 0 24 24"
-                                        strokeWidth="1.5"
-                                    >
-                                        <path
-                                            strokeLinecap="round"
-                                            strokeLinejoin="round"
-                                            d="M4.5 12h15m0 0l-6.75-6.75M19.5 12l-6.75 6.75"
-                                        />
-                                    </svg>
-                                </a>
+                    vec2 coverUv(vec2 uv) {
+                        float planeAspect = uPlaneSize.x / uPlaneSize.y;
+                        float imageAspect = uTextureSize.x / uTextureSize.y;
+                        if (planeAspect > imageAspect) {
+                            float scale = imageAspect / planeAspect;
+                            uv.y = uv.y * scale + (1.0 - scale) * 0.5;
+                        } else {
+                            float scale = planeAspect / imageAspect;
+                            uv.x = uv.x * scale + (1.0 - scale) * 0.5;
+                        }
+                        return uv;
+                    }
 
-                                <a
-                                    href="https://laravel-news.com"
-                                    className="flex items-start gap-4 rounded-lg bg-white p-6 shadow-[0px_14px_34px_0px_rgba(0,0,0,0.08)] ring-1 ring-white/[0.05] transition duration-300 hover:text-black/70 hover:ring-black/20 focus:outline-none focus-visible:ring-[#FF2D20] lg:pb-10 dark:bg-zinc-900 dark:ring-zinc-800 dark:hover:text-white/70 dark:hover:ring-zinc-700 dark:focus-visible:ring-[#FF2D20]"
-                                >
-                                    <div className="flex size-12 shrink-0 items-center justify-center rounded-full bg-[#FF2D20]/10 sm:size-16">
-                                        <svg
-                                            className="size-5 sm:size-6"
-                                            xmlns="http://www.w3.org/2000/svg"
-                                            fill="none"
-                                            viewBox="0 0 24 24"
-                                        >
-                                            <g fill="#FF2D20">
-                                                <path d="M8.75 4.5H5.5c-.69 0-1.25.56-1.25 1.25v4.75c0 .69.56 1.25 1.25 1.25h3.25c.69 0 1.25-.56 1.25-1.25V5.75c0-.69-.56-1.25-1.25-1.25Z" />
-                                                <path d="M24 10a3 3 0 0 0-3-3h-2V2.5a2 2 0 0 0-2-2H2a2 2 0 0 0-2 2V20a3.5 3.5 0 0 0 3.5 3.5h17A3.5 3.5 0 0 0 24 20V10ZM3.5 21.5A1.5 1.5 0 0 1 2 20V3a.5.5 0 0 1 .5-.5h14a.5.5 0 0 1 .5.5v17c0 .295.037.588.11.874a.5.5 0 0 1-.484.625L3.5 21.5ZM22 20a1.5 1.5 0 1 1-3 0V9.5a.5.5 0 0 1 .5-.5H21a1 1 0 0 1 1 1v10Z" />
-                                                <path d="M12.751 6.047h2a.75.75 0 0 1 .75.75v.5a.75.75 0 0 1-.75.75h-2A.75.75 0 0 1 12 7.3v-.5a.75.75 0 0 1 .751-.753ZM12.751 10.047h2a.75.75 0 0 1 .75.75v.5a.75.75 0 0 1-.75.75h-2A.75.75 0 0 1 12 11.3v-.5a.75.75 0 0 1 .751-.753ZM4.751 14.047h10a.75.75 0 0 1 .75.75v.5a.75.75 0 0 1-.75.75h-10A.75.75 0 0 1 4 15.3v-.5a.75.75 0 0 1 .751-.753ZM4.75 18.047h7.5a.75.75 0 0 1 .75.75v.5a.75.75 0 0 1-.75.75h-7.5A.75.75 0 0 1 4 19.3v-.5a.75.75 0 0 1 .75-.753Z" />
-                                            </g>
-                                        </svg>
-                                    </div>
+                    void main() {
+                        vec2 uv = coverUv(vUv);
+                        float shift = uVelocity * 0.035;
+                        float r = texture2D(uTexture, uv + vec2(shift, 0.0)).r;
+                        float g = texture2D(uTexture, uv).g;
+                        float b = texture2D(uTexture, uv - vec2(shift, 0.0)).b;
+                        vec3 color = vec3(r, g, b);
+                        float edge = smoothstep(0.0, 0.035, vUv.x) * smoothstep(0.0, 0.035, 1.0 - vUv.x);
+                        gl_FragColor = vec4(color, uAlpha * edge);
+                    }
+                `,
+            });
+            const mesh = new THREE.Mesh(geometry, material);
+            mesh.userData.index = index;
+            scene.add(mesh);
+            return mesh;
+        });
 
-                                    <div className="pt-3 sm:pt-5">
-                                        <h2 className="text-xl font-semibold text-black dark:text-white">
-                                            Laravel News
-                                        </h2>
+        const resize = () => {
+            const width = section.clientWidth;
+            const height = section.clientHeight;
+            camera.aspect = width / height;
+            camera.updateProjectionMatrix();
+            renderer.setSize(width, height, false);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, width < 768 ? 1.5 : 2));
 
-                                        <p className="mt-4 text-sm/relaxed">
-                                            Laravel News is a community driven
-                                            portal and newsletter aggregating
-                                            all of the latest and most important
-                                            news in the Laravel ecosystem,
-                                            including new package releases and
-                                            tutorials.
-                                        </p>
-                                    </div>
+            const visibleHeight = 2 * Math.tan(THREE.MathUtils.degToRad(camera.fov / 2)) * camera.position.z;
+            const visibleWidth = visibleHeight * camera.aspect;
+            layout.width = THREE.MathUtils.clamp(visibleWidth * (width < 768 ? 0.78 : 0.4), 0.82, 1.5);
+            layout.spacing = layout.width * (width < 768 ? 1.14 : 1.2);
+            meshes.forEach((mesh) => {
+                mesh.scale.set(layout.width, layout.width, 1);
+                mesh.material.uniforms.uPlaneSize.value.set(layout.width, layout.width * 0.74);
+            });
+        };
+        resize();
 
-                                    <svg
-                                        className="size-6 shrink-0 self-center stroke-[#FF2D20]"
-                                        xmlns="http://www.w3.org/2000/svg"
-                                        fill="none"
-                                        viewBox="0 0 24 24"
-                                        strokeWidth="1.5"
-                                    >
-                                        <path
-                                            strokeLinecap="round"
-                                            strokeLinejoin="round"
-                                            d="M4.5 12h15m0 0l-6.75-6.75M19.5 12l-6.75 6.75"
-                                        />
-                                    </svg>
-                                </a>
+        const context = gsap.context(() => {
+            ScrollTrigger.create({
+                trigger: section,
+                start: 'top top',
+                end: () => `+=${window.innerHeight * journey.length}`,
+                pin: true,
+                pinSpacing: true,
+                anticipatePin: 1,
+                scrub: true,
+                snap: { snapTo: 1 / (journey.length - 1), duration: { min: 0.2, max: 0.6 }, delay: 0.08, ease: 'power2.out' },
+                invalidateOnRefresh: true,
+                onUpdate: (self) => {
+                    scrollState.progress = self.progress;
+                    scrollState.velocity = THREE.MathUtils.clamp(self.getVelocity() * 0.000035, -0.22, 0.22);
+                    const nextIndex = Math.min(journey.length - 1, Math.round(self.progress * (journey.length - 1)));
+                    setActiveIndex((current) => current === nextIndex ? current : nextIndex);
+                },
+            });
+        }, section);
 
-                                <div className="flex items-start gap-4 rounded-lg bg-white p-6 shadow-[0px_14px_34px_0px_rgba(0,0,0,0.08)] ring-1 ring-white/[0.05] lg:pb-10 dark:bg-zinc-900 dark:ring-zinc-800">
-                                    <div className="flex size-12 shrink-0 items-center justify-center rounded-full bg-[#FF2D20]/10 sm:size-16">
-                                        <svg
-                                            className="size-5 sm:size-6"
-                                            xmlns="http://www.w3.org/2000/svg"
-                                            fill="none"
-                                            viewBox="0 0 24 24"
-                                        >
-                                            <g fill="#FF2D20">
-                                                <path d="M16.597 12.635a.247.247 0 0 0-.08-.237 2.234 2.234 0 0 1-.769-1.68c.001-.195.03-.39.084-.578a.25.25 0 0 0-.09-.267 8.8 8.8 0 0 0-4.826-1.66.25.25 0 0 0-.268.181 2.5 2.5 0 0 1-2.4 1.824.045.045 0 0 0-.045.037 12.255 12.255 0 0 0-.093 3.86.251.251 0 0 0 .208.214c2.22.366 4.367 1.08 6.362 2.118a.252.252 0 0 0 .32-.079 10.09 10.09 0 0 0 1.597-3.733ZM13.616 17.968a.25.25 0 0 0-.063-.407A19.697 19.697 0 0 0 8.91 15.98a.25.25 0 0 0-.287.325c.151.455.334.898.548 1.328.437.827.981 1.594 1.619 2.28a.249.249 0 0 0 .32.044 29.13 29.13 0 0 0 2.506-1.99ZM6.303 14.105a.25.25 0 0 0 .265-.274 13.048 13.048 0 0 1 .205-4.045.062.062 0 0 0-.022-.07 2.5 2.5 0 0 1-.777-.982.25.25 0 0 0-.271-.149 11 11 0 0 0-5.6 2.815.255.255 0 0 0-.075.163c-.008.135-.02.27-.02.406.002.8.084 1.598.246 2.381a.25.25 0 0 0 .303.193 19.924 19.924 0 0 1 5.746-.438ZM9.228 20.914a.25.25 0 0 0 .1-.393 11.53 11.53 0 0 1-1.5-2.22 12.238 12.238 0 0 1-.91-2.465.248.248 0 0 0-.22-.187 18.876 18.876 0 0 0-5.69.33.249.249 0 0 0-.179.336c.838 2.142 2.272 4 4.132 5.353a.254.254 0 0 0 .15.048c1.41-.01 2.807-.282 4.117-.802ZM18.93 12.957l-.005-.008a.25.25 0 0 0-.268-.082 2.21 2.21 0 0 1-.41.081.25.25 0 0 0-.217.2c-.582 2.66-2.127 5.35-5.75 7.843a.248.248 0 0 0-.09.299.25.25 0 0 0 .065.091 28.703 28.703 0 0 0 2.662 2.12.246.246 0 0 0 .209.037c2.579-.701 4.85-2.242 6.456-4.378a.25.25 0 0 0 .048-.189 13.51 13.51 0 0 0-2.7-6.014ZM5.702 7.058a.254.254 0 0 0 .2-.165A2.488 2.488 0 0 1 7.98 5.245a.093.093 0 0 0 .078-.062 19.734 19.734 0 0 1 3.055-4.74.25.25 0 0 0-.21-.41 12.009 12.009 0 0 0-10.4 8.558.25.25 0 0 0 .373.281 12.912 12.912 0 0 1 4.826-1.814ZM10.773 22.052a.25.25 0 0 0-.28-.046c-.758.356-1.55.635-2.365.833a.25.25 0 0 0-.022.48c1.252.43 2.568.65 3.893.65.1 0 .2 0 .3-.008a.25.25 0 0 0 .147-.444c-.526-.424-1.1-.917-1.673-1.465ZM18.744 8.436a.249.249 0 0 0 .15.228 2.246 2.246 0 0 1 1.352 2.054c0 .337-.08.67-.23.972a.25.25 0 0 0 .042.28l.007.009a15.016 15.016 0 0 1 2.52 4.6.25.25 0 0 0 .37.132.25.25 0 0 0 .096-.114c.623-1.464.944-3.039.945-4.63a12.005 12.005 0 0 0-5.78-10.258.25.25 0 0 0-.373.274c.547 2.109.85 4.274.901 6.453ZM9.61 5.38a.25.25 0 0 0 .08.31c.34.24.616.561.8.935a.25.25 0 0 0 .3.127.631.631 0 0 1 .206-.034c2.054.078 4.036.772 5.69 1.991a.251.251 0 0 0 .267.024c.046-.024.093-.047.141-.067a.25.25 0 0 0 .151-.23A29.98 29.98 0 0 0 15.957.764a.25.25 0 0 0-.16-.164 11.924 11.924 0 0 0-2.21-.518.252.252 0 0 0-.215.076A22.456 22.456 0 0 0 9.61 5.38Z" />
-                                            </g>
-                                        </svg>
-                                    </div>
+        let frameId;
+        const render = () => {
+            const travel = scrollState.progress * (journey.length - 1) * layout.spacing;
+            scrollState.velocity *= 0.9;
+            meshes.forEach((mesh, index) => {
+                const x = (index * layout.spacing) - travel;
+                const distance = Math.min(1, Math.abs(x) / layout.spacing);
+                mesh.position.x = x;
+                mesh.position.y = -0.02 + distance * 0.06;
+                mesh.position.z = -distance * 0.18;
+                mesh.rotation.y = THREE.MathUtils.lerp(-0.05, 0.05, (x / layout.spacing + 1) / 2);
+                mesh.material.uniforms.uVelocity.value = THREE.MathUtils.lerp(mesh.material.uniforms.uVelocity.value, scrollState.velocity, 0.15);
+                mesh.material.uniforms.uAlpha.value = THREE.MathUtils.lerp(mesh.material.uniforms.uAlpha.value, 1 - distance * 0.62, 0.1);
+            });
+            renderer.render(scene, camera);
+            frameId = requestAnimationFrame(render);
+        };
+        frameId = requestAnimationFrame(render);
+        window.addEventListener('resize', resize);
 
-                                    <div className="pt-3 sm:pt-5">
-                                        <h2 className="text-xl font-semibold text-black dark:text-white">
-                                            Vibrant Ecosystem
-                                        </h2>
+        return () => {
+            context.revert();
+            cancelAnimationFrame(frameId);
+            window.removeEventListener('resize', resize);
+            meshes.forEach((mesh) => {
+                mesh.material.uniforms.uTexture.value.dispose();
+                mesh.material.dispose();
+                scene.remove(mesh);
+            });
+            geometry.dispose();
+            renderer.dispose();
+            renderer.forceContextLoss();
+        };
+    }, []);
 
-                                        <p className="mt-4 text-sm/relaxed">
-                                            Laravel's robust library of
-                                            first-party tools and libraries,
-                                            such as{' '}
-                                            <a
-                                                href="https://forge.laravel.com"
-                                                className="rounded-sm underline hover:text-black focus:outline-none focus-visible:ring-1 focus-visible:ring-[#FF2D20] dark:hover:text-white dark:focus-visible:ring-[#FF2D20]"
-                                            >
-                                                Forge
-                                            </a>
-                                            ,{' '}
-                                            <a
-                                                href="https://vapor.laravel.com"
-                                                className="rounded-sm underline hover:text-black focus:outline-none focus-visible:ring-1 focus-visible:ring-[#FF2D20] dark:hover:text-white"
-                                            >
-                                                Vapor
-                                            </a>
-                                            ,{' '}
-                                            <a
-                                                href="https://nova.laravel.com"
-                                                className="rounded-sm underline hover:text-black focus:outline-none focus-visible:ring-1 focus-visible:ring-[#FF2D20] dark:hover:text-white"
-                                            >
-                                                Nova
-                                            </a>
-                                            ,{' '}
-                                            <a
-                                                href="https://envoyer.io"
-                                                className="rounded-sm underline hover:text-black focus:outline-none focus-visible:ring-1 focus-visible:ring-[#FF2D20] dark:hover:text-white"
-                                            >
-                                                Envoyer
-                                            </a>
-                                            , and{' '}
-                                            <a
-                                                href="https://herd.laravel.com"
-                                                className="rounded-sm underline hover:text-black focus:outline-none focus-visible:ring-1 focus-visible:ring-[#FF2D20] dark:hover:text-white"
-                                            >
-                                                Herd
-                                            </a>{' '}
-                                            help you take your projects to the
-                                            next level. Pair them with powerful
-                                            open source libraries like{' '}
-                                            <a
-                                                href="https://laravel.com/docs/billing"
-                                                className="rounded-sm underline hover:text-black focus:outline-none focus-visible:ring-1 focus-visible:ring-[#FF2D20] dark:hover:text-white"
-                                            >
-                                                Cashier
-                                            </a>
-                                            ,{' '}
-                                            <a
-                                                href="https://laravel.com/docs/dusk"
-                                                className="rounded-sm underline hover:text-black focus:outline-none focus-visible:ring-1 focus-visible:ring-[#FF2D20] dark:hover:text-white"
-                                            >
-                                                Dusk
-                                            </a>
-                                            ,{' '}
-                                            <a
-                                                href="https://laravel.com/docs/broadcasting"
-                                                className="rounded-sm underline hover:text-black focus:outline-none focus-visible:ring-1 focus-visible:ring-[#FF2D20] dark:hover:text-white"
-                                            >
-                                                Echo
-                                            </a>
-                                            ,{' '}
-                                            <a
-                                                href="https://laravel.com/docs/horizon"
-                                                className="rounded-sm underline hover:text-black focus:outline-none focus-visible:ring-1 focus-visible:ring-[#FF2D20] dark:hover:text-white"
-                                            >
-                                                Horizon
-                                            </a>
-                                            ,{' '}
-                                            <a
-                                                href="https://laravel.com/docs/sanctum"
-                                                className="rounded-sm underline hover:text-black focus:outline-none focus-visible:ring-1 focus-visible:ring-[#FF2D20] dark:hover:text-white"
-                                            >
-                                                Sanctum
-                                            </a>
-                                            ,{' '}
-                                            <a
-                                                href="https://laravel.com/docs/telescope"
-                                                className="rounded-sm underline hover:text-black focus:outline-none focus-visible:ring-1 focus-visible:ring-[#FF2D20] dark:hover:text-white"
-                                            >
-                                                Telescope
-                                            </a>
-                                            , and more.
-                                        </p>
-                                    </div>
-                                </div>
-                            </div>
-                        </main>
+    const active = journey[activeIndex];
+    return <section ref={sectionRef} id="journey" className="relative h-[100svh] overflow-hidden bg-[#0B132B] text-white"><canvas ref={canvasRef} className="absolute inset-0 h-full w-full" aria-hidden="true" /><div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_15%,rgba(11,19,43,.82)_90%)]" /><div className="absolute left-6 top-7 z-10 font-mono text-[10px] uppercase tracking-[0.18em] text-blue-200 md:left-12 md:top-10">03 / Your learning journey</div><div className="absolute right-6 top-7 z-10 flex gap-2 md:right-12 md:top-10">{journey.map((item, index) => <span key={item[0]} className={`h-1 rounded-full transition-all duration-300 ${index === activeIndex ? 'w-8 bg-amber-300' : 'w-3 bg-white/25'}`} />)}</div><div className="pointer-events-none absolute inset-x-6 bottom-8 z-10 md:inset-x-12 md:bottom-10"><AnimatePresence mode="wait"><motion.div key={active[0]} initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -12 }} transition={{ duration: 0.35 }} className="flex flex-col justify-between gap-5 md:flex-row md:items-end"><div><span className="inline-flex rounded-full border border-white/15 bg-slate-950/55 px-3 py-1.5 text-[10px] font-medium uppercase tracking-[0.13em] text-blue-100 backdrop-blur">{active[4]}</span><h3 className="mt-4 max-w-xl text-4xl font-semibold tracking-[-0.06em] md:text-6xl">{active[1]}</h3></div><div className="max-w-sm"><p className="text-sm leading-6 text-slate-200">{active[2]}</p><p className="mt-3 font-mono text-xs text-amber-300">{active[0]} / 04</p></div></motion.div></AnimatePresence></div></section>;
+}
 
-                        <footer className="py-16 text-center text-sm text-black dark:text-white/70">
-                            Laravel v{laravelVersion} (PHP v{phpVersion})
-                        </footer>
-                    </div>
-                </div>
-            </div>
-        </>
-    );
+function Finder() {
+    const [mode, setMode] = useState('Home Tutor');
+    const fields = [['Subject', 'Mathematics'], ['Level', 'SPM'], ['Mode', mode]];
+    return <div className="rounded-2xl border border-blue-400/20 bg-slate-950/50 p-3 shadow-2xl shadow-black/25 backdrop-blur-xl sm:p-4"><div className="mb-3 flex rounded-xl bg-white/5 p-1"><button onClick={() => setMode('Home Tutor')} className={`flex-1 rounded-lg px-3 py-2 text-xs font-semibold transition ${mode === 'Home Tutor' ? 'bg-blue-600 text-white shadow-lg' : 'text-slate-400 hover:text-white'}`}>Home Tutoring</button><button onClick={() => setMode('Online Class')} className={`flex-1 rounded-lg px-3 py-2 text-xs font-semibold transition ${mode === 'Online Class' ? 'bg-blue-600 text-white shadow-lg' : 'text-slate-400 hover:text-white'}`}>Online Classes</button></div><AnimatePresence mode="wait"><motion.div key={mode} initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -5 }} className="grid gap-2 sm:grid-cols-3">{fields.map(([label, value]) => <button type="button" key={label} className="flex items-center justify-between rounded-xl border border-white/10 bg-white/[0.055] px-3 py-3 text-left"><span><span className="block text-[10px] uppercase tracking-[0.13em] text-slate-500">{label}</span><span className="mt-1 block text-xs font-medium text-white">{value}</span></span><ChevronDownIcon className="h-3.5 w-3.5 text-slate-500" /></button>)}</motion.div></AnimatePresence><button className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-[#2563EB] px-4 py-3 text-sm font-semibold text-white transition hover:scale-[1.01] hover:bg-blue-500">Find a match <ArrowRightIcon className="h-4 w-4" /></button></div>;
+}
+
+function LandingPage() {
+    const [menuOpen, setMenuOpen] = useState(false);
+    const { scrollY } = useScroll();
+    const heroY = useTransform(scrollY, [0, 900], [0, 95]);
+    return <main className="min-h-screen overflow-x-clip bg-[#0F172A] font-sans text-white selection:bg-amber-400 selection:text-slate-950">
+        <section className="relative overflow-hidden border-b border-white/10"><div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_78%_24%,rgba(37,99,235,.22),transparent_25%),radial-gradient(circle_at_20%_80%,rgba(16,185,129,.12),transparent_25%)]" /><div className="pointer-events-none absolute inset-0 opacity-35 [background-image:linear-gradient(rgba(255,255,255,.055)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,.055)_1px,transparent_1px)] [background-size:100%_52px,52px_100%]" />
+            <nav className="relative z-20 mx-auto flex max-w-[1440px] items-center justify-between px-6 py-5 md:px-12"><Link href="/" className="flex items-center gap-2.5 text-lg font-semibold tracking-[-0.05em]"><span className="grid h-8 w-8 place-items-center rounded-lg bg-blue-600 text-sm">H</span>HomeTutor<span className="text-amber-300">.</span></Link><div className="hidden items-center gap-7 text-sm text-slate-300 md:flex"><a href="#practice" className="hover:text-white">Practice</a><a href="#live-class" className="hover:text-white">Live classes</a><a href="#journey" className="hover:text-white">How it works</a><Link href={route('login')} className="rounded-lg border border-white/20 px-4 py-2 font-medium transition hover:border-blue-400 hover:bg-white/5">Log in</Link></div><button type="button" onClick={() => setMenuOpen(!menuOpen)} className="rounded-lg border border-white/15 p-2 md:hidden">{menuOpen ? <XMarkIcon className="h-5 w-5" /> : <Bars3Icon className="h-5 w-5" />}</button></nav>
+            {menuOpen && <div className="absolute z-10 w-full border-y border-white/10 bg-[#0F172A] px-6 py-6 md:hidden"><div className="flex flex-col gap-5 text-sm text-slate-200"><a href="#practice" onClick={() => setMenuOpen(false)}>Practice</a><a href="#live-class" onClick={() => setMenuOpen(false)}>Live classes</a><a href="#journey" onClick={() => setMenuOpen(false)}>How it works</a><Link href={route('login')} onClick={() => setMenuOpen(false)}>Log in</Link></div></div>}
+            <div className="relative mx-auto grid min-h-[710px] max-w-[1440px] gap-12 px-6 pb-20 pt-16 md:px-12 lg:grid-cols-[1.05fr_.95fr] lg:items-center lg:pb-28"><Reveal className="relative z-[1]"><p className="mb-6 font-mono text-[10px] uppercase tracking-[0.18em] text-blue-300">Online & in-person tutoring / Malaysia</p><h1 className="max-w-3xl text-5xl font-semibold leading-[0.94] tracking-[-0.07em] sm:text-6xl xl:text-7xl">Master any subject with <span className="text-amber-300">1-on-1</span> home & online tutoring.</h1><p className="mt-7 max-w-xl text-lg leading-8 text-slate-300">Empowering students through personalized practice sessions, interactive live classes, and Malaysia’s top verified tutors.</p><div className="mt-9"><Finder /></div></Reveal><motion.div style={{ y: heroY }} className="relative mx-auto grid w-full max-w-xl gap-4 sm:grid-cols-[1.05fr_.95fr]"><div className="relative overflow-hidden rounded-3xl border border-blue-400/20 bg-white/[0.06] p-3 shadow-2xl backdrop-blur"><img src="/images/background_classroom.jpg" alt="Student in a live tutoring session" className="h-[360px] w-full rounded-2xl object-cover" /><div className="absolute left-7 top-7 inline-flex items-center gap-2 rounded-full bg-slate-950/80 px-3 py-1.5 text-[10px] font-bold tracking-[0.13em] text-emerald-300 backdrop-blur"><span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-400" />LIVE NOW</div><div className="absolute inset-x-7 bottom-7 rounded-2xl border border-white/15 bg-slate-950/80 p-3 backdrop-blur"><p className="text-xs font-semibold">Mathematics · Form 4</p><p className="mt-1 text-[11px] text-slate-400">Cikgu Aina is sharing her whiteboard</p></div></div><div className="flex flex-col justify-between rounded-3xl border border-blue-400/20 bg-gradient-to-b from-blue-600/25 to-white/[0.06] p-5 backdrop-blur"><div><p className="font-mono text-[10px] uppercase tracking-[0.14em] text-blue-200">Practice studio</p><h2 className="mt-3 text-2xl font-semibold tracking-[-0.045em]">Your next<br />small win.</h2></div><div className="space-y-2">{practiceItems.map(([title, detail], index) => <motion.div whileHover={{ scale: 1.03 }} key={title} className="rounded-xl border border-white/10 bg-slate-950/45 p-3"><p className="text-xs font-semibold text-amber-200">0{index + 1} · {title}</p><p className="mt-1 text-[11px] leading-4 text-slate-400">{detail}</p></motion.div>)}</div></div></motion.div></div>
+        </section>
+        <section className="border-b border-white/10 bg-[#0B132B]"><div className="mx-auto grid max-w-[1440px] divide-y divide-white/10 px-6 md:grid-cols-3 md:divide-x md:divide-y-0 md:px-12"><div className="py-7"><p className="font-mono text-3xl font-semibold tracking-[-0.05em] text-white"><Counter value={10000} suffix="+" /></p><p className="mt-1 text-sm text-slate-400">Active students</p></div><div className="py-7 md:px-10"><p className="font-mono text-3xl font-semibold tracking-[-0.05em] text-amber-300"><Counter value={94} suffix="%" /></p><p className="mt-1 text-sm text-slate-400">Achieved grade improvement</p></div><div className="py-7 md:pl-10"><p className="font-mono text-3xl font-semibold tracking-[-0.05em] text-emerald-300"><Counter value={1000} suffix="+" /></p><p className="mt-1 text-sm text-slate-400">Verified tutors</p></div></div></section>
+        <section id="practice" className="bg-slate-100 px-6 py-24 text-slate-900 md:px-12 md:py-32"><div className="mx-auto grid max-w-[1440px] gap-12 lg:grid-cols-2 lg:items-center"><Reveal><p className="font-mono text-[10px] uppercase tracking-[0.18em] text-blue-600">01 / Practice made personal</p><h2 className="mt-4 max-w-xl text-4xl font-semibold leading-[0.96] tracking-[-0.06em] md:text-6xl">Every worksheet, a clearer next step.</h2><p className="mt-6 max-w-md leading-7 text-slate-600">Move beyond the tick-box. Practice adapts to the learner with instant feedback, skill tracking, and thoughtful revision cues.</p><a href="#journey" className="mt-8 inline-flex items-center gap-2 rounded-lg bg-slate-900 px-5 py-3 text-sm font-semibold text-white transition hover:scale-[1.03]">Explore the learning journey <ArrowRightIcon className="h-4 w-4" /></a></Reveal><Reveal delay={0.12} className="rounded-3xl border border-slate-200 bg-white p-5 shadow-xl shadow-slate-300/40"><div className="flex items-center justify-between border-b border-slate-100 pb-4"><span className="text-sm font-semibold">Mathematics / Algebra</span><span className="rounded-full bg-emerald-50 px-2.5 py-1 text-[10px] font-bold text-emerald-600">AUTO-GRADED</span></div><div className="mt-5 rounded-2xl bg-slate-50 p-5"><p className="text-xs font-medium text-slate-400">QUESTION 08</p><p className="mt-3 text-2xl font-semibold tracking-[-0.04em]">Solve for x: 3x + 4 = 19</p><div className="mt-5 grid grid-cols-2 gap-2">{['x = 5', 'x = 7', 'x = 9', 'x = 11'].map((answer, index) => <button key={answer} className={`rounded-xl border p-3 text-left text-sm font-medium transition hover:-translate-y-0.5 ${index === 0 ? 'border-emerald-300 bg-emerald-50 text-emerald-700' : 'border-slate-200 bg-white text-slate-600'}`}>{answer}{index === 0 && <CheckIcon className="float-right h-4 w-4" />}</button>)}</div></div><div className="mt-5 flex items-center justify-between"><div><p className="text-xs text-slate-400">Weekly mastery</p><p className="mt-1 text-sm font-semibold">18 of 24 skills complete</p></div><div className="h-2 w-28 overflow-hidden rounded-full bg-slate-100"><div className="h-full w-3/4 rounded-full bg-blue-600" /></div></div></Reveal></div></section>
+        <section id="live-class" className="border-y border-white/10 bg-[#101C38] px-6 py-24 md:px-12 md:py-32"><div className="mx-auto grid max-w-[1440px] gap-12 lg:grid-cols-2 lg:items-center"><Reveal className="order-2 lg:order-1"><div className="overflow-hidden rounded-3xl border border-blue-400/20 bg-slate-950/50 p-4 shadow-2xl"><div className="flex items-center justify-between border-b border-white/10 pb-3 text-xs"><span className="font-medium text-slate-200">Live whiteboard</span><span className="inline-flex items-center gap-1.5 text-emerald-300"><span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-400" />42 students online</span></div><div className="relative mt-4 h-64 rounded-2xl bg-[#F8FAFC] p-7 text-slate-900"><p className="text-lg font-semibold tracking-[-0.04em]">Photosynthesis</p><p className="mt-5 text-sm text-slate-500">light + carbon dioxide + water →</p><div className="mt-3 inline-block rounded-lg border-2 border-blue-500 px-4 py-2 text-lg font-medium text-blue-700">glucose + oxygen</div><div className="absolute bottom-6 right-6 flex gap-2"><span className="grid h-9 w-9 place-items-center rounded-lg bg-blue-600 text-white">T</span><span className="grid h-9 w-9 place-items-center rounded-lg bg-amber-400 text-slate-900">S</span></div></div><div className="mt-4 flex gap-2 overflow-hidden">{['Screen share', 'Real-time Q&A', 'Lesson replay'].map((item) => <span key={item} className="whitespace-nowrap rounded-full border border-white/10 px-3 py-1.5 text-[10px] text-slate-300">{item}</span>)}</div></div></Reveal><Reveal delay={0.1} className="order-1 lg:order-2"><p className="font-mono text-[10px] uppercase tracking-[0.18em] text-amber-300">02 / Live online classes</p><h2 className="mt-4 max-w-xl text-4xl font-semibold leading-[0.96] tracking-[-0.06em] md:text-6xl">A live class that feels close.</h2><p className="mt-6 max-w-md leading-7 text-slate-300">Bring the energy of a great tutor into every home—with shared whiteboards, screen sharing, real-time questions, and replays when learners need another look.</p><button className="mt-8 inline-flex items-center gap-2 rounded-lg border border-white/20 px-5 py-3 text-sm font-semibold transition hover:scale-[1.03] hover:bg-white hover:text-slate-950"><PlayIcon className="h-4 w-4 fill-current" /> Watch class preview</button></Reveal></div></section>
+        <LearningJourney />
+        <section id="results" className="bg-slate-100 px-6 py-24 text-slate-900 md:px-12 md:py-32"><div className="mx-auto max-w-[1440px]"><Reveal className="flex flex-col justify-between gap-6 md:flex-row md:items-end"><div><p className="font-mono text-[10px] uppercase tracking-[0.18em] text-blue-600">Real learning, real change</p><h2 className="mt-4 text-4xl font-semibold leading-[0.96] tracking-[-0.06em] md:text-6xl">Trusted progress stories.</h2></div><p className="max-w-sm text-sm leading-6 text-slate-500">Small teaching moments build into lasting confidence, one learner at a time.</p></Reveal><div className="mt-12 grid gap-5 lg:grid-cols-3">{testimonials.map((testimonial, index) => <Reveal key={testimonial.name} delay={index * 0.08}><motion.article whileHover={{ y: -6 }} className="h-full rounded-3xl border border-slate-200 bg-white p-6 shadow-sm transition-shadow hover:shadow-lg"><div className="flex items-center justify-between"><img src={testimonial.image} alt={testimonial.name} className="h-12 w-12 rounded-2xl object-cover" /><span className="inline-flex items-center gap-1 text-sm font-semibold text-amber-500"><StarIcon className="h-4 w-4 fill-current" />{testimonial.score}</span></div><p className="mt-7 text-lg leading-7 tracking-[-0.025em] text-slate-700">“{testimonial.quote}”</p><div className="mt-7 border-t border-slate-100 pt-4"><p className="text-sm font-semibold">{testimonial.name}</p><p className="mt-1 text-xs text-slate-400">{testimonial.role}</p></div></motion.article></Reveal>)}</div></div></section>
+        <section className="bg-[#0B132B] px-6 py-24 text-center md:px-12 md:py-32"><Reveal><p className="font-mono text-[10px] uppercase tracking-[0.18em] text-emerald-300">The next class starts here</p><h2 className="mx-auto mt-4 max-w-3xl text-4xl font-semibold leading-[0.96] tracking-[-0.06em] md:text-6xl">Give every learner the right kind of support.</h2><p className="mx-auto mt-6 max-w-xl leading-7 text-slate-300">Find a verified tutor, join a live class, and turn learning into forward motion.</p><Link href={route('login')} className="mt-8 inline-flex items-center gap-2 rounded-lg bg-blue-600 px-5 py-3.5 text-sm font-semibold transition hover:scale-[1.03] hover:bg-blue-500">Find a tutor <ArrowRightIcon className="h-4 w-4" /></Link></Reveal></section>
+        <footer className="border-t border-white/10 px-6 py-7 text-xs text-slate-400 md:px-12"><div className="mx-auto flex max-w-[1440px] flex-col gap-4 sm:flex-row sm:justify-between"><span>© {new Date().getFullYear()} HomeTutor Malaysia</span><div className="flex gap-5"><a href="https://hometutor.com.my/" target="_blank" rel="noreferrer" className="hover:text-white">Official site</a><Link href={route('login')} className="hover:text-white">Log in</Link></div></div></footer>
+    </main>;
+}
+
+export default function Welcome() {
+    return <><Head title="HomeTutor | Home & Online Tutoring" /><SmoothScroll><LandingPage /></SmoothScroll></>;
 }

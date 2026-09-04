@@ -2,10 +2,18 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Head, usePage, Link, router } from '@inertiajs/react';
 import ObjectiveQuestionLayout from '@/Layouts/ObjectiveQuestionLayout';
 import ResultQuestion from '@/Pages/courses/training/ResultQuestion';
+<<<<<<< HEAD
 import Calculator from '@/Components/ScientificCalculator';
 import PageDrawingTool from '@/Components/PageDrawingTool';
 import AutoNotes from '@/Components/AutoNotes';
 import QuestionReportButton from '@/Components/QuestionReportButton';
+=======
+import Calculator from '@/components/ScientificCalculator';
+import PageDrawingTool from '@/components/PageDrawingTool';
+import AutoNotes from '@/components/AutoNotes';
+import ReportQuestionButton from '@/Components/ReportQuestionButton';
+import ImagePathLabel, { addImagePathLabels } from '@/Components/ImagePathLabel';
+>>>>>>> 917d4bb (Initial project commit)
 
 /**
  * QuestionDisplay Component
@@ -26,14 +34,18 @@ const QuestionDisplay = ({ question }) => {
     // If question has text content
     if (question.question_text) {
       // Process HTML content for better styling
+<<<<<<< HEAD
       const processedHtml = question.question_text
+=======
+      const processedHtml = addImagePathLabels(question.question_text
+>>>>>>> 917d4bb (Initial project commit)
         .replace(
           /<img([^>]*)>/g,
-          '<img$1 class="max-w-full h-auto rounded-lg shadow-md max-h-96 object-contain mx-auto my-4" onerror="this.style.display=\'none\'; this.nextElementSibling?.style.display=\'block\';">'
+          '<img$1 class="max-w-full h-auto rounded-lg shadow-md max-h-96 object-contain mx-auto my-4">'
         )
         .replace(/<br\s*\/?>/g, '<br class="my-3">')
         .replace(/(<br\s*\/?>\s*){2,}/g, '</p><p class="mb-4">')
-        .replace(/<p([^>]*)>/g, '<p$1 class="mb-4 leading-relaxed">');
+        .replace(/<p([^>]*)>/g, '<p$1 class="mb-4 leading-relaxed">'));
 
       return (
         <div className="relative">
@@ -53,6 +65,7 @@ const QuestionDisplay = ({ question }) => {
       if (imageUrl && (imageUrl.startsWith('http') || imageUrl.startsWith('/') || imageUrl.startsWith('data:'))) {
         return (
           <div className="flex justify-center">
+<<<<<<< HEAD
             <img
               src={imageUrl}
               alt="Question"
@@ -72,6 +85,16 @@ const QuestionDisplay = ({ question }) => {
                 console.log('Question image loaded successfully:', imageUrl);
               }}
             />
+=======
+            <div className="max-w-full">
+              <img
+                src={imageUrl}
+                alt="Question"
+                className="max-w-full h-auto rounded-lg shadow-md max-h-96 object-contain"
+              />
+              <ImagePathLabel path={imageUrl} />
+            </div>
+>>>>>>> 917d4bb (Initial project commit)
           </div>
         );
       } else {
@@ -168,6 +191,7 @@ const OptionDisplay = ({ option, index, isSelected, isCorrect, isIncorrect, isDi
                 src={option.file}
                 alt={`Option ${optionLetter}`}
                 className="max-w-full h-auto rounded-lg shadow-sm max-h-32 object-contain"
+<<<<<<< HEAD
                 onError={(e) => {
                   console.error('Failed to load option image:', option.file);
                   e.target.style.display = 'none';
@@ -179,6 +203,10 @@ const OptionDisplay = ({ option, index, isSelected, isCorrect, isIncorrect, isDi
                   }
                 }}
               />
+=======
+              />
+              <ImagePathLabel path={option.file} />
+>>>>>>> 917d4bb (Initial project commit)
             </div>
 
             {/* Optional text next to image */}
@@ -201,7 +229,7 @@ const OptionDisplay = ({ option, index, isSelected, isCorrect, isIncorrect, isDi
           </span>
           <div
             className="text-sm md:text-base lg:text-base xl:text-lg prose prose-sm max-w-none"
-            dangerouslySetInnerHTML={{ __html: optionText }}
+            dangerouslySetInnerHTML={{ __html: addImagePathLabels(optionText) }}
           />
         </div>
       );
@@ -277,10 +305,53 @@ export default function ObjectiveQuestion() {
   // Timer State
   const [timeElapsed, setTimeElapsed] = useState(0);
   const [timerRunning, setTimerRunning] = useState(false);
+  const [finalTimeElapsed, setFinalTimeElapsed] = useState(null);
   const [practiceStartTime, setPracticeStartTime] = useState(null);
   const [questionAttempts, setQuestionAttempts] = useState([]);
   const [questionStartTime, setQuestionStartTime] = useState(null);
 
+<<<<<<< HEAD
+=======
+  const getSubjectPageUrl = () => {
+    let savedContext = {};
+
+    try {
+      savedContext = JSON.parse(window.localStorage.getItem('hometutor:last-subject-context') || '{}');
+    } catch {
+      savedContext = {};
+    }
+
+    const targetSubject = subject || savedContext.subject;
+    const params = new URLSearchParams();
+    const targetSubjectId = subject_id || savedContext.subject_id;
+    const targetLevelId = level_id || savedContext.level_id;
+    const targetForm = standard || savedContext.form;
+
+    if (targetSubjectId) params.set('subject_id', targetSubjectId);
+    if (targetLevelId) params.set('level_id', targetLevelId);
+    if (targetForm) params.set('form', targetForm);
+
+    return targetSubject
+      ? `/subject/${encodeURIComponent(targetSubject)}?${params.toString()}`
+      : '/dashboard';
+  };
+
+  const returnToSubjectPage = () => {
+    window.location.assign(getSubjectPageUrl());
+  };
+
+  useEffect(() => {
+    if (!subject) return;
+
+    window.localStorage.setItem('hometutor:last-subject-context', JSON.stringify({
+      subject,
+      subject_id,
+      level_id,
+      form: standard,
+    }));
+  }, [level_id, standard, subject, subject_id]);
+
+>>>>>>> 917d4bb (Initial project commit)
   // Tools State
   const [showToolsDropdown, setShowToolsDropdown] = useState(false);
   const [showCalculator, setShowCalculator] = useState(false);
@@ -305,6 +376,7 @@ export default function ObjectiveQuestion() {
   const wrongSoundRef = useRef(null);
   const successSoundRef = useRef(null);
 
+<<<<<<< HEAD
   /**
    * Handle early exit and show results
    */
@@ -417,6 +489,124 @@ export default function ObjectiveQuestion() {
     }
   };
 
+=======
+/**
+ * Handle early exit and show results
+ */
+const handleExitWithResults = async () => {
+  const completedTime = timeElapsed;
+  setFinalTimeElapsed(completedTime);
+  setTimerRunning(false);
+
+  // Calculate results for answered questions
+  const correctAnswers = firstTryResults.filter(result =>
+    result !== null && result.isCorrect
+  ).length;
+
+  const skippedAnswers = questions.length - answeredQuestions.size;
+  const totalQuestions = questions.length;
+
+  // Prepare results data
+  const exitResults = {
+    totalQuestions: totalQuestions,
+    answered: answeredQuestions.size,
+    correctAnswers: correctAnswers,
+    skippedAnswers: skippedAnswers,
+    timeElapsed: completedTime,
+    score: Math.round((correctAnswers / totalQuestions) * 100),
+    isComplete: false,
+    completionType: 'early_exit',
+    isEarlyExit: true,
+    questions: questions.map((q, index) => {
+      const result = firstTryResults[index];
+      return {
+        question: q.question_text || 'Question',
+        answered: answeredQuestions.has(index),
+        correct: result?.isCorrect || false,
+        skipped: !answeredQuestions.has(index)
+      };
+    })
+  };
+
+  // Save the practice session first
+  try {
+    const endTime = new Date().toISOString();
+
+    // Create question attempts array including UNFINISHED questions
+    const allQuestionAttempts = [];
+    
+    // 1. Add already attempted questions
+    questionAttempts.forEach(attempt => {
+      allQuestionAttempts.push(attempt);
+    });
+    
+    // 2. Add attempts for UNFINISHED questions (choosen_answer_id = 0, answer_status = 0)
+    questions.forEach((question, index) => {
+      // Skip questions that already have an attempt
+      const hasExistingAttempt = questionAttempts.some(attempt => 
+        attempt.question_id === question.id
+      );
+      
+      if (!hasExistingAttempt) {
+        // Create attempt for unfinished question
+        const timeTaken = questionStartTime ? Math.floor((Date.now() - questionStartTime) / 1000) : 0;
+        
+        allQuestionAttempts.push({
+          question_id: question.id,
+          topic_id: topic_id,
+          choosen_answer_id: 0, // Set to 0 for unfinished questions
+          answer_status: 0, // Set to 0 (wrong) for unfinished questions
+          question_type_id: 1,
+          time_taken: 0,
+          attempted_at: new Date().toISOString(),
+          selected_index: null, // No selection
+          is_first_attempt: false // Not a first attempt (wasn't attempted)
+        });
+      }
+    });
+
+    console.log('📤 Sending early exit data with unfinished questions:', {
+      totalQuestions: totalQuestions,
+      answeredQuestions: answeredQuestions.size,
+      totalAttempts: allQuestionAttempts.length,
+      attemptedQuestions: questionAttempts.length,
+      unfinishedQuestions: allQuestionAttempts.length - questionAttempts.length
+    });
+
+    await router.post('/practice-session/objective', {
+      subject_id: subject_id,
+      topic_id: topic_id,
+      start_at: practiceStartTime,
+      end_at: endTime,
+      total_correct: correctAnswers,
+      total_skipped: skippedAnswers,
+      total_time_seconds: completedTime,
+      score: Math.round((correctAnswers / totalQuestions) * 100),
+      question_attempts: allQuestionAttempts, // Send ALL attempts including unfinished
+      first_try_data: firstTryResults.map((result, index) => ({
+        question_id: questions[index]?.id,
+        first_try_result: result ? result.isCorrect : null,
+        chosen_answer_id: result ? result.answerId : 0 // 0 for unfinished
+      }))
+    });
+
+    console.log('✅ Early exit session saved with unfinished questions');
+
+    // AFTER saving, show results
+    setEarlyExitResults(exitResults);
+    setShowEarlyExitResults(true);
+    setTimerRunning(false);
+
+  } catch (error) {
+    console.error('❌ Failed to save early exit session:', error);
+    // Still show results even if save fails
+    setEarlyExitResults(exitResults);
+    setShowEarlyExitResults(true);
+    setTimerRunning(false);
+  }
+};
+
+>>>>>>> 917d4bb (Initial project commit)
 
   /**
    * Go back to quiz from results
@@ -443,6 +633,7 @@ export default function ObjectiveQuestion() {
     }
   };
 
+<<<<<<< HEAD
   /**
    * Handle regular exit (without showing results)
    */
@@ -515,6 +706,80 @@ export default function ObjectiveQuestion() {
       alert('Failed to save your progress. Please try again.');
     }
   };
+=======
+/**
+ * Handle regular exit (without showing results)
+ */
+const handleExitQuiz = async () => {
+  // Stop the timer
+  setTimerRunning(false);
+
+  const correctAnswers = firstTryResults.filter(result =>
+    result !== null && result.isCorrect
+  ).length;
+  const skippedAnswers = questions.length - answeredQuestions.size;
+  const endTime = new Date().toISOString();
+
+  try {
+    // Create question attempts array including UNFINISHED questions
+    const allQuestionAttempts = [];
+    
+    // 1. Add already attempted questions
+    questionAttempts.forEach(attempt => {
+      allQuestionAttempts.push(attempt);
+    });
+    
+    // 2. Add attempts for UNFINISHED questions (choosen_answer_id = 0, answer_status = 0)
+    questions.forEach((question, index) => {
+      // Skip questions that already have an attempt
+      const hasExistingAttempt = questionAttempts.some(attempt => 
+        attempt.question_id === question.id
+      );
+      
+      if (!hasExistingAttempt) {
+        // Create attempt for unfinished question
+        const timeTaken = questionStartTime ? Math.floor((Date.now() - questionStartTime) / 1000) : 0;
+        
+        allQuestionAttempts.push({
+          question_id: question.id,
+          topic_id: topic_id,
+          choosen_answer_id: 0, // Set to 0 for unfinished questions
+          answer_status: 0, // Set to 0 (wrong) for unfinished questions
+          question_type_id: 1,
+          time_taken: 0,
+          attempted_at: new Date().toISOString(),
+          selected_index: null, // No selection
+          is_first_attempt: false // Not a first attempt (wasn't attempted)
+        });
+      }
+    });
+
+    await router.post('/practice-session/objective', {
+      subject_id: subject_id,
+      topic_id: topic_id,
+      start_at: practiceStartTime,
+      end_at: endTime,
+      total_correct: correctAnswers,
+      total_skipped: skippedAnswers,
+      total_time_seconds: timeElapsed,
+      score: Math.round((correctAnswers / questions.length) * 100),
+      question_attempts: allQuestionAttempts, // Send ALL attempts including unfinished
+      first_try_data: firstTryResults.map((result, index) => ({
+        question_id: questions[index]?.id,
+        first_try_result: result ? result.isCorrect : null,
+        chosen_answer_id: result ? result.answerId : 0 // 0 for unfinished
+      }))
+    });
+
+    console.log('✅ Session saved for early exit with all questions');
+    returnToSubjectPage();
+
+  } catch (error) {
+    console.error('❌ Failed to save session:', error);
+    alert('Failed to save your progress. Please try again.');
+  }
+};
+>>>>>>> 917d4bb (Initial project commit)
 
   /**
  * Handle back navigation logic
@@ -525,8 +790,13 @@ export default function ObjectiveQuestion() {
       // Use the exit confirmation handler that shows results
       handleExitConfirmation();
     } else {
+<<<<<<< HEAD
       // No progress, just go back
       window.history.back();
+=======
+      // No progress: return to the subject and selected level directly.
+      returnToSubjectPage();
+>>>>>>> 917d4bb (Initial project commit)
     }
   };
 
@@ -699,6 +969,7 @@ export default function ObjectiveQuestion() {
   // HELPER FUNCTIONS
   // ============================
 
+<<<<<<< HEAD
   /**
    * Saves the complete practice session data to the server
    * Includes attempts, timing, and first-try results
@@ -782,6 +1053,91 @@ export default function ObjectiveQuestion() {
     }
   };
 
+=======
+/**
+ * Saves the complete practice session data to the server
+ * Includes attempts, timing, and first-try results
+ */
+const savePracticeSession = async () => {
+  const endTime = new Date().toISOString();
+
+  console.log('📤 Sending practice session data:', {
+    score: score,
+    answeredCount: answeredQuestions.size,
+    totalQuestions: questions.length,
+    attemptsCount: questionAttempts.length
+  });
+
+  try {
+    // Create question attempts array including UNFINISHED questions
+    const allQuestionAttempts = [];
+    
+    // 1. Add already attempted questions
+    questionAttempts.forEach(attempt => {
+      allQuestionAttempts.push(attempt);
+    });
+    
+    // 2. Add attempts for UNFINISHED questions (choosen_answer_id = 0, answer_status = 0)
+    questions.forEach((question, index) => {
+      // Skip questions that already have an attempt
+      const hasExistingAttempt = questionAttempts.some(attempt => 
+        attempt.question_id === question.id
+      );
+      
+      if (!hasExistingAttempt) {
+        // Create attempt for unfinished question
+        const timeTaken = questionStartTime ? Math.floor((Date.now() - questionStartTime) / 1000) : 0;
+        
+        allQuestionAttempts.push({
+          question_id: question.id,
+          topic_id: topic_id,
+          choosen_answer_id: 0, // Set to 0 for unfinished questions
+          answer_status: 0, // Set to 0 (wrong) for unfinished questions
+          question_type_id: 1,
+          time_taken: 0,
+          attempted_at: new Date().toISOString(),
+          selected_index: null, // No selection
+          is_first_attempt: false // Not a first attempt (wasn't attempted)
+        });
+      }
+    });
+
+    console.log('📤 All question attempts (including unfinished):', {
+      totalAttempts: allQuestionAttempts.length,
+      attempted: questionAttempts.length,
+      unfinished: allQuestionAttempts.length - questionAttempts.length
+    });
+
+    // Use await to ensure the save completes before continuing
+    await router.post('/practice-session/objective', {
+      subject_id: subject_id,
+      topic_id: topic_id,
+      start_at: practiceStartTime,
+      end_at: endTime,
+      total_correct: score,
+      total_skipped: questions.length - answeredQuestions.size,
+      total_time_seconds: timeElapsed,
+      score: Math.round((score / questions.length) * 100),
+      question_attempts: allQuestionAttempts, // Send ALL attempts including unfinished
+      first_try_data: firstTryResults.map((result, index) => ({
+        question_id: questions[index]?.id,
+        first_try_result: result ? result.isCorrect : null,
+        chosen_answer_id: result ? result.answerId : 0 // 0 for unfinished
+      }))
+    }, {
+      preserveState: true, // This is important - preserves component state
+      preserveScroll: true
+    });
+
+    console.log('✅ Practice session saved successfully with all questions');
+
+  } catch (error) {
+    console.error('❌ Failed to save practice session:', error);
+    throw error; // Re-throw to handle in calling function
+  }
+};
+
+>>>>>>> 917d4bb (Initial project commit)
   // Get current topic name (fallback to 'General')
   const currentTopic = topic || 'General';
 
@@ -1003,7 +1359,12 @@ export default function ObjectiveQuestion() {
       setQuestionStartTime(Date.now());
     } else {
       // If last question, complete quiz
+<<<<<<< HEAD
       setTimerRunning(false); // STOP THE TIMER FIRST
+=======
+      setFinalTimeElapsed(timeElapsed);
+      setTimerRunning(false);
+>>>>>>> 917d4bb (Initial project commit)
 
       try {
         // Call savePracticeSession directly before setting quizCompleted
@@ -1050,6 +1411,7 @@ export default function ObjectiveQuestion() {
         setHasCheckedFirstTry(false);
         setShowCelebration(false);
         setTimeElapsed(0);
+        setFinalTimeElapsed(null);
         setTimerRunning(true);
         setQuestionAttempts([]);
         setLoading(false);
@@ -1071,6 +1433,7 @@ export default function ObjectiveQuestion() {
         setHasCheckedFirstTry(false);
         setShowCelebration(false);
         setTimeElapsed(0);
+        setFinalTimeElapsed(null);
         setTimerRunning(true);
         setQuestionAttempts([]);
       }
@@ -1224,12 +1587,22 @@ export default function ObjectiveQuestion() {
    * @returns {JSX.Element} - Footer toolbar
    */
   const FooterContent = () => (
+<<<<<<< HEAD
     <div className="max-w-full mx-auto flex flex-wrap justify-between items-center gap-3">
       {/* Left side: Tools button with dropdown */}
       <div className="relative">
         <button
           onClick={() => setShowToolsDropdown(!showToolsDropdown)}
           className="bg-gray-600 text-white px-4 py-2 rounded-lg font-medium shadow-md transition-all duration-300 hover:bg-gray-700 hover:scale-[1.03] hover:shadow-lg flex items-center gap-2"
+=======
+    <div className="mx-auto flex w-full flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
+      {/* Left side: Tools button */}
+      <div className="hidden items-center gap-2 sm:flex">
+        <div className="relative">
+        <button
+          onClick={() => setShowToolsDropdown(!showToolsDropdown)}
+          className="flex min-h-11 items-center gap-2 rounded-xl bg-slate-700 px-4 py-2.5 text-sm font-semibold text-white shadow-md transition hover:bg-slate-800 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2"
+>>>>>>> 917d4bb (Initial project commit)
         >
           <svg
             className="w-5 h-5"
@@ -1255,7 +1628,11 @@ export default function ObjectiveQuestion() {
 
         {/* Tools Dropdown Menu */}
         {showToolsDropdown && (
+<<<<<<< HEAD
           <div className="absolute bottom-full left-0 mb-2 w-48 bg-white rounded-lg shadow-xl border border-gray-200 z-50">
+=======
+          <div className="absolute bottom-full left-0 z-50 mb-2 w-56 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-xl">
+>>>>>>> 917d4bb (Initial project commit)
             <div className="py-1">
               <button
                 onClick={() => {
@@ -1341,16 +1718,28 @@ export default function ObjectiveQuestion() {
             </div>
           </div>
         )}
+<<<<<<< HEAD
       </div>
 
       {/* Middle: Answer check buttons */}
       <div className="flex items-center flex-wrap gap-3">
+=======
+        </div>
+      </div>
+
+      {/* Middle: Answer check buttons */}
+      <div className="order-2 flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:items-center">
+>>>>>>> 917d4bb (Initial project commit)
         {/* Check Answer button (first attempt) */}
         {!hasCheckedFirstTry && firstTryResults[currentQuestionIndex] === null && (
           <button
             onClick={handleCheckAnswer}
             disabled={selectedAnswer.index === null}
+<<<<<<< HEAD
             className={`px-6 py-3 sm:px-5 sm:py-2 md:px-6 md:py-3 rounded-lg font-medium shadow-md  text-base sm:text-sm md:text-base  hover:shadow-lg ${selectedAnswer.index === null
+=======
+            className={`min-h-12 w-full rounded-xl px-5 py-3 text-base font-semibold shadow-md transition hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-offset-2 sm:min-h-11 sm:w-auto sm:px-5 sm:py-2.5 sm:text-sm md:px-6 md:text-base ${selectedAnswer.index === null
+>>>>>>> 917d4bb (Initial project commit)
               ? "bg-gray-400 text-gray-200 cursor-not-allowed"
               : "bg-green-600 text-white hover:bg-green-700"
               }`}
@@ -1364,14 +1753,18 @@ export default function ObjectiveQuestion() {
         {hasCheckedFirstTry &&
           firstTryResults[currentQuestionIndex]?.isCorrect === false &&
           !answeredQuestions.has(currentQuestionIndex) && (
-            <div className="flex items-center flex-wrap gap-3">
+            <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:items-center">
               <span className="text-red-600 font-medium text-sm md:text-base">
                 Select another answer
               </span>
               <button
                 onClick={handleCheckAnswer}
                 disabled={selectedAnswer.index === null || isCheckAgainDisabled}
+<<<<<<< HEAD
                 className={`px-6 py-3 sm:px-5 sm:py-2 md:px-6 md:py-3 rounded-lg font-medium shadow-md  text-base sm:text-sm md:text-base hover:shadow-lg ${selectedAnswer.index === null || isCheckAgainDisabled
+=======
+                className={`min-h-12 w-full rounded-xl px-5 py-3 text-base font-semibold shadow-md transition hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-orange-400 focus:ring-offset-2 sm:min-h-11 sm:w-auto sm:px-5 sm:py-2.5 sm:text-sm md:px-6 md:text-base ${selectedAnswer.index === null || isCheckAgainDisabled
+>>>>>>> 917d4bb (Initial project commit)
                   ? "bg-gray-400 text-gray-200 cursor-not-allowed"
                   : "bg-orange-600 text-white hover:bg-orange-700"
                   }`}
@@ -1380,19 +1773,29 @@ export default function ObjectiveQuestion() {
               </button>
             </div>
           )}
-      </div>
 
+<<<<<<< HEAD
       {/* Right side: Next/Finish button */}
       {(isAnswerCorrect === true || answeredQuestions.has(currentQuestionIndex)) && (
         <button
           onClick={handleNextQuestion}
           className="bg-blue-600 text-white px-6 py-3 sm:px-5 sm:py-2 md:px-6 md:py-3 rounded-lg  font-medium shadow-md text-base sm:text-sm md:text-base hover:scale-[1.03] hover:shadow-lg"
+=======
+          {/* Right side: Next/Finish button */}
+      {(isAnswerCorrect === true || answeredQuestions.has(currentQuestionIndex)) && (
+        <button
+          onClick={handleNextQuestion}
+          className="order-3 min-h-12 w-full rounded-xl bg-blue-600 px-6 py-3 text-base font-semibold text-white shadow-md transition hover:bg-blue-700 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 sm:order-none sm:min-h-11 sm:w-auto sm:px-5 sm:py-2.5 sm:text-sm md:px-6 md:text-base"
+>>>>>>> 917d4bb (Initial project commit)
         >
           {currentQuestionIndex < questions.length - 1
             ? "Next Question"
             : "Finish Quiz"}
         </button>
       )}
+      </div>
+
+      
     </div>
   );
 
@@ -1470,7 +1873,11 @@ export default function ObjectiveQuestion() {
       answered: answeredQuestions.size,
       correctAnswers: correctAnswers, // Use score which tracks correct answers
       skippedAnswers: skippedAnswers,
+<<<<<<< HEAD
       timeElapsed: timeElapsed,
+=======
+      timeElapsed: finalTimeElapsed ?? timeElapsed,
+>>>>>>> 917d4bb (Initial project commit)
       score: Math.round((correctAnswers / questions.length) * 100),
       isComplete: true,
       isEarlyExit: false,
@@ -1667,7 +2074,10 @@ export default function ObjectiveQuestion() {
         selectedAnswer={selectedAnswer}
         handleExitQuiz={handleExitQuiz}
         handleBackNavigation={handleBackNavigation}
+<<<<<<< HEAD
         onExitWithResults={handleExitConfirmation}
+=======
+>>>>>>> 917d4bb (Initial project commit)
       >
         <div className="relative p-0">
           {/* Desktop Feedback Messages (Correct Answer) */}
@@ -1786,6 +2196,7 @@ export default function ObjectiveQuestion() {
           <div className="py-2 sm:py-4 bg-cover bg-center bg-no-repeat h-auto" style={{ backgroundImage: 'url(/images/background_classroom.jpg)' }}>
             <div className="mx-auto relative px-4 sm:px-0 md:px-4 lg:px-10 max-w-full sm:max-w-2xl md:max-w-full lg:max-w-2xl xl:max-w-5xl 2xl:max-w-6xl">
               {/* Question Card */}
+<<<<<<< HEAD
               <div className="bg-white opacity-100 rounded-2xl shadow-xl p-6 mb-10 transition-all duration-300 hover:shadow-2xl">
                 <div className="flex justify-between items-start mb-6">
                   <h2 className="text-sm md:text-lg lg:text-lg xl:text-xl font-semibold flex-1 leading-relaxed text-gray-800 lg:text-gray-900">
@@ -1823,6 +2234,15 @@ export default function ObjectiveQuestion() {
                   />
                 </div>
 
+=======
+              <div className="bg-white opacity-100 rounded-2xl shadow-xl mt-10 p-6 mb-10 transition-all duration-300 hover:shadow-2xl">
+                <div className="flex items-start justify-between gap-3 mb-6">
+                  <div className="text-sm md:text-lg lg:text-lg xl:text-xl font-semibold min-w-0 flex-1 leading-relaxed text-gray-800 lg:text-gray-900">
+                    <QuestionDisplay question={currentQuestion} />
+                  </div>
+                </div>
+
+>>>>>>> 917d4bb (Initial project commit)
                 {/* Instructions */}
                 <span className="text-gray-600 text-sm sm:text-sm mb-4 block">Pilih 1 jawapan : </span>
 
@@ -1849,6 +2269,17 @@ export default function ObjectiveQuestion() {
                   })}
                 </div>
 
+<<<<<<< HEAD
+=======
+                <div className="mb-6 flex justify-stretch sm:justify-end">
+                  <ReportQuestionButton
+                    questionId={currentQuestion?.id}
+                    context="objective_practice"
+                    className="w-full justify-center px-4 py-2.5 sm:w-auto"
+                  />
+                </div>
+
+>>>>>>> 917d4bb (Initial project commit)
                 {/* Explanation Section (shown after correct answer) */}
                 {showExplanation && (
                   <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mt-4 animate-fade-in">
@@ -1860,7 +2291,7 @@ export default function ObjectiveQuestion() {
                     </h3>
                     <div
                       className="text-blue-700 text-sm sm:text-base prose prose-blue max-w-none"
-                      dangerouslySetInnerHTML={{ __html: currentQuestion.explanation }}
+                      dangerouslySetInnerHTML={{ __html: addImagePathLabels(currentQuestion.explanation) }}
                     />
                   </div>
                 )}

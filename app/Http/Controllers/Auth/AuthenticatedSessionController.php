@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
+use App\Services\LoginActivityService;
+use App\Services\StreakService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -29,6 +31,7 @@ class AuthenticatedSessionController extends Controller
     /**
      * Handle an incoming authentication request.
      */
+<<<<<<< HEAD
     // public function store(LoginRequest $request): RedirectResponse
     // {
     //     $request->authenticate();
@@ -73,6 +76,23 @@ class AuthenticatedSessionController extends Controller
             'locale' => $preservedLocale,
             'user_id' => Auth::id()
         ]);
+=======
+    public function store(LoginRequest $request): RedirectResponse|\Symfony\Component\HttpFoundation\Response
+    {
+        $request->authenticate();
+
+        $request->session()->regenerate();
+        app(StreakService::class)->recordLogin($request->user()->id);
+        app(LoginActivityService::class)->record($request->user()->id, $request);
+
+        if ($request->user()->isParent() || $request->user()->hasRole('admin') || $request->user()->isCodeManager()) {
+            $request->session()->forget('url.intended');
+
+            return Inertia::location(route($request->user()->homeRouteName(), absolute: false));
+        }
+
+        return redirect()->intended(route($request->user()->homeRouteName(), absolute: false));
+>>>>>>> 917d4bb (Initial project commit)
     }
 
     return redirect()->intended(route('dashboard', absolute: false));

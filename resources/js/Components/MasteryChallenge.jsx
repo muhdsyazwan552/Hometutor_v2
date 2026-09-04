@@ -1,5 +1,10 @@
 import React, { useState, useEffect } from "react";
+<<<<<<< HEAD
 import QuestionReportButton from '@/Components/QuestionReportButton';
+=======
+import ReportQuestionButton from '@/Components/ReportQuestionButton';
+import ImagePathLabel, { addImagePathLabels } from '@/Components/ImagePathLabel';
+>>>>>>> 917d4bb (Initial project commit)
 
 export default function MasteryChallenge({ isOpen, onClose, subjectId, levelId, subjectKey }) {
     const [sessionId, setSessionId] = useState(null);
@@ -38,7 +43,11 @@ export default function MasteryChallenge({ isOpen, onClose, subjectId, levelId, 
     const loadSessionProgress = async (sid) => {
         try {
             console.log('Loading session progress for session:', sid);
+<<<<<<< HEAD
             const response = await fetch(`/api/challenge/progress?session_id=${sid}`);
+=======
+            const response = await fetch(route('mission.challenge.progress', { session_id: sid }));
+>>>>>>> 917d4bb (Initial project commit)
             const data = await response.json();
             
             console.log('Session progress data:', data);
@@ -70,7 +79,11 @@ export default function MasteryChallenge({ isOpen, onClose, subjectId, levelId, 
             
             const csrfToken = getCsrfToken();
             
+<<<<<<< HEAD
             const response = await fetch('/api/challenge/start', {
+=======
+            const response = await fetch(route('mission.challenge.start'), {
+>>>>>>> 917d4bb (Initial project commit)
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -123,7 +136,11 @@ export default function MasteryChallenge({ isOpen, onClose, subjectId, levelId, 
         setShowExplanation(false); // Reset explanation visibility
         
         try {
+<<<<<<< HEAD
             const response = await fetch(`/api/challenge/question?session_id=${sid || sessionId}`);
+=======
+            const response = await fetch(route('mission.challenge.question', { session_id: sid || sessionId }));
+>>>>>>> 917d4bb (Initial project commit)
             const data = await response.json();
             
             console.log('Question data received:', data);
@@ -161,7 +178,11 @@ export default function MasteryChallenge({ isOpen, onClose, subjectId, levelId, 
         try {
             await refreshCsrfToken();
             
+<<<<<<< HEAD
             const response = await fetch('/api/challenge/answer', {
+=======
+            const response = await fetch(route('mission.challenge.answer'), {
+>>>>>>> 917d4bb (Initial project commit)
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -209,7 +230,11 @@ export default function MasteryChallenge({ isOpen, onClose, subjectId, levelId, 
 
     const loadSummary = async (sid) => {
         try {
+<<<<<<< HEAD
             const response = await fetch(`/api/challenge/summary?session_id=${sid}`);
+=======
+            const response = await fetch(route('mission.challenge.summary', { session_id: sid }));
+>>>>>>> 917d4bb (Initial project commit)
             const data = await response.json();
             console.log('Summary loaded:', data);
             setSummary(data);
@@ -241,7 +266,11 @@ export default function MasteryChallenge({ isOpen, onClose, subjectId, levelId, 
     // Render HTML content safely
     const renderContent = (content) => {
         if (!content) return null;
+<<<<<<< HEAD
         return <div dangerouslySetInnerHTML={{ __html: content }} />;
+=======
+        return <div dangerouslySetInnerHTML={{ __html: addImagePathLabels(content) }} />;
+>>>>>>> 917d4bb (Initial project commit)
     };
 
     // Get correct answer and its explanation
@@ -435,6 +464,12 @@ const getCorrectAnswerInfo = () => {
 
                         {/* Question Content */}
                         <div className="p-8">
+<<<<<<< HEAD
+=======
+                            <div className="mb-3 flex justify-end">
+                                <ReportQuestionButton questionId={currentQuestion.id} context="mastery_challenge" />
+                            </div>
+>>>>>>> 917d4bb (Initial project commit)
                             <div className="mb-6">
                                 {/* Question Text or Image */}
                                 {currentQuestion.question_text ? (
@@ -442,12 +477,20 @@ const getCorrectAnswerInfo = () => {
                                         {renderContent(currentQuestion.question_text)}
                                     </div>
                                 ) : currentQuestion.question_file ? (
+<<<<<<< HEAD
                                     <div className="flex justify-center">
+=======
+                                    <div className="flex flex-col items-center">
+>>>>>>> 917d4bb (Initial project commit)
                                         <img 
                                             src={currentQuestion.question_file} 
                                             alt="Question" 
                                             className="max-w-full h-auto rounded-lg shadow"
                                         />
+<<<<<<< HEAD
+=======
+                                        <ImagePathLabel path={currentQuestion.question_file} />
+>>>>>>> 917d4bb (Initial project commit)
                                     </div>
                                 ) : (
                                     <p className="text-lg text-gray-800 leading-relaxed">
@@ -456,6 +499,7 @@ const getCorrectAnswerInfo = () => {
                                 )}
                             </div>
 
+<<<<<<< HEAD
                             <div className="-mt-3 mb-5 flex justify-end">
                                 <QuestionReportButton
                                     questionId={currentQuestion.id}
@@ -468,6 +512,8 @@ const getCorrectAnswerInfo = () => {
                                 />
                             </div>
 
+=======
+>>>>>>> 917d4bb (Initial project commit)
                             {/* Answer Options */}
                             <div className="space-y-3">
                                 {currentQuestion.answers && currentQuestion.answers.length > 0 ? (
@@ -498,11 +544,22 @@ const getCorrectAnswerInfo = () => {
                                                                 {renderContent(answer.answer_text)}
                                                             </div>
                                                         ) : answer.answer_option_file ? (
+<<<<<<< HEAD
                                                             <img 
                                                                 src={answer.answer_option_file} 
                                                                 alt="Answer option" 
                                                                 className="max-w-xs h-auto rounded"
                                                             />
+=======
+                                                            <div className="inline-block max-w-full">
+                                                                <img 
+                                                                    src={answer.answer_option_file} 
+                                                                    alt="Answer option" 
+                                                                    className="max-w-xs h-auto rounded"
+                                                                />
+                                                                <ImagePathLabel path={answer.answer_option_file} />
+                                                            </div>
+>>>>>>> 917d4bb (Initial project commit)
                                                         ) : (
                                                             <span className="text-gray-800">{answer.answer_option}</span>
                                                         )}
@@ -608,6 +665,10 @@ const getCorrectAnswerInfo = () => {
                                                                                 alt="Answer explanation" 
                                                                                 className="max-w-full h-auto rounded shadow"
                                                                             />
+<<<<<<< HEAD
+=======
+                                                                            <ImagePathLabel path={correctAnswer.reason_file} />
+>>>>>>> 917d4bb (Initial project commit)
                                                                         </div>
                                                                     )}
                                                                 </div>

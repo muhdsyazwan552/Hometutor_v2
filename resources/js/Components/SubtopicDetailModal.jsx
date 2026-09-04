@@ -152,6 +152,9 @@ export default function SubtopicDetailModal({ isOpen, onClose, subtopicData, que
                                                     No
                                                 </th>
                                                 <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider border-b">
+                                                    Type
+                                                </th>
+                                                <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider border-b">
                                                     Total Questions
                                                 </th>
                                                 <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider border-b">
@@ -191,6 +194,11 @@ export default function SubtopicDetailModal({ isOpen, onClose, subtopicData, que
                                                 <tr key={session.id || index} className="">
                                                     <td className="px-4 py-3 text-sm text-gray-500 text-center whitespace-nowrap">
                                                         {index + 1}
+                                                    </td>
+                                                    <td className="px-4 py-3 text-center whitespace-nowrap">
+                                                        <span className={`inline-flex rounded-full px-2.5 py-1 text-xs font-bold ${session.session_type === 'mission' ? 'bg-purple-100 text-purple-700' : 'bg-sky-100 text-sky-700'}`}>
+                                                            {session.session_type === 'mission' ? 'Mission' : 'Practice'}
+                                                        </span>
                                                     </td>
                                                     <td className="px-4 py-3 text-sm text-gray-700 text-center bg-gray-100">
                                                         {session.total_questions || 0}

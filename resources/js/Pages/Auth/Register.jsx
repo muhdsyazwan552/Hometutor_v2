@@ -11,6 +11,7 @@ export default function RegisterForm({ onSubmit }) {
         name: '',
         email: '',
         password: '',
+        reference_code: '',
     });
 
     const submit = (e) => {
@@ -69,9 +70,23 @@ export default function RegisterForm({ onSubmit }) {
                 <InputError message={errors.password} className="mt-2" />
             </div>
 
+            <div>
+                <InputLabel htmlFor="reference_code" value="Reference code (optional)" />
+                <TextInput
+                    id="reference_code"
+                    name="reference_code"
+                    value={data.reference_code}
+                    className="mt-1 block w-full uppercase"
+                    autoComplete="off"
+                    onChange={(e) => setData('reference_code', e.target.value.toUpperCase())}
+                />
+                {/* <p className="mt-1 text-xs text-slate-500">Leave blank if you are registering directly with Dasar Jati.</p> */}
+                <InputError message={errors.reference_code} className="mt-2" />
+            </div>
+
             <div className="flex justify-end">
                 <PrimaryButton disabled={processing}>
-                    Register
+                    Create parent account
                 </PrimaryButton>
             </div>
         </form>

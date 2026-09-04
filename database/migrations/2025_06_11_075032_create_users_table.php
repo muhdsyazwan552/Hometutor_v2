@@ -11,10 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('users', function (Blueprint $table) {
-            $table->id();
-            $table->timestamps();
-        });
+        // The framework migration 0001_01_01_000000 already creates this
+        // table. This duplicate migration previously made fresh installs and
+        // the test database fail with "table users already exists".
     }
 
     /**
@@ -22,6 +21,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('users');
+        // Intentionally empty: this migration does not own the users table.
     }
 };

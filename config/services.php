@@ -35,4 +35,11 @@ return [
         ],
     ],
 
+    'website_b' => [
+        'base_url' => env('WEBSITE_B_API_URL'),
+        'client_id' => env('WEBSITE_B_CLIENT_ID'),
+        'client_secret' => env('WEBSITE_B_CLIENT_SECRET'),
+        'timeout' => (int) env('WEBSITE_B_API_TIMEOUT', 15),
+    ],
+
 ];

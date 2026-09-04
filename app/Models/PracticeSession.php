@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Str;
 
 class PracticeSession extends Model
 {
@@ -27,6 +28,9 @@ class PracticeSession extends Model
         'topic_id',
         'subtopic_id',
         'question_type_id',
+        'session_type',
+        'total_questions',
+        'mastery_session_id',
         'total_correct',
         'total_skipped',
         'score',
@@ -36,29 +40,37 @@ class PracticeSession extends Model
 
     ];
 
-     protected $casts = [
+    protected static function booted(): void
+    {
+        static::creating(function (PracticeSession $session): void {
+            $session->uuid ??= (string) Str::uuid();
+        });
+    }
+
+    protected $casts = [
         'start_at' => 'datetime',
         'end_at' => 'datetime',
+        'total_questions' => 'integer',
+        'mastery_session_id' => 'integer',
     ];
 
     public function topic()
-{
-    return $this->belongsTo(Topic::class, 'topic_id');
-}
+    {
+        return $this->belongsTo(Topic::class, 'topic_id');
+    }
 
-public function subtopic()
-{
-    return $this->belongsTo(Topic::class, 'subtopic_id');
-}
+    public function subtopic()
+    {
+        return $this->belongsTo(Topic::class, 'subtopic_id');
+    }
 
-public function subject()
-{
-    return $this->belongsTo(Subject::class);
-}
+    public function subject()
+    {
+        return $this->belongsTo(Subject::class);
+    }
 
-public function user()
-{
-    return $this->belongsTo(User::class);
-}
-
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
 }

@@ -8,6 +8,12 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
+<<<<<<< HEAD
+=======
+use Illuminate\Support\Str;
+use App\Services\StreakService;
+use App\Support\QuestionContentNormalizer;
+>>>>>>> 917d4bb (Initial project commit)
 
 class ObjectiveController extends Controller
 {
@@ -236,16 +242,24 @@ class ObjectiveController extends Controller
 
             return [
                 'id' => $question->id,
+<<<<<<< HEAD
                 'question_code' => $question->question_code,
                 'question_text' => $question->question_text,
                 'question_file' => $question->question_file,
+=======
+                'question_text' => QuestionContentNormalizer::questionHtml($question->question_text, $question->question_file),
+                'question_file' => QuestionContentNormalizer::questionFileUrl($question->question_file),
+>>>>>>> 917d4bb (Initial project commit)
                 'question_type' => $this->determineQuestionType($question),
                 'options' => $this->formatAnswers($question->answers ?? []),
                 'correctAnswer' => $this->getCorrectAnswerIndex($question),
                 'explanation' => $this->getExplanation($question),
                 'category' => $topicName,
                 'difficulty' => $this->getDifficultyLevel($question->difficulty_type_id),
+<<<<<<< HEAD
                 'difficulty_type_id' => $question->difficulty_type_id,
+=======
+>>>>>>> 917d4bb (Initial project commit)
             ];
         })->toArray();
     }
@@ -555,13 +569,31 @@ class ObjectiveController extends Controller
         'converted_start_at' => $startAt
     ]);
 
+<<<<<<< HEAD
     // Create the practice session using query builder
     $sessionId = DB::table('practice_session')->insertGetId([
+=======
+    $questionAttempts = $request->get('question_attempts', []);
+    $totalQuestions = collect($questionAttempts)
+        ->pluck('question_id')
+        ->filter()
+        ->unique()
+        ->count() ?: 5;
+
+    // Create the practice session using query builder
+    $sessionId = DB::table('practice_session')->insertGetId([
+        'uuid' => (string) Str::uuid(),
+>>>>>>> 917d4bb (Initial project commit)
         'user_id' => Auth::id(),
         'subject_id' => $request->subject_id,
         'topic_id' => $mainTopicId,
         'subtopic_id' => $subtopicId,
         'question_type_id' => 1, // Objective
+<<<<<<< HEAD
+=======
+        'session_type' => 'practice',
+        'total_questions' => $totalQuestions,
+>>>>>>> 917d4bb (Initial project commit)
         'start_at' => $startAt, // Use converted datetime
         'end_at' => now(),
         'total_correct' => $request->total_correct,
@@ -573,9 +605,12 @@ class ObjectiveController extends Controller
     ]);
 
     // Save quiz attempts if provided
-    $questionAttempts = $request->get('question_attempts', []);
     if (!empty($questionAttempts)) {
         $this->saveQuizAttempts($questionAttempts, $sessionId, $mainTopicId, $subtopicId);
+<<<<<<< HEAD
+=======
+        app(StreakService::class)->recordAnswer(Auth::id());
+>>>>>>> 917d4bb (Initial project commit)
     }
 
     // return response()->json([

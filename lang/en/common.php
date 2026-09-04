@@ -8,8 +8,7 @@ return [
     'school' => 'School',
     'grade' => 'Grade',
     'not_specified' => 'Not specified',
-    'form_4' => 'Form 4',
-    'form_5' => 'Form 5',
+    
     'friend_requests' => 'Friend Requests',
     'new_assignment' => 'New Assignment',
     'my_courses' =>  'My Courses',
@@ -18,6 +17,32 @@ return [
     'name' => 'Name',
     'schoool' => 'School',
     'time' => 'Time',
+
+    // Standard Levels
+    'standard_1' => 'Standard 1',
+    'standard_2' => 'Standard 2',
+    'standard_3' => 'Standard 3',
+    'standard_4' => 'Standard 4',
+    'standard_5' => 'Standard 5',
+    'standard_6' => 'Standard 6',
+    'form_1' => 'Form 1',
+    'form_2' => 'Form 2',
+    'form_3' => 'Form 3',
+    'form_4' => 'Form 4',
+    'form_5' => 'Form 5',
+<<<<<<< HEAD
+    'friend_requests' => 'Friend Requests',
+    'new_assignment' => 'New Assignment',
+    'my_courses' =>  'My Courses',
+    'leaderboard' => 'Leaderboard',
+    'rank' => 'Rank',
+    'name' => 'Name',
+    'schoool' => 'School',
+    'time' => 'Time',
+=======
+
+
+>>>>>>> 917d4bb (Initial project commit)
     
     // Friends
     'friends_ptrs' => 'PTRS Friends',
@@ -32,6 +57,7 @@ return [
     
     // Courses
     'courses' => 'Courses',
+    'your_level' => 'Your level',
     'my_courses' => 'My Courses',
     'up_first' => 'Up First',
     'exercises_complete' => 'exercises complete',

@@ -47,7 +47,8 @@ class ProfileController extends Controller
      */
     public function update(ProfileUpdateRequest $request): RedirectResponse
     {
-        $request->user()->fill($request->validated());
+        $validated = $request->validated();
+        $request->user()->fill(collect($validated)->only(['name', 'email'])->all());
 
         if ($request->user()->isDirty('email')) {
             $request->user()->email_verified_at = null;
@@ -55,6 +56,13 @@ class ProfileController extends Controller
 
         $request->user()->save();
 
+<<<<<<< HEAD
+=======
+        if ($request->user()->student && array_key_exists('class_name', $validated)) {
+            $request->user()->student->update(['class_name' => $validated['class_name']]);
+        }
+
+>>>>>>> 917d4bb (Initial project commit)
         return Redirect::route('profile.edit')->with('status', 'profile-updated');
     }
 
@@ -166,5 +174,9 @@ class ProfileController extends Controller
     } catch (\Exception $e) {
         return back()->with('error', 'Failed to update profile picture: ' . $e->getMessage());
     }
+<<<<<<< HEAD
+=======
+}
+>>>>>>> 917d4bb (Initial project commit)
 }
 }

@@ -8,8 +8,29 @@ return [
     'school' => 'Sekolah',
     'grade' => 'Tingkatan',
     'not_specified' => 'Tidak dinyatakan',
+    
+    'friend_requests' => 'Permintaan Rakan',
+    'new_assignment' => 'Tugasan Baru',
+    'my_courses' =>  'Kursus Saya',
+    'leaderboard' => 'Papan Kedudukan',
+    'rank' => 'Kedudukan',
+    'name' => 'Nama',
+    'schoool' => 'Sekolah',
+    'time' => 'Masa',
+
+    // Standard Levels
+    'standard_1' => 'Darjah 1',
+    'standard_2' => 'Darjah 2',
+    'standard_3' => 'Darjah 3',
+    'standard_4' => 'Darjah 4',
+    'standard_5' => 'Darjah 5',
+    'standard_6' => 'Darjah 6',
+    'form_1' => 'Tingkatan 1',
+    'form_2' => 'Tingkatan 2',
+    'form_3' => 'Tingkatan 3',
     'form_4' => 'Tingkatan 4',
     'form_5' => 'Tingkatan 5',
+<<<<<<< HEAD
     'friend_requests' => 'Permintaan Rakan',
     'new_assignment' => 'Tugasan Baru',
     'my_courses' =>  'Kursus Saya',
@@ -19,6 +40,11 @@ return [
     'schoool' => 'Sekolah',
     'time' => 'Masa',
     
+=======
+
+
+
+>>>>>>> 917d4bb (Initial project commit)
     // Friends
     'friends_ptrs' => 'Kawan PTRS',
     'search_friends' => 'Cari kawan...',
@@ -32,6 +58,7 @@ return [
     
     // Courses
     'courses' => 'Kursus',
+    'your_level' => 'Tahap anda',
     'my_courses' => 'Kursus Saya',
     'up_first' => 'Seterusnya',
     'exercises_complete' => 'latihan selesai',

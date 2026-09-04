@@ -16,10 +16,18 @@ use Inertia\Inertia;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+<<<<<<< HEAD
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\App;
 use App\Traits\InertiaLocaleTrait;
+=======
+use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Facades\App;
+use App\Traits\InertiaLocaleTrait;
+use App\Support\QuestionContentNormalizer;
+use App\Helpers\LevelHelper;
+>>>>>>> 917d4bb (Initial project commit)
 
 
 class ReportController extends Controller
@@ -30,11 +38,28 @@ class ReportController extends Controller
     {
         $subjectId = $request->get('subject_id');
         $levelId = $request->get('level_id');
+<<<<<<< HEAD
         $form = $request->get('form', 'Form 4');
         $questionType = $request->get('question_type', 'Objective');
 
         $userId = Auth::id();
         Auth::user()->load('student');
+=======
+        $form = $request->get('form');
+        $questionType = $request->get('question_type', 'Objective');
+
+        $userId = Auth::id();
+        $user = Auth::user();
+        $user?->load('student');
+        $studentLevelId = $user?->student?->level_id;
+        $availableForms = $studentLevelId
+            ? LevelHelper::getAvailableForms($studentLevelId)
+            : ['Form 1', 'Form 2', 'Form 3'];
+
+        if (! in_array($form, $availableForms, true)) {
+            $form = $availableForms[0];
+        }
+>>>>>>> 917d4bb (Initial project commit)
 
         $locale = Session::get('locale', 'en');
         App::setLocale($locale);
@@ -53,6 +78,10 @@ class ReportController extends Controller
         // Get available levels
         $availableLevels = DB::table('level')
             ->where('is_active', 1)
+<<<<<<< HEAD
+=======
+            ->whereIn('name', $availableForms)
+>>>>>>> 917d4bb (Initial project commit)
             ->select('id', 'name', 'abbr')
             ->get()
             ->mapWithKeys(function ($level) {
@@ -119,6 +148,7 @@ class ReportController extends Controller
         $shouldPreloadBoth = $request->has('preload_both') && $request->get('preload_both') === 'true';
 
         if ($shouldPreloadBoth) {
+<<<<<<< HEAD
             // Load both types menggunakan CACHE untuk performa
             $cacheKey = "report_data_{$subjectId}_{$levelId}";
             $cacheDuration = 5; // 5 menit
@@ -129,6 +159,12 @@ class ReportController extends Controller
                     'subjective' => $this->getOptimizedReportData($subjectId, $levelId, 2)
                 ];
             });
+=======
+            $allData = [
+                'objective' => $this->getOptimizedReportData($subjectId, $levelId, 1),
+                'subjective' => $this->getOptimizedReportData($subjectId, $levelId, 2),
+            ];
+>>>>>>> 917d4bb (Initial project commit)
 
             $objectiveData = $allData['objective'];
             $subjectiveData = $allData['subjective'];
@@ -152,6 +188,7 @@ class ReportController extends Controller
             'subjective_topics' => $subjectiveData,
             'topics' => $currentData,
             'selectedStandard' => $form,
+            'availableForms' => $availableForms,
             'availableLevels' => $availableLevels,
             'availableSubjects' => $availableSubjects,
             'locale' => $locale,
@@ -329,14 +366,22 @@ class ReportController extends Controller
         // Get all session data for these topics in one query
         $progressData = DB::table('practice_session')
             ->select(
+<<<<<<< HEAD
                 DB::raw('CASE WHEN topic_id IN (' . implode(',', $topicIds) . ') THEN topic_id ELSE subtopic_id END as topic_id'),
+=======
+                DB::raw('COALESCE(NULLIF(subtopic_id, 0), topic_id) as topic_id'),
+>>>>>>> 917d4bb (Initial project commit)
                 DB::raw('COUNT(DISTINCT id) as total_sessions'),
                 DB::raw('AVG(score) as average_score'),
                 DB::raw('MAX(score) as max_score'),
                 DB::raw('MIN(score) as min_score'),
                 DB::raw('MAX(created_at) as last_session'),
                 DB::raw('SUM(total_correct) as total_answered'),
+<<<<<<< HEAD
                 DB::raw('SUM(total_correct + total_skipped) as total_questions'),
+=======
+                DB::raw("SUM(CASE WHEN session_type = 'practice' THEN 5 ELSE COALESCE(total_questions, total_correct + total_skipped) END) as total_questions"),
+>>>>>>> 917d4bb (Initial project commit)
                 DB::raw('AVG(total_correct) as avg_answered')
             )
             ->where(function ($query) use ($topicIds) {
@@ -345,7 +390,11 @@ class ReportController extends Controller
             })
             ->where('question_type_id', $questionTypeId)
             ->where('user_id', $userId)
+<<<<<<< HEAD
             ->groupBy(DB::raw('CASE WHEN topic_id IN (' . implode(',', $topicIds) . ') THEN topic_id ELSE subtopic_id END'))
+=======
+            ->groupBy(DB::raw('COALESCE(NULLIF(subtopic_id, 0), topic_id)'))
+>>>>>>> 917d4bb (Initial project commit)
             ->get()
             ->keyBy('topic_id');
 
@@ -369,8 +418,13 @@ class ReportController extends Controller
                 if ($data->last_session) {
                     $lastSession = \Carbon\Carbon::parse($data->last_session);
                     $stats['last_session'] = $lastSession->year == date('Y')
+<<<<<<< HEAD
                         ? $lastSession->format('d M, H:i A')
                         : $lastSession->format('d M Y, H:i A');
+=======
+                        ? $lastSession->format('d M, h:i A')
+                        : $lastSession->format('d M Y, h:i A');
+>>>>>>> 917d4bb (Initial project commit)
                 }
 
                 if ($questionTypeId == 1) { // Objective
@@ -463,7 +517,11 @@ class ReportController extends Controller
                 ->selectRaw('MIN(score) as min_score')
                 ->selectRaw('MAX(created_at) as last_session')
                 ->selectRaw('SUM(total_correct) as total_answered')
+<<<<<<< HEAD
                 ->selectRaw('SUM(total_correct + total_skipped) as total_questions')
+=======
+                ->selectRaw("SUM(CASE WHEN session_type = 'practice' THEN 5 ELSE COALESCE(total_questions, total_correct + total_skipped) END) as total_questions")
+>>>>>>> 917d4bb (Initial project commit)
                 ->selectRaw('AVG(total_correct) as avg_answered')
                 ->first();
 
@@ -492,9 +550,15 @@ class ReportController extends Controller
                     $lastSession = \Carbon\Carbon::parse($sessionData->last_session);
                     // Format: "15 Dec, 14:30" or "15 Dec 2024, 14:30" if not current year
                     if ($lastSession->year == date('Y')) {
+<<<<<<< HEAD
                         $stats['last_session'] = $lastSession->format('d M, H:i A'); // "15 Dec, 14:30"
                     } else {
                         $stats['last_session'] = $lastSession->format('d M Y, H:i A'); // "15 Dec 2023, 14:30"
+=======
+                        $stats['last_session'] = $lastSession->format('d M, h:i A');
+                    } else {
+                        $stats['last_session'] = $lastSession->format('d M Y, h:i A');
+>>>>>>> 917d4bb (Initial project commit)
                     }
                 } else {
                     $stats['last_session'] = '-';
@@ -547,6 +611,7 @@ class ReportController extends Controller
      */
     private function getOptimizedReportData($subjectId, $levelId, $questionTypeId)
     {
+<<<<<<< HEAD
         // Cache key untuk data report
         // $cacheKey = "optimized_report_{$subjectId}_{$levelId}_{$questionTypeId}_" . Auth::id();
 
@@ -581,6 +646,34 @@ class ReportController extends Controller
                 ])
                 ->get();
 
+=======
+        // Progress is user-specific and changes after every completed session,
+        // so it must not be stored in a shared report cache.
+        $topics = DB::table('topics as parent')
+                ->leftJoin('topics as child', function ($join) {
+                    $join->on('child.parent_id', '=', 'parent.id')
+                        ->where('child.is_active', 1);
+                })
+                ->where('parent.subject_id', $subjectId)
+                ->where('parent.level_id', $levelId)
+                ->where(function ($query) {
+                    $query->whereNull('parent.parent_id')
+                        ->orWhere('parent.parent_id', 0);
+                })
+                ->where('parent.is_active', 1)
+                ->orderBy('parent.seq')
+                ->orderBy('child.seq')
+                ->select([
+                    'parent.id as parent_id',
+                    'parent.name as parent_name',
+                    'parent.seq as parent_seq',
+                    'child.id as child_id',
+                    'child.name as child_name',
+                    'child.seq as child_seq'
+                ])
+                ->get();
+
+>>>>>>> 917d4bb (Initial project commit)
             if ($topics->isEmpty()) {
                 return [];
             }
@@ -679,8 +772,12 @@ class ReportController extends Controller
                 'question_type_id' => $questionTypeId
             ]);
 
+<<<<<<< HEAD
             return $reportData;
         });
+=======
+        return $reportData;
+>>>>>>> 917d4bb (Initial project commit)
     }
 
     /**
@@ -882,6 +979,7 @@ class ReportController extends Controller
             $sessionData = [];
 
             foreach ($sessions as $index => $session) {
+<<<<<<< HEAD
                 if ($questionTypeId == 1) { // Objective
                     // Objective calculations
                     $totalQuestions = ($session->total_correct ?? 0) + ($session->total_skipped ?? 0);
@@ -893,6 +991,27 @@ class ReportController extends Controller
 
                     // Calculate score percentage
                     $scorePercentage = $totalQuestions > 0 ? (($session->total_correct ?? 0) / $totalQuestions) * 100 : 0;
+=======
+                $sessionType = $session->session_type ?? 'practice';
+                $storedQuestionCount = (int) ($session->total_questions ?? 0);
+                $fallbackQuestionCount = (int) ($session->total_correct ?? 0)
+                    + (int) ($session->total_skipped ?? 0);
+                $totalQuestions = $sessionType === 'practice'
+                    ? 5
+                    : ($storedQuestionCount > 0 ? $storedQuestionCount : max($fallbackQuestionCount, 10));
+
+                if ($questionTypeId == 1) { // Objective
+                    $totalWrong = max(
+                        $totalQuestions
+                            - (int) ($session->total_correct ?? 0)
+                            - (int) ($session->total_skipped ?? 0),
+                        0
+                    );
+
+                    $scorePercentage = $session->score !== null
+                        ? (float) $session->score
+                        : (($session->total_correct ?? 0) / $totalQuestions) * 100;
+>>>>>>> 917d4bb (Initial project commit)
 
                     // For DonutChart, use score_percentage
                     $scoreForChart = $scorePercentage;
@@ -901,12 +1020,16 @@ class ReportController extends Controller
                     $totalAnswered = $session->total_correct ?? 0;
                     $totalSkipped = $session->total_skipped ?? 0;
 
+<<<<<<< HEAD
                     // For subjective, total questions = 5 (as per your requirement)
                     $totalQuestions = 5;
 
                     // Recalculate skipped
                     $totalSkipped = $totalQuestions - $totalAnswered;
                     $totalSkipped = max($totalSkipped, 0);
+=======
+                    $totalSkipped = max($totalQuestions - $totalAnswered, 0);
+>>>>>>> 917d4bb (Initial project commit)
 
                     $totalWrong = 0;
 
@@ -935,6 +1058,10 @@ class ReportController extends Controller
                     'id' => $session->id,
                     'session_no' => $index + 1,
                     'session_date' => $sessionDate,
+<<<<<<< HEAD
+=======
+                    'session_type' => $sessionType,
+>>>>>>> 917d4bb (Initial project commit)
                     'total_questions' => $totalQuestions,
                     'total_correct' => $questionTypeId == 1 ? ($session->total_correct ?? 0) : $totalAnswered,
                     'total_wrong' => $totalWrong,
@@ -1128,20 +1255,40 @@ class ReportController extends Controller
 
     public function getQuestionAttempts($sessionId)
     {
+<<<<<<< HEAD
         try {
             Log::info('Fetching question attempts for session:', ['session_id' => $sessionId]);
+=======
+        return $this->getQuestionAttemptsForUser($sessionId, (int) Auth::id());
+    }
+
+    public function getQuestionAttemptsForUser($sessionIdentifier, int $userId, bool $lookupByUuid = false)
+    {
+        try {
+            Log::info('Fetching question attempts for session:', ['session' => $sessionIdentifier]);
+>>>>>>> 917d4bb (Initial project commit)
 
             // 1. Get session with topic in single query
             $session = DB::table('practice_session')
                 ->leftJoin('topics', 'practice_session.topic_id', '=', 'topics.id')
                 ->select('practice_session.*', 'topics.name as topic_name')
+<<<<<<< HEAD
                 ->where('practice_session.id', $sessionId)
+=======
+                ->where($lookupByUuid ? 'practice_session.uuid' : 'practice_session.id', $sessionIdentifier)
+                ->where('practice_session.user_id', $userId)
+>>>>>>> 917d4bb (Initial project commit)
                 ->first();
 
             if (!$session) {
                 abort(404, 'Session not found');
             }
 
+<<<<<<< HEAD
+=======
+            $sessionId = $session->id;
+
+>>>>>>> 917d4bb (Initial project commit)
             // 2. Get ALL attempts for this session with questions in ONE query
             $attempts = DB::table('quiz_attempts as qa')
                 ->join('questions as q', 'qa.question_id', '=', 'q.id')
@@ -1183,6 +1330,11 @@ class ReportController extends Controller
             foreach ($attempts as $attempt) {
                 $questionId = $attempt->question_id;
                 $answers = $allAnswers[$questionId] ?? collect();
+<<<<<<< HEAD
+=======
+                $hideMissionCorrection = ($session->session_type ?? 'practice') === 'mission'
+                    && (int) $attempt->answer_status !== 1;
+>>>>>>> 917d4bb (Initial project commit)
 
                 // Get correct answer
                 $correctAnswer = $answers->firstWhere('iscorrectanswer', 1);
@@ -1191,7 +1343,13 @@ class ReportController extends Controller
                 $explanationAnswer = $answers->first(function ($answer) {
                     return !empty($answer->reason);
                 });
+<<<<<<< HEAD
                 $explanation = $explanationAnswer ? $explanationAnswer->reason : "Explanation not available.";
+=======
+                $explanation = $hideMissionCorrection
+                    ? null
+                    : ($explanationAnswer ? $explanationAnswer->reason : "Explanation not available.");
+>>>>>>> 917d4bb (Initial project commit)
 
                 // Get chosen answer details (from answers collection, not DB)
                 $chosenAnswer = null;
@@ -1202,8 +1360,13 @@ class ReportController extends Controller
                 // Format answers for objective questions
                 $formattedAnswers = [];
                 if ($attempt->question_type_id == 1) { // Objective
+<<<<<<< HEAD
                     $formattedAnswers = $answers->map(function ($answer) use ($attempt, $chosenAnswer) {
                         return $this->formatAnswer($answer, $attempt, $chosenAnswer);
+=======
+                    $formattedAnswers = $answers->map(function ($answer) use ($attempt, $chosenAnswer, $hideMissionCorrection) {
+                        return $this->formatAnswer($answer, $attempt, $chosenAnswer, ! $hideMissionCorrection);
+>>>>>>> 917d4bb (Initial project commit)
                     })->toArray();
                 }
 
@@ -1213,14 +1376,25 @@ class ReportController extends Controller
                     $sampleAnswer = $answers->first(function ($answer) {
                         return !empty($answer->sample_answer);
                     });
+<<<<<<< HEAD
                     $schemaAnswer = $sampleAnswer ? $sampleAnswer->sample_answer : $explanation;
+=======
+                    $schemaAnswer = $hideMissionCorrection
+                        ? null
+                        : ($sampleAnswer ? $sampleAnswer->sample_answer : $explanation);
+>>>>>>> 917d4bb (Initial project commit)
                 }
 
                 $formattedAttempts[] = [
                     'id' => $attempt->id,
                     'question_id' => $questionId,
+<<<<<<< HEAD
                     'question_text' => $attempt->question_text,
                     'question_file' => $attempt->question_file,
+=======
+                    'question_text' => QuestionContentNormalizer::questionHtml($attempt->question_text, $attempt->question_file),
+                    'question_file' => QuestionContentNormalizer::questionFileUrl($attempt->question_file),
+>>>>>>> 917d4bb (Initial project commit)
                     'question_type' => $attempt->question_type_id == 1 ? 'objective' : 'subjective',
                     'question_type_id' => $attempt->question_type_id,
                     'answers' => $formattedAnswers,
@@ -1242,9 +1416,17 @@ class ReportController extends Controller
                 'total_questions' => count($formattedAttempts),
                 'success' => true
             ]);
+<<<<<<< HEAD
         } catch (\Exception $e) {
             Log::error('Error fetching question attempts:', [
                 'session_id' => $sessionId,
+=======
+        } catch (\Symfony\Component\HttpKernel\Exception\HttpExceptionInterface $e) {
+            throw $e;
+        } catch (\Exception $e) {
+            Log::error('Error fetching question attempts:', [
+                'session' => $sessionIdentifier,
+>>>>>>> 917d4bb (Initial project commit)
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
@@ -1259,13 +1441,22 @@ class ReportController extends Controller
     /**
      * Format answer data
      */
+<<<<<<< HEAD
     private function formatAnswer($answer, $attempt, $chosenAnswer)
+=======
+    private function formatAnswer($answer, $attempt, $chosenAnswer, bool $revealCorrectAnswer = true)
+>>>>>>> 917d4bb (Initial project commit)
     {
         $isChosen = $chosenAnswer && $chosenAnswer->id == $answer->id;
         $isCorrect = $answer->iscorrectanswer == 1;
 
         // Check if we should show correct answer
+<<<<<<< HEAD
         $shouldShowCorrect = !($attempt->choosen_answer_id == 0 && $attempt->answer_status == 0);
+=======
+        $shouldShowCorrect = $revealCorrectAnswer
+            && !($attempt->choosen_answer_id == 0 && $attempt->answer_status == 0);
+>>>>>>> 917d4bb (Initial project commit)
 
         // Only mark as correct/wrong if answer was actually chosen
         $wasCorrect = $isChosen && $isCorrect;
@@ -1322,6 +1513,11 @@ class ReportController extends Controller
             'created_at' => $session->created_at ? date('d M Y, H:i', strtotime($session->created_at)) : null,
             'topic_name' => $session->topic_name ?: 'Unknown',
             'question_type_id' => $session->question_type_id,
+<<<<<<< HEAD
+=======
+            'session_type' => $session->session_type ?? 'practice',
+            'total_questions' => $session->total_questions ?? null,
+>>>>>>> 917d4bb (Initial project commit)
         ];
     }
 

@@ -16,6 +16,11 @@ export default function SubjectReportPage() {
     question_type = 'Objective',
     objective_topics = [],  
     subjective_topics = [], 
+<<<<<<< HEAD
+=======
+    availableLevels = {},
+    availableSubjects = {},
+>>>>>>> 917d4bb (Initial project commit)
   } = props;
 
   const [currentStandard, setCurrentStandard] = useState(form || 'Form 4');
@@ -32,12 +37,22 @@ export default function SubjectReportPage() {
   const handleStandardChange = (standard) => {
     setCurrentStandard(standard);
     setIsLoading(true);
+<<<<<<< HEAD
+=======
+    const newLevelId = availableLevels?.[standard] || level_id;
+    const newSubjectId = availableSubjects?.[standard] || subject_id;
+>>>>>>> 917d4bb (Initial project commit)
     
     router.get(route('subject-report-page', {
       subject: subject_abbr || subject,
       form: standard,
+<<<<<<< HEAD
       level_id: level_id,
       subject_id: subject_id,
+=======
+      level_id: newLevelId,
+      subject_id: newSubjectId,
+>>>>>>> 917d4bb (Initial project commit)
       question_type: activeTab,
       preload_both: 'true'
     }), {

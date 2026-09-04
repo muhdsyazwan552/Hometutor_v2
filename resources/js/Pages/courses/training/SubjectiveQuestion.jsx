@@ -2,7 +2,15 @@ import React, { useState, useMemo, useEffect, useRef } from "react";
 import SubjectiveQuestionLayout from "@/Layouts/SubjectiveQuestionLayout";
 import ResultQuestion from "@/Pages/courses/training/ResultQuestion";
 import { Head, usePage, router } from '@inertiajs/react'; // Added router import
+<<<<<<< HEAD
 import QuestionReportButton from '@/Components/QuestionReportButton';
+=======
+import ReportQuestionButton from '@/Components/ReportQuestionButton';
+import ImagePathLabel, { addImagePathLabels } from '@/Components/ImagePathLabel';
+import Calculator from '@/components/ScientificCalculator';
+import PageDrawingTool from '@/components/PageDrawingTool';
+import AutoNotes from '@/components/AutoNotes';
+>>>>>>> 917d4bb (Initial project commit)
 
 export default function SubjectiveQuestion({ title = "Subjective Quiz" }) {
   const pageProps = usePage().props;
@@ -26,7 +34,17 @@ export default function SubjectiveQuestion({ title = "Subjective Quiz" }) {
 
   const [open, setOpen] = useState(false);
   const [zoomedImage, setZoomedImage] = useState("");
+<<<<<<< HEAD
 
+=======
+  const [showToolsDropdown, setShowToolsDropdown] = useState(false);
+  const [showCalculator, setShowCalculator] = useState(false);
+  const [showPageDrawing, setShowPageDrawing] = useState(false);
+  const [showAutoNotes, setShowAutoNotes] = useState(false);
+  const [noteClickCount, setNoteClickCount] = useState(0);
+  const toolsRef = useRef(null);
+  
+>>>>>>> 917d4bb (Initial project commit)
   // Add missing state variables
   const [practiceStartTime, setPracticeStartTime] = useState(new Date().toISOString());
   const [quizCompleted, setQuizCompleted] = useState(false);
@@ -35,6 +53,17 @@ export default function SubjectiveQuestion({ title = "Subjective Quiz" }) {
   useEffect(() => {
     setPracticeStartTime(new Date().toISOString());
   }, []);
+
+  useEffect(() => {
+    const closeTools = (event) => {
+      if (showToolsDropdown && toolsRef.current && !toolsRef.current.contains(event.target)) {
+        setShowToolsDropdown(false);
+      }
+    };
+
+    document.addEventListener('mousedown', closeTools);
+    return () => document.removeEventListener('mousedown', closeTools);
+  }, [showToolsDropdown]);
 
 
 
@@ -67,6 +96,9 @@ export default function SubjectiveQuestion({ title = "Subjective Quiz" }) {
 
   // Update handleSubmit to set quizCompleted
   const handleSubmit = () => {
+    const completedTime = timeElapsed;
+    setFinalTimeElapsed(completedTime);
+
     // Stop the timer
     setTimerRunning(false);
 
@@ -79,7 +111,7 @@ export default function SubjectiveQuestion({ title = "Subjective Quiz" }) {
       score: answered,
       answered: answered,
       skipped: skipped,
-      timeElapsed: timeElapsed,
+      timeElapsed: completedTime,
       questions: questions.map((q, index) => ({
         question: q.question,
         answered: answers[index].trim() !== "",
@@ -131,6 +163,7 @@ export default function SubjectiveQuestion({ title = "Subjective Quiz" }) {
   // Timer state
   const [timeElapsed, setTimeElapsed] = useState(0);
   const [timerRunning, setTimerRunning] = useState(false);
+  const [finalTimeElapsed, setFinalTimeElapsed] = useState(null);
 
   // per-question state
   const [checked, setChecked] = useState(Array(questions.length).fill(false));
@@ -349,6 +382,7 @@ const processHtmlContent = (html) => {
       const totalQuestions = questions.length;
       const skippedQuestions = totalQuestions - answeredQuestions;
 
+<<<<<<< HEAD
       const response = await router.post('/practice-session/subjective', {
         subject_id: subject_id,
         topic_id: topic_id,
@@ -401,6 +435,18 @@ const processHtmlContent = (html) => {
     // Check for <img> tags
     return /<img[^>]*>/i.test(html);
   };
+=======
+// Update handleNext to reset question timer:
+const handleNext = () => {
+  if (currentIndex < questions.length - 1) {
+    setCurrentIndex(currentIndex + 1);
+    setError("");
+    setQuestionStartTime(Date.now());
+  } else {
+    handleSubmit();
+  }
+};
+>>>>>>> 917d4bb (Initial project commit)
 
   
 
@@ -422,6 +468,7 @@ const processHtmlContent = (html) => {
 
 
 
+<<<<<<< HEAD
   const resetQuiz = () => {
     setAnswers(Array(questions.length).fill(""));
     setError("");
@@ -438,6 +485,25 @@ const processHtmlContent = (html) => {
     setTimerRunning(true);
     setQuestionStartTime(Date.now()); // Add this line
   };
+=======
+const resetQuiz = () => {
+  setAnswers(Array(questions.length).fill(""));
+  setError("");
+  setShowScore(false);
+  setQuizResults(null);
+  setChecked(Array(questions.length).fill(false));
+  setShowSchema(Array(questions.length).fill(false));
+  setIsCorrect(Array(questions.length).fill(null));
+  setFirstTryResults(Array(questions.length).fill(null));
+  setCurrentIndex(0);
+  setQuestionAttempts([]); // Add this line
+  // Reset timer
+  setTimeElapsed(0);
+  setFinalTimeElapsed(null);
+  setTimerRunning(true);
+  setQuestionStartTime(Date.now()); // Add this line
+};
+>>>>>>> 917d4bb (Initial project commit)
 
 
 
@@ -468,28 +534,37 @@ const processHtmlContent = (html) => {
 
   // Responsive Footer Content
   const footerContent = (
-    <div className="w-full flex flex-col sm:flex-row justify-between items-center gap-3 px-4 md:px-10 py-3">
-      {/* Tools Button - Hidden on mobile, visible on tablet and up */}
-      <button className="hidden sm:flex items-center gap-2 px-4 py-2 border-2 border-gray-300 text-gray-700 rounded-lg hover:border-blue-500 hover:text-blue-600 hover:bg-blue-50 transition-all duration-200">
-        <span>🔧</span>
-        <span className="hidden md:inline">Tools</span>
-      </button>
+    <div className="mx-auto flex w-full flex-col gap-3 px-4 py-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between md:px-10">
+      <div ref={toolsRef} className="relative hidden sm:block">
+        <button type="button" onClick={() => setShowToolsDropdown((visible) => !visible)} className="flex min-h-11 items-center gap-2 rounded-xl bg-slate-700 px-4 py-2.5 text-sm font-semibold text-white shadow-md transition hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2">
+          <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+          Tools
+        </button>
+        {showToolsDropdown && <div className="absolute bottom-full left-0 z-50 mb-2 w-56 overflow-hidden rounded-xl border border-slate-200 bg-white py-1 shadow-xl">
+          <button type="button" onClick={() => { setShowCalculator(true); setShowToolsDropdown(false); }} className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm font-medium text-slate-700 hover:bg-slate-50">🧮 Calculator</button>
+          <button type="button" onClick={() => { setShowPageDrawing(true); setShowToolsDropdown(false); }} className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm font-medium text-slate-700 hover:bg-slate-50">✏️ Draw on page</button>
+          <button type="button" onClick={() => { setShowAutoNotes(true); setNoteClickCount((count) => count + 1); setShowToolsDropdown(false); }} className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm font-medium text-slate-700 hover:bg-slate-50">📝 Add note</button>
+        </div>}
+      </div>
 
-      {/* Mobile Tools Button */}
-      <button className="sm:hidden flex items-center gap-2 px-3 py-2 border-2 border-gray-300 text-gray-700 rounded-lg hover:border-blue-500 hover:text-blue-600 hover:bg-blue-50 transition-all duration-200">
-        <span>🔧</span>
-      </button>
-
-      <div className="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto">
+      <div className="order-2 flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:items-center">
         {/* Check Answer button */}
         {!checked[currentIndex] && (
           <button
             onClick={handleCheckAnswer}
             disabled={!answers[currentIndex].trim()}
+<<<<<<< HEAD
             className={`w-full sm:w-auto px-4 py-3 md:px-6 md:py-3 rounded-lg font-medium shadow-md  text-sm md:text-base hover:scale-105 ${!answers[currentIndex].trim()
               ? 'bg-gray-400 text-gray-200 cursor-not-allowed'
               : 'bg-green-600 text-white hover:bg-green-700 '
               }`}
+=======
+            className={`min-h-12 w-full rounded-xl px-5 py-3 text-base font-semibold shadow-md transition hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-offset-2 sm:min-h-11 sm:w-auto sm:px-5 sm:py-2.5 sm:text-sm md:px-6 md:text-base ${
+              !answers[currentIndex].trim()
+                ? 'bg-gray-400 text-gray-200 cursor-not-allowed'
+                : 'bg-green-600 text-white hover:bg-green-700 '
+            }`}
+>>>>>>> 917d4bb (Initial project commit)
           >
             Check Answer
           </button>
@@ -499,7 +574,11 @@ const processHtmlContent = (html) => {
         {checked[currentIndex] && (
           <button
             onClick={handleNext}
+<<<<<<< HEAD
             className="w-full sm:w-auto bg-blue-600 text-white px-6 py-3 md:px-8 md:py-4 rounded-lg hover:bg-blue-700  font-medium shadow-md text-sm md:text-lg"
+=======
+            className="order-3 min-h-12 w-full rounded-xl bg-blue-600 px-6 py-3 text-base font-semibold text-white shadow-md transition hover:bg-blue-700 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 sm:order-none sm:min-h-11 sm:w-auto sm:px-5 sm:py-2.5 sm:text-sm md:px-6 md:text-base"
+>>>>>>> 917d4bb (Initial project commit)
           >
             {currentIndex < questions.length - 1 ? (
               <>
@@ -518,7 +597,7 @@ const processHtmlContent = (html) => {
 
   // Main content for children prop
   const mainContent = (
-    <div className="py-4 md:py-6 bg-cover bg-center bg-no-repeat min-h-screen" style={{ backgroundImage: 'url(/images/background_classroom.jpg)' }}>
+    <div className="py-2 sm:py-4 bg-cover bg-center bg-no-repeat h-auto" style={{ backgroundImage: 'url(/images/background_classroom.jpg)' }}>
       <div className="max-w-4xl mx-auto relative px-4 md:px-0">
         {/* Floating Feedback Messages - Hidden on mobile */}
         {isCorrect[currentIndex] === true && (
@@ -552,6 +631,7 @@ const processHtmlContent = (html) => {
 
         
         {/* Question Card */}
+<<<<<<< HEAD
 <div className="bg-white opacity-100 rounded-xl md:rounded-2xl shadow-lg md:shadow-xl p-4 md:p-6 mb-6 md:mb-10 transition-all duration-300 hover:shadow-xl md:hover:shadow-2xl">
   {/* Mobile Question Counter */}
   <div className="lg:hidden mb-4 pb-3 border-b border-gray-200">
@@ -588,6 +668,27 @@ const processHtmlContent = (html) => {
     <p className="text-red-500">No question content available</p>
   )}
   </div>
+=======
+        <div className="bg-white opacity-100 rounded-xl mt-10 md:rounded-2xl shadow-lg md:shadow-xl p-4 md:p-6 mb-6 md:mb-10 transition-all duration-300 hover:shadow-xl md:hover:shadow-2xl">
+          {/* Mobile Question Counter */}
+          <div className="lg:hidden mb-4 pb-3 border-b border-gray-200">
+            <h2 className="text-lg font-semibold text-gray-800 text-center">
+              Question {currentIndex + 1} of {questions.length}
+            </h2>
+          </div>
+
+          {/* Question content with HTML rendering */}
+          <div className="text-gray-700 mb-4 md:mb-6 text-base md:text-lg question-content">
+            {questions[currentIndex]?.question ? (
+              <div
+                className="prose max-w-none prose-sm md:prose-base"
+                dangerouslySetInnerHTML={{ __html: addImagePathLabels(questions[currentIndex].question) }}
+              />
+            ) : (
+              <p className="text-red-500">No question content available</p>
+            )}
+          </div>
+>>>>>>> 917d4bb (Initial project commit)
 
   <div className="-mt-2 mb-4 flex justify-end">
     <QuestionReportButton
@@ -602,6 +703,7 @@ const processHtmlContent = (html) => {
 
   <span className="text-gray-600 text-sm md:text-md mb-3 md:mb-4 block">Type your answer below:</span>
 
+<<<<<<< HEAD
   {/* Answer input */}
   <textarea
     value={answers[currentIndex]}
@@ -611,6 +713,22 @@ const processHtmlContent = (html) => {
     placeholder="Type your detailed answer with explanations and working here..."
     disabled={checked[currentIndex]}
   />
+=======
+          <div className="mb-4 flex justify-stretch sm:justify-end">
+            <ReportQuestionButton
+              questionId={questions[currentIndex]?.id}
+              context="subjective_practice"
+              className="w-full justify-center px-4 py-2.5 sm:w-auto"
+            />
+          </div>
+
+          {/* Error */}
+          {error && (
+            <div className="bg-red-50 border border-red-200 rounded-lg md:rounded-xl p-3 md:p-4 mb-3 md:mb-4 animate-shake">
+              <p className="text-red-600 font-medium text-sm md:text-base">{error}</p>
+            </div>
+          )}
+>>>>>>> 917d4bb (Initial project commit)
 
   {/* Error */}
   {error && (
@@ -619,6 +737,7 @@ const processHtmlContent = (html) => {
     </div>
   )}
 
+<<<<<<< HEAD
   {/* Buttons Section */}
   <div className="flex flex-col gap-3">
    
@@ -727,6 +846,28 @@ const processHtmlContent = (html) => {
       ) : (
         <div className="text-red-500 bg-red-50 p-3 rounded-lg">
           <p>No schema answer available for this question.</p>
+=======
+              {showSchema[currentIndex] && (
+                <div className="p-3 md:p-4 bg-green-50 border-2 border-green-200 rounded-lg md:rounded-xl shadow-sm animate-fade-in">
+                  <h3 className="text-green-800 font-semibold mb-2 flex items-center text-sm md:text-base">
+                    <svg className="w-4 h-4 md:w-5 md:h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    Schema Answer:
+                  </h3>
+                  {questions[currentIndex]?.schema ? (
+                    <div
+                      className="text-green-700 text-base md:text-lg prose max-w-none prose-sm md:prose-base"
+                      dangerouslySetInnerHTML={{ __html: addImagePathLabels(questions[currentIndex].schema) }}
+                    />
+                  ) : (
+                    <p className="text-green-700">No schema answer available</p>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+>>>>>>> 917d4bb (Initial project commit)
         </div>
       )}
     </div>
@@ -741,11 +882,14 @@ const processHtmlContent = (html) => {
           className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4"
           onClick={() => setOpen(false)}
         >
-          <img
-            src={zoomedImage}
-            alt="Zoomed question image"
-            className="max-h-[90vh] max-w-[90vw] rounded-lg shadow-lg cursor-zoom-out"
-          />
+          <div className="max-w-[90vw]">
+            <img
+              src={zoomedImage}
+              alt="Zoomed question image"
+              className="max-h-[85vh] max-w-[90vw] rounded-lg shadow-lg cursor-zoom-out"
+            />
+            <ImagePathLabel path={zoomedImage} className="bg-white/90" />
+          </div>
         </div>
       )}
     </div>
@@ -794,6 +938,20 @@ const processHtmlContent = (html) => {
       >
         {mainContent}
       </SubjectiveQuestionLayout>
+
+      {showPageDrawing && <PageDrawingTool isActive={showPageDrawing} onClose={() => setShowPageDrawing(false)} />}
+      {showAutoNotes && <AutoNotes isActive={showAutoNotes} addNoteTrigger={noteClickCount} />}
+      {showCalculator && (
+        <div className="fixed inset-0 z-[110] flex items-end justify-center bg-slate-950/55 p-0 backdrop-blur-sm sm:items-center sm:p-4">
+          <div className="w-full overflow-hidden rounded-t-3xl bg-white shadow-2xl sm:max-w-2xl sm:rounded-3xl">
+            <div className="flex items-center justify-between border-b border-slate-200 px-5 py-4">
+              <div><p className="text-xs font-bold uppercase tracking-widest text-sky-600">Study tool</p><h2 className="text-lg font-black text-slate-900">Scientific Calculator</h2></div>
+              <button type="button" onClick={() => setShowCalculator(false)} className="grid h-9 w-9 place-items-center rounded-full bg-slate-100 text-xl text-slate-600 transition hover:bg-slate-200" aria-label="Close calculator">×</button>
+            </div>
+            <div className="max-h-[75vh] overflow-auto p-3 sm:p-5"><Calculator /></div>
+          </div>
+        </div>
+      )}
 
       {/* Custom CSS for animations and responsive design */}
       <style>{`
